@@ -1,0 +1,4 @@
+name: PolarisDuels
+version: '1.0-SNAPSHOT'
+main: us.polarismc.polarisduels.Main
+api-version: '1.21'
