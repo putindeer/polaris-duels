@@ -29,15 +29,15 @@ public class GameModeCMD implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         Player p = (Player) sender;
-        if (!p.hasPermission("uhc.gamemode")) {
-            p.sendMessage(plugin.utils.chat("&cYou don't have permission to execute this command"));
+        if (!sender.hasPermission("uhc.gamemode")) {
+            plugin.utils.message(sender, "&cYou don't have permission to execute this command");
             return true;
         }
 
         String commandName = command.getName().toLowerCase();
 
         if (args.length == 0 && commandName.equalsIgnoreCase("gamemode")) {
-            p.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&cUsage: /gamemode <survival/creative/adventure/spectator> [player]"));
+            plugin.utils.message(sender, "&cUsage: /gamemode <survival/creative/adventure/spectator> [player]");
             return true;
         }
 
@@ -62,7 +62,7 @@ public class GameModeCMD implements TabExecutor {
             if (args.length == 1) {
                 Player target = Bukkit.getPlayer(args[0]);
                 if (target == null) {
-                    sender.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&cThe specified player is offline."));
+                    plugin.utils.message(p, "&cThe specified player is offline.");
                     return true;
                 }
                 changeGameMode(target, p, newGM);
@@ -87,7 +87,7 @@ public class GameModeCMD implements TabExecutor {
                 newGM = GameMode.SPECTATOR;
                 break;
             default:
-                p.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&cInvalid game mode specified."));
+                plugin.utils.message(p, "&cInvalid game mode specified.");
                 return true;
         }
 
@@ -96,7 +96,7 @@ public class GameModeCMD implements TabExecutor {
         } else {
             Player target = Bukkit.getPlayer(args[1]);
             if (target == null) {
-                sender.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&cThe specified player is offline."));
+                plugin.utils.message(sender, "&cThe specified player is offline.");
                 return true;
             }
             changeGameMode(target, p, newGM);
@@ -110,17 +110,17 @@ public class GameModeCMD implements TabExecutor {
         if (p == p2) p2 = null;
         p.setGameMode(newGM);
         if (p2 == null) {
-            p.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&7You changed your gamemode from &2" + oldGM.name() + " &7to &2" + newGM.name() + "&7."));
+            plugin.utils.message(p, "&7You changed your gamemode from &2" + oldGM.name() + " &7to &2" + newGM.name() + "&7.");
             Bukkit.getOnlinePlayers().stream()
                     .filter(a -> a.hasPermission("duels.admin") && a != p)
-                    .forEach(a -> a.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&f" + p.getName() + " &7changed his gamemode from &2" + oldGM.name() + " &7to &2" + newGM.name() + "&7.")));
+                    .forEach(a -> plugin.utils.message(a, "&f" + p.getName() + " &7changed his gamemode from &2" + oldGM.name() + " &7to &2" + newGM.name() + "&7."));
         } else {
             Player sender = p2;
-            p.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&f" + sender.getName() + " &7changed your gamemode from &2" + oldGM.name() + " &7to &2" + newGM.name() + "&7."));
-            sender.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&7You changed &f" + p.getName() + "&7's gamemode from &2" + oldGM.name() + " &7to &2" + newGM.name() + "&7."));
+            plugin.utils.message(p, "&f" + sender.getName() + " &7changed your gamemode from &2" + oldGM.name() + " &7to &2" + newGM.name() + "&7.");
+            plugin.utils.message(sender, "&7You changed &f" + p.getName() + "&7's gamemode from &2" + oldGM.name() + " &7to &2" + newGM.name() + "&7.");
             Bukkit.getOnlinePlayers().stream()
                     .filter(a -> a.hasPermission("duels.admin") && a != p && a != sender)
-                    .forEach(a -> a.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&f" + sender.getName() + " &7changed &f" + p.getName() + "&7's gamemode from &2" + oldGM.name() + " &7to &2" + newGM.name() + "&7.")));
+                    .forEach(a -> plugin.utils.message(a, "&f" + sender.getName() + " &7changed &f" + p.getName() + "&7's gamemode from &2" + oldGM.name() + " &7to &2" + newGM.name() + "&7."));
         }
     }
 

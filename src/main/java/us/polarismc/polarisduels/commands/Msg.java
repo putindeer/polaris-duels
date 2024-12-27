@@ -21,19 +21,17 @@ public class Msg implements CommandExecutor {
     }
     private final HashMap<CommandSender,CommandSender> reply = new HashMap<>();
 
-    //TODO - not being able to do /msg while muted
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, @NotNull String[] args) {
         if (cmd.getName().equalsIgnoreCase("msg")) {
             if (args.length < 2) {
-                sender.sendMessage(plugin.utils.chat(plugin.utils.prefix + "Usage: &c/msg <player> <message>"));
+                plugin.utils.message(sender, "Usage: &c/msg <player> <message>");
                 return true;
             }
             if (sender instanceof Player) {
                 Player target = Bukkit.getPlayer(args[0]);
                 if (target == null) {
-                    sender.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&b" + args[0] + " &cno está conectado"));
+                    plugin.utils.message(sender, "&b" + args[0] + " &cis not connected");
                     return true;
                 }
                 StringBuilder message = new StringBuilder();
@@ -41,21 +39,20 @@ public class Msg implements CommandExecutor {
                     message.append(args[i]).append(" ");
                 }
                 String msg = message.toString().trim();
-                sender.sendMessage(plugin.utils.chat("&8(&3Tú &7» &b" + target.getName() + "&8)&7: " + msg));
-                target.sendMessage(plugin.utils.chat("&8(&3" + sender.getName() + " &7» &bTú&8)&7: " + msg));
+                plugin.utils.message(sender, "&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg);
+                plugin.utils.message(target, Sound.BLOCK_NOTE_BLOCK_BELL, "&8(&3" + sender.getName() + " &7» &bYou&8)&7: " + msg);
                 reply.put(target,sender);
                 reply.put(sender,target);
-                target.playSound(target.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL,1,1);
             }
         }
         if (cmd.getName().equalsIgnoreCase("reply")) {
             if (args.length == 0) {
-                sender.sendMessage(plugin.utils.chat(plugin.utils.prefix + "Usage: &c/r <message>"));
+                plugin.utils.message(sender, "Usage: &c/r <message>");
                 return true;
             }
             if (sender instanceof Player) {
                 if (!reply.containsKey(sender)) {
-                    sender.sendMessage(plugin.utils.chat(plugin.utils.prefix + "No tienes a nadie para responder"));
+                    plugin.utils.message(sender, "You don't have anyone to reply to.");
                     return true;
                 }
                 CommandSender target = reply.get(sender);
@@ -64,9 +61,10 @@ public class Msg implements CommandExecutor {
                     message.append(arg).append(" ");
                 }
                 String msg = message.toString().trim();
-                sender.sendMessage(plugin.utils.chat("&8(&3Tú &7» &b" + target.getName() + "&8)&7: " + msg));
-                target.sendMessage(plugin.utils.chat("&8(&3" + sender.getName() + " &7» &bTú&8)&7: " + msg));
-                if (target instanceof Player t) t.playSound(t.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL,1,1);
+                plugin.utils.message(sender, "&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg);
+                if (target instanceof Player) {
+                    plugin.utils.message(target, Sound.BLOCK_NOTE_BLOCK_BELL, "&8(&3" + sender.getName() + " &7» &bYou&8)&7: " + msg);
+                }
             }
         }
         return false;

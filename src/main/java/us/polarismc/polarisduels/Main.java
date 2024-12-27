@@ -15,7 +15,6 @@ import java.util.UUID;
 public final class Main extends JavaPlugin {
     public final Map<UUID, FastBoard> boards = new HashMap<>();
     public static Main pl;
-    public StartThings start;
     public Utils utils;
 
     public ArenaDAO arenaFile;
@@ -24,13 +23,12 @@ public final class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         pl = this;
+        utils = new Utils();
 
         arenaFile = new ArenaGsonImpl(this);
         arenas = arenaFile.loadArenas();
 
-        start = new StartThings(this);
-        utils = new Utils();
-
+        new StartThings(this);
     }
 
     @Override

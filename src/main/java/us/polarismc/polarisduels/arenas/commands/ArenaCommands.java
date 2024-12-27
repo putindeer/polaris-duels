@@ -3,7 +3,6 @@ package us.polarismc.polarisduels.arenas.commands;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -49,7 +48,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, @NotNull String[] args) {
         if (cmd.getName().equals("arena")){
             if (args.length < 1){
-                sender.sendMessage(plugin.utils.chat("&carena usage -> /arena [setup/delete]"));
+                sender.sendMessage(plugin.utils.chat("&cArena usage -> /arena [setup/delete]"));
                 return true;
             }
 
@@ -57,7 +56,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
                 startArenaSetup((Player) sender);
             } else if (args[0].equalsIgnoreCase("delete")) {
                 if (args.length < 2) {
-                    sender.sendMessage(plugin.utils.chat("&carena usage -> /arena [bla/bla]"));
+                    sender.sendMessage(plugin.utils.chat("&cArena usage -> /arena delete <arena name>"));
                     return true;
                 }
                 String arenaName = args[1];
@@ -65,13 +64,13 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
                 if (arenas.containsKey(arenaName)) {
                     arenas.remove(arenaName);
                     plugin.arenaFile.deleteArena(arenaName);
-                    sender.sendMessage(plugin.utils.chat("&#10e8f3Arena '%arenaname%' deleted").replace("%arenaname%", arenaName));
+                    sender.sendMessage(plugin.utils.chat("&#10e8f3Arena " + arenaName + "deleted"));
                 } else {
-                    sender.sendMessage(plugin.utils.chat("&cArena with the name &4'%arenaname%' &cdoes not exists").replace("%s", arenaName));
+                    sender.sendMessage(plugin.utils.chat("&cArena with the name &4" + arenaName + " &cdoes not exists"));
                 }
                 return true;
             } else {
-                sender.sendMessage(plugin.utils.chat("&carena usage -> /arena [setup/delete]"));
+                sender.sendMessage(plugin.utils.chat("&cArena usage -> /arena [setup/delete]"));
                 return true;
             }
         }
@@ -85,7 +84,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
      */
     private void startArenaSetup(Player sender) {
         if (setupSessions.containsKey(sender.getUniqueId())) {
-            sender.sendMessage(plugin.utils.chat("&cYou're already in setup mode"));
+            sender.sendMessage(plugin.utils.chat("&cYou're already in setup mode!"));
             return;
         }
 
@@ -93,7 +92,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         ArenaSetupSession session = new ArenaSetupSession(sender, arena);
         setupSessions.put(sender.getUniqueId(), session);
 
-        sender.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&#10e8f3Step 1: Please enter the name of the arena"));
+        plugin.utils.message(sender, "&#10e8f3Step 1: Please enter the name of the arena");
     }
 
     /**
@@ -115,38 +114,38 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
             case 1:
                 session.getArena().setName(m);
                 session.setStep(2);
-                p.sendMessage(plugin.utils.chat(plugin.utils.prefix + "&#10e8f3Step 2: Please enter the Display Name of the arena"));
+                plugin.utils.message(p, "&#10e8f3Step 2: Please enter the Display Name of the arena");
                 break;
             case 2:
                 session.getArena().setDisplayName(m);
                 session.setStep(3);
-                p.sendMessage(plugin.utils.prefix + "&#10e8f3Step 3: Please stand on the spawn point 1 and say 'loc1' to save");
+                plugin.utils.message(p, "&#10e8f3Step 3: Please stand on the spawn point 1 and say 'loc1' to save");
                 break;
             case 3:
                 if (message.equals(Component.text("loc1"))) {
                     session.getArena().setSpawnOne(p.getLocation());
                     session.setStep(4);
-                    p.sendMessage(plugin.utils.prefix + "&#10e8f3Step 4: Please stand on the spawn point 2 and say 'loc2' to save");
+                    plugin.utils.message(p, "&#10e8f3Step 4: Please stand on the spawn point 2 and say 'loc2' to save");
                 } else {
-                    p.sendMessage(plugin.utils.prefix + "&cPlease say 'loc1' to save the spawn point 1");
+                    plugin.utils.message(p, "&cPlease say 'loc1' to save the spawn point 1");
                 }
                 break;
             case 4:
                 if (message.equals(Component.text("loc2"))) {
                     session.getArena().setSpawnTwo(p.getLocation());
                     session.setStep(5);
-                    p.sendMessage(plugin.utils.prefix + "&#10e8f3Step5: Please place an item in your hand for the Arena Logo and say 'go'");
+                    plugin.utils.message(p, "&#10e8f3Step5: Please place an item in your hand for the Arena Logo and say 'go'");
                 } else {
-                    p.sendMessage(plugin.utils.prefix + "&cPlease say 'loc2' to save the spawn point 2");
+                    plugin.utils.message(p, "&cPlease say 'loc2' to save the spawn point 2");
                 }
                 break;
             case 5:
                 if (message.equals(Component.text("go")) && !p.getInventory().getItemInMainHand().getType().isAir()) {
                     session.getArena().setBlockLogo(p.getInventory().getItemInMainHand());
                     session.setStep(6);
-                    p.sendMessage(plugin.utils.prefix + "&#10e8f3Step 6: Please select the center of the arena by right-clicking");
+                    plugin.utils.message(p, "&#10e8f3Step 6: Please select the center of the arena by right-clicking");
                 } else {
-                    p.sendMessage(plugin.utils.prefix + "&cThere's not any item in your hand");
+                    plugin.utils.message(p, "&cThere's not any item in your hand");
                 }
         }
     }
@@ -167,7 +166,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
             session.getArena().setCenter(e.getClickedBlock().getLocation());
             session.setStep(6);
             arenas.put(session.getArena().getName(), session.getArena());
-            p.sendMessage(plugin.utils.prefix + "&#FFC300Arena setup completed!");
+            plugin.utils.message(p, "&#FFC300Arena setup completed!");
 
             plugin.arenaFile.saveArenas(arenas);
 

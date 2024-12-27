@@ -1,7 +1,6 @@
 package us.polarismc.polarisduels.events;
 
 import fr.mrmicky.fastboard.FastBoard;
-import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EntityType;
@@ -32,7 +31,7 @@ public class HubEvents implements Listener {
     @EventHandler
     public void join(PlayerJoinEvent event) {
         Player p = event.getPlayer();
-        event.joinMessage(Component.text(plugin.utils.chat("&8(&a+&8) " + p.getName())));
+        event.joinMessage(plugin.utils.chat("&8(&a+&8) " + p.getName()));
 
         FastBoard board = new FastBoard(p);
         board.updateTitle("Polaris Duels");
@@ -55,7 +54,7 @@ public class HubEvents implements Listener {
     @EventHandler
     public void onLeft (PlayerQuitEvent e) {
         Player p = e.getPlayer();
-        e.quitMessage(Component.text(plugin.utils.chat("&8(&c-&8) " + p.getName())));
+        e.quitMessage(plugin.utils.chat("&8(&c-&8) " + p.getName()));
         FastBoard board = plugin.boards.remove(p.getUniqueId());
         if (board != null) {
             board.delete();

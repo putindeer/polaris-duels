@@ -1,7 +1,6 @@
 package us.polarismc.polarisduels.utils;
 
 import fr.mrmicky.fastboard.FastBoard;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.commands.ArenaCommands;
@@ -27,7 +26,7 @@ public class StartThings {
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdir();
         }
-        // Fast Board
+        // Scoreboard
         plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             for (FastBoard board : plugin.boards.values()) {
                 updateBoard(board);
@@ -37,8 +36,8 @@ public class StartThings {
 
         // TAB
         plugin.getServer().getScheduler().runTaskTimer(plugin, () -> Bukkit.getOnlinePlayers().forEach(p -> p.sendPlayerListHeaderAndFooter(
-                Component.text(plugin.utils.chat("&9&lPolaris Duels")),
-                Component.text(plugin.utils.chat("&7Ping: &9") + p.getPing() + " &8| &7Tps: " + new DecimalFormat("##").format(plugin.getServer().getTPS()[0]))
+                plugin.utils.chat("&9&lPolaris Duels"),
+                plugin.utils.chat("&7Ping: &9" + p.getPing() + " &8| &7Tps: " + new DecimalFormat("##").format(plugin.getServer().getTPS()[0]))
         )),0, 100);
     }
 

@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.*;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
-import org.bukkit.util.Consumer;
+import java.util.function.Consumer;
 import us.polarismc.polarisduels.Main;
 
 import java.util.ArrayList;
@@ -105,20 +105,20 @@ public class ItemBuilder {
     // =======================================================
     public ItemBuilder lore(String... msgs) {
         List<Component> lore = new ArrayList<>();
-        Arrays.stream(msgs).forEach(s -> lore.add(Component.text(plugin.utils.chat("&7" + s))));
+        Arrays.stream(msgs).forEach(s -> lore.add(plugin.utils.chat("&7" + s)));
 
         this.meta.lore(lore);
         return this;
     }
     public ItemBuilder lore(List<String> msgs) {
         List<Component> lore = new ArrayList<>();
-        msgs.forEach(s -> lore.add(Component.text(plugin.utils.chat("&7" + s))));
+        msgs.forEach(s -> lore.add(plugin.utils.chat("&7" + s)));
         this.meta.lore(lore);
         return this;
     }
     public ItemBuilder lore(String msg) {
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text(plugin.utils.chat("&7" + msg)));
+        lore.add(plugin.utils.chat("&7" + msg));
         this.meta.lore(lore);
         return this;
     }
@@ -126,7 +126,7 @@ public class ItemBuilder {
     public ItemBuilder loreAdd(String... msg) {
         List<Component> lore = this.meta.lore() == null ? new ArrayList<>() : new ArrayList<>(Objects.requireNonNull(this.meta.lore()));
         for (String s : msg)
-            lore.add(Component.text(plugin.utils.chat("&7" + s)));
+            lore.add(plugin.utils.chat("&7" + s));
 
         this.meta.lore(lore);
         return this;
@@ -137,7 +137,7 @@ public class ItemBuilder {
 
         if (bool) {
             for (String s : msgs)
-                lore.add(Component.text(plugin.utils.chat("&7" + s)));
+                lore.add(plugin.utils.chat("&7" + s));
         }
 
         this.meta.lore(lore);
@@ -148,7 +148,7 @@ public class ItemBuilder {
     // Name
     // =======================================================
     public ItemBuilder name(String str) {
-        this.meta.displayName(Component.text(plugin.utils.chat(str)));
+        this.meta.displayName(plugin.utils.chat(str));
         return this;
     }
 

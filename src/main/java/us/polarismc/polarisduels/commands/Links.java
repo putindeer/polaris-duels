@@ -21,9 +21,9 @@ public class Links implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String[] strings) {
         Player p = (Player) sender;
-        p.sendMessage(plugin.utils.chat("&9Discord: discord.polarismc.us"));
-        p.sendMessage(plugin.utils.chat("&bStore: store.polarismc.us"));
-        p.sendMessage(plugin.utils.chat("&aApplys: applys.polarismc.us"));
+        plugin.utils.message(p, "&9Discord: discord.polarismc.us",
+                "&bStore: store.polarismc.us",
+                "&aApplys: applys.polarismc.us");
         return true;
     }
 }

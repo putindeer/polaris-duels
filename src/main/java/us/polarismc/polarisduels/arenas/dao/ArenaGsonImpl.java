@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class ArenaGsonImpl implements ArenaDAO {
     private final Main plugin;
     private final File file;
@@ -63,7 +64,11 @@ public class ArenaGsonImpl implements ArenaDAO {
         try (FileWriter writer = new FileWriter(file)) {
             gson.toJson(arenasArray, writer);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().severe("Error saving arenas to file: " + e.getMessage());
+            plugin.getLogger().severe("Stack trace: ");
+            for (StackTraceElement element : e.getStackTrace()) {
+                plugin.getLogger().severe(element.toString());
+            }
         }
     }
 
@@ -140,7 +145,11 @@ public class ArenaGsonImpl implements ArenaDAO {
                 arenas.put(name, arena);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().severe("Error loading arenas from file: " + e.getMessage());
+            plugin.getLogger().severe("Stack trace: ");
+            for (StackTraceElement element : e.getStackTrace()) {
+                plugin.getLogger().severe(element.toString());
+            }
         }
 
         return arenas;
@@ -195,13 +204,22 @@ public class ArenaGsonImpl implements ArenaDAO {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().severe("Error reading arenas file while deleting arena: " + e.getMessage());
+            plugin.getLogger().severe("Stack trace: ");
+            for (StackTraceElement element : e.getStackTrace()) {
+                plugin.getLogger().severe(element.toString());
+            }
+            return;
         }
 
         try (FileWriter writer = new FileWriter(file)) {
             gson.toJson(arenasArray, writer);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().severe("Error writing arenas file after deleting arena: " + e.getMessage());
+            plugin.getLogger().severe("Stack trace: ");
+            for (StackTraceElement element : e.getStackTrace()) {
+                plugin.getLogger().severe(element.toString());
+            }
         }
     }
 }
