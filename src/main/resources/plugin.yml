@@ -2,3 +2,33 @@ name: PolarisDuels
 version: '1.0-SNAPSHOT'
 main: us.polarismc.polarisduels.Main
 api-version: '1.21'
+authors: [putandar, woxan, zowi]
+description: A Minimalist Duels Plugin for Polaris
+website: https://github.com/putindeer/PolarisDuels
+
+commands:
+  arena:
+    description: Manage arenas
+    usage: /arena
+    permission: duels.arenamanager
+  broadcast:
+    description: Broadcast a message to all players
+    aliases: [bc]
+  gmc:
+    permission: duels.gamemode
+  gmsp:
+    permission: duels.gamemode
+  gms:
+    permission: duels.gamemode
+  gma:
+    permission: duels.gamemode
+  gm:
+    aliases: [gamemode]
+    permission: duels.gamemode
+  links:
+    description: Display the links of the server to a player
+  msg:
+    description: Private-message a player
+  reply:
+    description: Reply to a private-message
+    aliases: [r]
