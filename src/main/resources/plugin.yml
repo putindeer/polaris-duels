@@ -32,3 +32,5 @@ commands:
   reply:
     description: Reply to a private-message
     aliases: [r]
+  debug:
+    permission: duels.dev

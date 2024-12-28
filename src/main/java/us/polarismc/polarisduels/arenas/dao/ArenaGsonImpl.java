@@ -10,13 +10,15 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
+import us.polarismc.polarisduels.arenas.states.InactiveArenaState;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class ArenaGsonImpl implements ArenaDAO {
@@ -40,13 +42,12 @@ public class ArenaGsonImpl implements ArenaDAO {
      * @param arenas map of the arenas
      */
     @Override
-    public void saveArenas(Map<String, ArenaEntity> arenas) {
+    public void saveArenas(List<ArenaEntity> arenas) {
         Gson gson = new Gson();
         JsonArray arenasArray = new JsonArray();
 
-        for (Map.Entry<String, ArenaEntity> entry : arenas.entrySet()) {
+        for (ArenaEntity arena : arenas) {
             JsonObject arenaJson = new JsonObject();
-            ArenaEntity arena = entry.getValue();
 
             arenaJson.addProperty("name", arena.getName());
             arenaJson.addProperty("displayName", arena.getDisplayName());
@@ -106,19 +107,19 @@ public class ArenaGsonImpl implements ArenaDAO {
     /**
      * Load the arenas at starting the server
      *
-     * @return the map of the arenas to work with
+     * @return the list of the arenas to work with
      */
     @Override
-    public Map<String, ArenaEntity> loadArenas() {
+    public List<ArenaEntity> loadArenas() {
         Gson gson = new Gson();
-        Map<String, ArenaEntity> arenas = new HashMap<>();
+        List<ArenaEntity> arenas = new ArrayList<>();
 
         try (FileReader reader = new FileReader(file)) {
             JsonArray arenasArray = gson.fromJson(reader, JsonArray.class);
 
             if (arenasArray == null) {
                 plugin.getLogger().warning("El archivo JSON no contiene un arreglo de arenas válido.");
-                return new HashMap<>();
+                return new ArrayList<>();
             }
 
             for (JsonElement element : arenasArray) {
@@ -141,8 +142,8 @@ public class ArenaGsonImpl implements ArenaDAO {
                 if (arenaJson.has("blockLogo")) {
                     arena.setBlockLogo(jsonToItemStack(arenaJson.getAsJsonObject("blockLogo")));
                 }
-
-                arenas.put(name, arena);
+                arena.setArenaState(new InactiveArenaState());
+                arenas.add(arena);
             }
         } catch (IOException e) {
             plugin.getLogger().severe("Error loading arenas from file: " + e.getMessage());
@@ -188,9 +189,9 @@ public class ArenaGsonImpl implements ArenaDAO {
     /**
      * Deletes the arenas when /arenai delete -name
      *
-     * @param arenaName the arena name to be deleted
+     * @param arena the arena to be deleted
      */
-    public void deleteArena(String arenaName) {
+    public void deleteArena(ArenaEntity arena) {
         Gson gson = new Gson();
         JsonArray arenasArray = new JsonArray();
 
@@ -199,7 +200,7 @@ public class ArenaGsonImpl implements ArenaDAO {
 
             for (JsonElement element : currentArenas) {
                 JsonObject arenaJson = element.getAsJsonObject();
-                if (!arenaJson.get("name").getAsString().equals(arenaName)) {
+                if (!arenaJson.get("name").getAsString().equals(arena.getName())) {
                     arenasArray.add(arenaJson);
                 }
             }

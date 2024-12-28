@@ -14,22 +14,25 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.polarismc.polarisduels.Main;
+import us.polarismc.polarisduels.arenas.ArenaManager;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.arenas.session.ArenaSetupSession;
+import us.polarismc.polarisduels.arenas.states.InactiveArenaState;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
     private final Main plugin;
     private final Map<UUID, ArenaSetupSession> setupSessions = new HashMap<>();
-    private Map<String, ArenaEntity> arenas = new HashMap<>();
+    private final ArenaManager arenaManager;
 
     public ArenaCommands(Main plugin){
         this.plugin = plugin;
         Objects.requireNonNull(plugin.getCommand("arena")).setExecutor(this);
         Objects.requireNonNull(plugin.getCommand("arena")).setTabCompleter(this);
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        this.arenas = plugin.arenas;
+        this.arenaManager = plugin.getArenaManager();
     }
 
     /**
@@ -61,9 +64,13 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
                 }
                 String arenaName = args[1];
 
-                if (arenas.containsKey(arenaName)) {
-                    arenas.remove(arenaName);
-                    plugin.arenaFile.deleteArena(arenaName);
+                Optional<ArenaEntity> deletedArena = arenaManager.arenas.stream()
+                        .filter(arena -> arena.getName().equalsIgnoreCase(arenaName))
+                        .findFirst();
+
+                if (deletedArena.isPresent()) {
+                    arenaManager.arenas.remove(deletedArena.get());
+                    arenaManager.arenaFile.deleteArena(deletedArena.get());
                     sender.sendMessage(plugin.utils.chat("&#10e8f3Arena " + arenaName + "deleted"));
                 } else {
                     sender.sendMessage(plugin.utils.chat("&cArena with the name &4" + arenaName + " &cdoes not exists"));
@@ -134,7 +141,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
                 if (message.equals(Component.text("loc2"))) {
                     session.getArena().setSpawnTwo(p.getLocation());
                     session.setStep(5);
-                    plugin.utils.message(p, "&#10e8f3Step5: Please place an item in your hand for the Arena Logo and say 'go'");
+                    plugin.utils.message(p, "&#10e8f3Step 5: Please place an item in your hand for the Arena Logo and say 'go'");
                 } else {
                     plugin.utils.message(p, "&cPlease say 'loc2' to save the spawn point 2");
                 }
@@ -165,10 +172,11 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
             if (e.getClickedBlock() == null) return;
             session.getArena().setCenter(e.getClickedBlock().getLocation());
             session.setStep(6);
-            arenas.put(session.getArena().getName(), session.getArena());
+            session.getArena().setArenaState(new InactiveArenaState());
+            arenaManager.arenas.add(session.getArena());
             plugin.utils.message(p, "&#FFC300Arena setup completed!");
 
-            plugin.arenaFile.saveArenas(arenas);
+            arenaManager.arenaFile.saveArenas(arenaManager.arenas);
 
             setupSessions.remove(p.getUniqueId());
         }
@@ -179,8 +187,10 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         if (command.getName().equalsIgnoreCase("arena")) {
             if (args.length == 1) {
                 return Arrays.asList("setup", "delete");
-            } else if (args.length == 2 && args[0].equalsIgnoreCase("delete") && !arenas.isEmpty()) {
-                return new ArrayList<>(arenas.keySet());
+            } else if (args.length == 2 && args[0].equalsIgnoreCase("delete") && !arenaManager.arenas.isEmpty()) {
+                return arenaManager.arenas.stream()
+                        .map(ArenaEntity::getName)
+                        .collect(Collectors.toList());
             }
         }
         return null;

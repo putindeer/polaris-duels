@@ -7,6 +7,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -15,11 +16,16 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.polarismc.polarisduels.Main;
+import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
+import us.polarismc.polarisduels.utils.ItemBuilder;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class HubEvents implements Listener {
     private final Main plugin;
@@ -50,6 +56,14 @@ public class HubEvents implements Listener {
         p.setExp(0.0f);
         Inventory inv = p.getInventory();
         inv.clear();
+
+
+        inv.addItem(new ItemBuilder(Material.NAME_TAG).name("&c1v1 Queue").lore("&7Use this item to enter to the 1v1 Queue").build());
+        inv.addItem(new ItemBuilder(Material.NAME_TAG).name("&c2v2 Queue").lore("&7Use this item to enter to the 2v2 Queue").build());
+        inv.addItem(new ItemBuilder(Material.NAME_TAG).name("&c3v3 Queue").lore("&7Use this item to enter to the 3v3 Queue").build());
+
+        inv.setItem(7, new ItemBuilder(Material.ENDER_PEARL).name("&aCreate Party").lore("&7Use this item to create a party!").build());
+        inv.setItem(8, new ItemBuilder(Material.DIAMOND_AXE).name("&9Kit Editor").lore("&7Use this item to edit your kit.").build());
     }
     @EventHandler
     public void onLeft (PlayerQuitEvent e) {
@@ -121,6 +135,7 @@ public class HubEvents implements Listener {
             }
         }
     }
+
     @EventHandler
     public void teleportingNether(PlayerTeleportEvent e) {
         if (e.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) {
@@ -156,4 +171,38 @@ public class HubEvents implements Listener {
         if (e.getPlayer().getWorld().getName().equals("lobby") && e.getPlayer().getLocation().getBlockY() <= -64)
             e.getPlayer().teleport(new Location(Bukkit.getWorld("lobby"), 0, 100, 0));
     }
+    @EventHandler
+    public void onInteract(PlayerInteractEvent e){
+        if (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+            Player player = e.getPlayer();
+
+            ItemStack item = player.getInventory().getItemInMainHand();
+            ItemMeta meta = item.getItemMeta();
+
+            if (player.getGameMode() == GameMode.SPECTATOR) return;
+            if (meta == null) return;
+
+            switch (item.getType()) {
+                case BARRIER -> {
+                }
+                case NAME_TAG -> {
+                    if (Objects.equals(meta.displayName(), plugin.utils.chat("&c1v1 Queue"))) {
+                        e.setCancelled(true);
+                        Optional<ArenaEntity> arena = plugin.getArenaManager().findOpenArena();
+                        if (arena.isPresent()) {
+                            plugin.getArenaManager().setWaitingState(arena.get());
+                        } else plugin.utils.message(player, "&cThere are no arenas open. Try again in a bit.");
+                    }
+                    if (Objects.equals(meta.displayName(), plugin.utils.chat("&c1v1 Queue"))) {
+                        e.setCancelled(true);
+                    }
+                    if (Objects.equals(meta.displayName(), plugin.utils.chat("&c1v1 Queue"))) {
+                        e.setCancelled(true);
+                    }
+                }
+
+            }
+        }
+    }
+
 }

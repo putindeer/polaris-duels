@@ -6,6 +6,7 @@ import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.commands.ArenaCommands;
 import us.polarismc.polarisduels.commands.Links;
 import us.polarismc.polarisduels.commands.Msg;
+import us.polarismc.polarisduels.commands.debug.Debug;
 import us.polarismc.polarisduels.commands.staff.Broadcast;
 import us.polarismc.polarisduels.commands.staff.GameModeCMD;
 import us.polarismc.polarisduels.events.HubEvents;
@@ -50,6 +51,7 @@ public class StartThings {
         new GameModeCMD(plugin);
         // Specific commands
         new ArenaCommands(plugin);
+        new Debug(plugin);
     }
 
     public void registerListeners() {

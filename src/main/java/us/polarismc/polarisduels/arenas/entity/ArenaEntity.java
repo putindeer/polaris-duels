@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
+import us.polarismc.polarisduels.arenas.states.ArenaState;
 
 @Data
 @NoArgsConstructor
@@ -16,4 +17,11 @@ public class ArenaEntity {
     private Location center;
     private boolean beingUsed;
     private ItemStack blockLogo;
+    private ArenaState arenaState;
+
+    public void setArenaState(ArenaState state) {
+        this.arenaState.onDisable(this);
+        this.arenaState = state;
+        this.arenaState.onEnable(this);
+    }
 }
