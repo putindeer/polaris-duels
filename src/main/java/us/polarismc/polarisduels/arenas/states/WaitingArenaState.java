@@ -34,5 +34,4 @@ public class WaitingArenaState implements ArenaState {
     public void createWaitingArena(ArenaEntity arena, ItemStack[] kit, int playersNeeded, int rounds){
         ArenaEntity a;
     }
-
 }

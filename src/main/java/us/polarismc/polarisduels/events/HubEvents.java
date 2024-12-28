@@ -22,6 +22,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
+import us.polarismc.polarisduels.arenas.states.WaitingArenaState;
 import us.polarismc.polarisduels.utils.ItemBuilder;
 
 import java.util.Objects;
@@ -188,7 +189,7 @@ public class HubEvents implements Listener {
                 case NAME_TAG -> {
                     if (Objects.equals(meta.displayName(), plugin.utils.chat("&c1v1 Queue"))) {
                         e.setCancelled(true);
-                        Optional<ArenaEntity> arena = plugin.getArenaManager().findOpenArena();
+                        Optional<ArenaEntity> arena = plugin.getArenaManager().findCompatibleArena(new ItemStack[] { new ItemStack(Material.DIAMOND_SWORD) }, 2, 2);
                         if (arena.isPresent()) {
                             plugin.getArenaManager().setWaitingState(arena.get());
                         } else plugin.utils.message(player, "&cThere are no arenas open. Try again in a bit.");

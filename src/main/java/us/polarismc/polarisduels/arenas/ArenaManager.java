@@ -10,6 +10,7 @@ import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.arenas.states.InactiveArenaState;
 import us.polarismc.polarisduels.arenas.states.WaitingArenaState;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,5 +31,19 @@ public class ArenaManager {
     }
     public Optional<ArenaEntity> findOpenArena(){
         return getArenas().stream().filter(arena -> arena.getArenaState() instanceof InactiveArenaState).findAny();
+    }
+    public Optional<ArenaEntity> findCompatibleArena(ItemStack[] kit, int playersNeeded, int rounds) {
+        Optional<ArenaEntity> compatibleArena = getArenas().stream()
+                .filter(arena -> {
+                    if (arena.getArenaState() instanceof WaitingArenaState state) {
+                        return state.getPlayersNeeded() == playersNeeded
+                                && state.getRounds() == rounds
+                                && Arrays.equals(state.getKit(), kit);
+                    }
+                    return false;
+                })
+                .findAny();
+
+        return compatibleArena.isPresent() ? compatibleArena : findOpenArena();
     }
 }

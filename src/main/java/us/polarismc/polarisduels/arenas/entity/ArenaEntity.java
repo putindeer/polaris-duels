@@ -20,7 +20,9 @@ public class ArenaEntity {
     private ArenaState arenaState;
 
     public void setArenaState(ArenaState state) {
-        this.arenaState.onDisable(this);
+        if (this.arenaState != null) {
+            this.arenaState.onDisable(this);
+        }
         this.arenaState = state;
         this.arenaState.onEnable(this);
     }
