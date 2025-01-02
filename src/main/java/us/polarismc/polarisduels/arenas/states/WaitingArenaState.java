@@ -9,6 +9,7 @@ import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 @Setter
 @Getter
 public class WaitingArenaState implements ArenaState {
+    private final Main plugin = Main.getInstance();
     private final ArenaEntity arena;
     private final ItemStack[] kit;
     private final int playersNeeded;
@@ -19,6 +20,9 @@ public class WaitingArenaState implements ArenaState {
         this.kit = kit;
         this.playersNeeded = playersNeeded;
         this.rounds = rounds;
+        arena.setKit(kit);
+        arena.setPlayersNeeded(playersNeeded);
+        arena.setRounds(rounds);
     }
 
     @Override
@@ -29,9 +33,5 @@ public class WaitingArenaState implements ArenaState {
     @Override
     public void onDisable(ArenaEntity arena) {
         Main.pl.getLogger().info("WaitingArenaState disabled");
-    }
-
-    public void createWaitingArena(ArenaEntity arena, ItemStack[] kit, int playersNeeded, int rounds){
-        ArenaEntity a;
     }
 }

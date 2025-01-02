@@ -1,16 +1,49 @@
 package us.polarismc.polarisduels.arenas.states;
 
+import lombok.Getter;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
+import us.polarismc.polarisduels.arenas.tasks.StartCountdownTask;
 
-public class StartingArenaState implements ArenaState {
+public class StartingArenaState implements ArenaState, Listener {
+    private final Main plugin = Main.getInstance();
+    @Getter
+    private StartCountdownTask startCountdownTask;
+    private ArenaEntity arena;
     @Override
     public void onEnable(ArenaEntity arena) {
-        Main.pl.getLogger().info("StartingArenaState enabled");
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+        this.arena = arena;
+        for (Player p : arena.getPlayerList()) {
+            plugin.getPlayerManager().getDuelsPlayer(p).setQueue(false);
+            p.getInventory().clear();
+            setKit(p, arena);
+        }
+        this.startCountdownTask =  new StartCountdownTask(plugin, arena, 10);
+        this.startCountdownTask.runTaskTimer(plugin, 0, 20);
+        plugin.getLogger().info("StartingArenaState enabled");
     }
 
     @Override
     public void onDisable(ArenaEntity arena) {
-        Main.pl.getLogger().info("StartingArenaState disabled");
+        plugin.getLogger().info("StartingArenaState disabled");
+    }
+
+    public void setKit(Player p, ArenaEntity arena) {
+        for (ItemStack i : arena.getKit()) {
+            p.getInventory().addItem(i);
+        }
+    }
+
+    @EventHandler
+    private void onQuit(PlayerQuitEvent event){
+        if (!arena.hasPlayer(event.getPlayer())) return;
+        arena.removePlayer(event.getPlayer(), Main.pl);
     }
 }

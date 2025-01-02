@@ -5,10 +5,12 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
+import java.util.Objects;
 
 @SuppressWarnings("unused")
 public class Utils {
@@ -142,5 +144,9 @@ public class Utils {
             p.sendMessage(prefix.append(chat(part)));
         }
         p.playSound(p.getLocation(), s, 10, 1);
+    }
+
+    public void setMaxHealth(Player p) {
+        Objects.requireNonNull(p.getAttribute(Attribute.MAX_HEALTH)).setBaseValue(Objects.requireNonNull(p.getAttribute(Attribute.MAX_HEALTH)).getDefaultValue());
     }
 }
