@@ -13,9 +13,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.states.ArenaState;
-import us.polarismc.polarisduels.arenas.states.InactiveArenaState;
 import us.polarismc.polarisduels.arenas.states.StartingArenaState;
 import us.polarismc.polarisduels.arenas.states.WaitingArenaState;
+import us.polarismc.polarisduels.queue.KitType;
 import us.polarismc.polarisduels.events.HubEvents;
 import us.polarismc.polarisduels.player.DuelsPlayer;
 import us.polarismc.polarisduels.utils.ItemBuilder;
@@ -42,7 +42,7 @@ public class ArenaEntity {
     private List<UUID> players = new ArrayList<>();
     @Getter
     @Setter
-    private ItemStack[] kit;
+    private KitType kit;
     @Getter
     @Setter
     private int playersNeeded;

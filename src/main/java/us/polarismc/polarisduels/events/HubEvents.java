@@ -21,6 +21,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
+import us.polarismc.polarisduels.queue.QueueGUI;
 import us.polarismc.polarisduels.player.DuelsPlayer;
 import us.polarismc.polarisduels.utils.ItemBuilder;
 
@@ -205,39 +206,34 @@ public class HubEvents implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent e){
         if (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
-            Player player = e.getPlayer();
+            Player p = e.getPlayer();
 
-            ItemStack item = player.getInventory().getItemInMainHand();
+            ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta meta = item.getItemMeta();
 
-            if (player.getGameMode() == GameMode.SPECTATOR) return;
+            if (p.getGameMode() == GameMode.SPECTATOR) return;
             if (meta == null) return;
 
             switch (item.getType()) {
                 case BARRIER -> {
                     if (Objects.equals(meta.displayName(), plugin.utils.chat(LEAVE_QUEUE))) {
                         e.setCancelled(true);
-                        Optional<ArenaEntity> arena = plugin.getArenaManager().findPlayerArena(player);
+                        Optional<ArenaEntity> arena = plugin.getArenaManager().findPlayerArena(p);
                         if (arena.isPresent()){
-                            arena.get().removePlayer(player, plugin);
-                            plugin.utils.message(player, "&cYou left the queue");
-                        } else plugin.utils.message(player, "&cYou don't seem to be in any arena, try re-joining.");
+                            arena.get().removePlayer(p, plugin);
+                            plugin.utils.message(p, "&cYou left the queue");
+                        } else plugin.utils.message(p, "&cYou don't seem to be in any arena, try re-joining.");
                     }
                 }
                 case NAME_TAG -> {
-                    if (Objects.equals(meta.displayName(), plugin.utils.chat("&c1v1 Queue"))) {
-                        e.setCancelled(true);
-                        Optional<ArenaEntity> arena = plugin.getArenaManager().findCompatibleArena(new ItemStack[] { new ItemStack(Material.DIAMOND_SWORD) }, 2, 2);
-                        if (arena.isPresent()) {
-                            plugin.getArenaManager().setWaitingState(arena.get());
-                            arena.get().addPlayer(player, plugin);
-                        } else plugin.utils.message(player, "&cThere are no arenas open. Try again in a bit.");
+                    if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_1V1_QUEUE))) {
+                        new QueueGUI(p, 1, plugin);
                     }
-                    if (Objects.equals(meta.displayName(), plugin.utils.chat("&c1v1 Queue"))) {
-                        e.setCancelled(true);
+                    if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_2v2_QUEUE))) {
+                        new QueueGUI(p, 2, plugin);
                     }
-                    if (Objects.equals(meta.displayName(), plugin.utils.chat("&c1v1 Queue"))) {
-                        e.setCancelled(true);
+                    if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_3v3_QUEUE))) {
+                        new QueueGUI(p, 3, plugin);
                     }
                 }
 

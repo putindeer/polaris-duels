@@ -36,9 +36,9 @@ public class StartingArenaState implements ArenaState, Listener {
     }
 
     public void setKit(Player p, ArenaEntity arena) {
-        for (ItemStack i : arena.getKit()) {
-            p.getInventory().addItem(i);
-        }
+        ItemStack[] items = plugin.getKitManager().loadKit(p.getUniqueId(), arena.getKit());
+        p.getInventory().clear();
+        p.getInventory().setContents(items);
     }
 
     @EventHandler

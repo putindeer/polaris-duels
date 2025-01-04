@@ -194,7 +194,7 @@ public class ItemBuilder {
         return this.meta(PotionMeta.class, m -> m.addCustomEffect(pe, true));
     }
 
-    public ItemBuilder potBaseEffect(PotionType type) {
+    public ItemBuilder potionType(PotionType type) {
         return this.meta(PotionMeta.class, m -> m.setBasePotionType(type));
     }
 

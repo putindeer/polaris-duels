@@ -2,20 +2,20 @@ package us.polarismc.polarisduels.arenas.states;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
+import us.polarismc.polarisduels.queue.KitType;
 
 @Setter
 @Getter
 public class WaitingArenaState implements ArenaState {
     private final Main plugin = Main.getInstance();
     private final ArenaEntity arena;
-    private final ItemStack[] kit;
+    private final KitType kit;
     private final int playersNeeded;
     private final int rounds;
 
-    public WaitingArenaState(ArenaEntity arena, ItemStack[] kit, int playersNeeded, int rounds){
+    public WaitingArenaState(ArenaEntity arena, KitType kit, int playersNeeded, int rounds){
         this.arena = arena;
         this.kit = kit;
         this.playersNeeded = playersNeeded;

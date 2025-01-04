@@ -1,11 +1,13 @@
 package us.polarismc.polarisduels.utils;
 
 import fr.mrmicky.fastboard.FastBoard;
+import fr.mrmicky.fastinv.FastInvManager;
 import org.bukkit.Bukkit;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.commands.ArenaCommands;
 import us.polarismc.polarisduels.commands.Links;
 import us.polarismc.polarisduels.commands.Msg;
+import us.polarismc.polarisduels.commands.Test;
 import us.polarismc.polarisduels.commands.debug.Debug;
 import us.polarismc.polarisduels.commands.staff.Broadcast;
 import us.polarismc.polarisduels.commands.staff.GameModeCMD;
@@ -24,6 +26,7 @@ public class StartThings {
     public void onEnable() {
         registerListeners();
         registerCommands();
+        FastInvManager.register(plugin);
         if (!plugin.getDataFolder().exists()) {
             plugin.getDataFolder().mkdir();
         }
@@ -52,6 +55,7 @@ public class StartThings {
         // Specific commands
         new ArenaCommands(plugin);
         new Debug(plugin);
+        new Test(plugin);
     }
 
     public void registerListeners() {

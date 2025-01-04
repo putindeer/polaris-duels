@@ -34,3 +34,5 @@ commands:
     aliases: [r]
   debug:
     permission: duels.dev
+  test:
+    permission: duels.dev

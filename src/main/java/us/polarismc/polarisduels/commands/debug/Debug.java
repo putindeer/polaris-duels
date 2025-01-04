@@ -1,15 +1,14 @@
 package us.polarismc.polarisduels.commands.debug;
 
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.arenas.states.ArenaState;
+import us.polarismc.polarisduels.queue.KitType;
 import us.polarismc.polarisduels.player.DuelsPlayer;
 
 import java.util.Objects;
@@ -68,9 +67,21 @@ public class Debug implements CommandExecutor {
 
         // ArenaManager verifications
         plugin.getLogger().info("--- ArenaManager Checks ---");
-        plugin.getLogger().info("Open Arena Found: " + plugin.getArenaManager().findOpenArena());
-        ItemStack[] kit = new ItemStack[] { new ItemStack(Material.DIAMOND_SWORD) };
-        plugin.getLogger().info("Compatible Arena Found: " + plugin.getArenaManager().findCompatibleArena(kit, 2, 2));
+        plugin.getArenaManager().findInactiveArena().ifPresentOrElse(
+                arena -> plugin.getLogger().info("Open Arena Found: " + arena),
+                () -> plugin.getLogger().info("No Inactive Arena was found.")
+                );
+        for (KitType kit : KitType.values()) {
+            for (int playersNeeded : new int[]{2, 4, 6}) {
+                plugin.getArenaManager().findCompatibleArenaNoMethod(kit, playersNeeded, 2)
+                        .ifPresentOrElse(
+                                arena -> plugin.getLogger().info("Compatible Arena Found for " + kit + " with " + playersNeeded + " players needed: " + arena),
+                                () -> plugin.getLogger().info("No Compatible Arena Found for " + kit + " with " + playersNeeded + " players needed")
+                        );
+            }
+        }
+
+
 
         // RollBackManager status
         plugin.getLogger().info("Rollback Manager Active: " + (plugin.getArenaManager().getRollBackManager() != null));
