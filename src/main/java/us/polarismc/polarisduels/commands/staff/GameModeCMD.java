@@ -27,7 +27,7 @@ public class GameModeCMD implements TabExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         Player p = (Player) sender;
         if (!sender.hasPermission("uhc.gamemode")) {
             plugin.utils.message(sender, "&cYou don't have permission to execute this command");
@@ -125,7 +125,7 @@ public class GameModeCMD implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String @NotNull [] args) {
         List<String> completions = new ArrayList<>();
         if (args.length == 1) {
             String commandName = command.getName().toLowerCase();

@@ -26,8 +26,6 @@ public class DuelManager {
 
     }
     public Optional<Duel> duelFor(Player player){
-        return duelList.stream().filter(duel -> {
-            return duel.isPlayer(player);
-        }).findAny();
+        return duelList.stream().filter(duel -> duel.isPlayer(player)).findAny();
     }
 }

@@ -89,9 +89,6 @@ public class ArenaEntity {
 
         if (players.size() == playersNeeded) {
             setArenaState(new StartingArenaState());
-            for (Player p : getPlayerList()) {
-                plugin.getPlayerManager().getDuelsPlayer(p).setQueue(false);
-            }
         }
     }
 
@@ -102,10 +99,10 @@ public class ArenaEntity {
             duelsPlayer.deleteTeam(duelsPlayer.getTeam());
             duelsPlayer.removeTeam();
         }
-        if (duelsPlayer.inQueue()) {
+        if (duelsPlayer.isQueue()) {
             duelsPlayer.setQueue(false);
         }
-        if (duelsPlayer.inDuel()){
+        if (duelsPlayer.isDuel()){
             duelsPlayer.setDuel(false);
         }
 

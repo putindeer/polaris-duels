@@ -19,7 +19,7 @@ public class Links implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String[] strings) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, String @NotNull [] strings) {
         Player p = (Player) sender;
         plugin.utils.message(p, "&9Discord: discord.polarismc.us",
                 "&bStore: store.polarismc.us",

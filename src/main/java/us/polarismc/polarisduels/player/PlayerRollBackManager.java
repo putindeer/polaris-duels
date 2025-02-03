@@ -30,6 +30,7 @@ public class PlayerRollBackManager {
         previousLevelMap.put(player.getUniqueId(), player.getLevel());
         player.getInventory().clear();
     }
+
     public void restore(Player player, JavaPlugin plugin){
         player.getInventory().clear();
         DuelsPlayer duelsPlayer = Main.pl.getPlayerManager().getDuelsPlayer(player);
@@ -62,18 +63,8 @@ public class PlayerRollBackManager {
         HubEvents.giveJoinItems(player);
 
         if (plugin == null) return;
-        Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
-            @Override
-            public void run() {
-                player.setFireTicks(0);
-            }
-        }, 2);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> player.setFireTicks(0), 2);
     }
-
-
-
-
-
 }
 
 

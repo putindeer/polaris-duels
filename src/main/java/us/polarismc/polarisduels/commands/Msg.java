@@ -22,7 +22,7 @@ public class Msg implements CommandExecutor {
     private final HashMap<CommandSender,CommandSender> reply = new HashMap<>();
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, @NotNull String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String s, @NotNull String @NotNull [] args) {
         if (cmd.getName().equalsIgnoreCase("msg")) {
             if (args.length < 2) {
                 plugin.utils.message(sender, "Usage: &c/msg <player> <message>");

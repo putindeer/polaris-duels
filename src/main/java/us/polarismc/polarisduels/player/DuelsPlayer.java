@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.duel.DuelTeam;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class DuelsPlayer {
@@ -17,8 +18,10 @@ public class DuelsPlayer {
     @Getter
     private final String name;
     private final String ip;
+    @Getter
     @Setter
     private boolean duel = false;
+    @Getter
     @Setter
     private boolean queue = false;
     @Getter
@@ -30,7 +33,7 @@ public class DuelsPlayer {
 
         this.uid = uid;
         this.name = name;
-        this.ip = getPlayer().getAddress().getAddress().getHostAddress();
+        this.ip = Objects.requireNonNull(getPlayer().getAddress()).getAddress().getHostAddress();
     }
 
     public Player getPlayer() {
@@ -42,19 +45,10 @@ public class DuelsPlayer {
         return p != null;
     }
 
-    public boolean inQueue() {
-        return queue;
-    }
-
-    public boolean inDuel() {
-        return duel;
-    }
-
     public String getIp() {
-        if (isOnline()) return getPlayer().getAddress().getAddress().getHostAddress();
+        if (isOnline()) return Objects.requireNonNull(getPlayer().getAddress()).getAddress().getHostAddress();
         return ip;
     }
-
 
     public synchronized void removeTeam() {
         this.team = null;

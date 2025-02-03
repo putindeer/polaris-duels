@@ -23,16 +23,16 @@ public class KitManager {
     public void saveKit(UUID uuid, KitType kitType, ItemStack[] inv) {
         byte[] serializedInv = ItemStack.serializeItemsAsBytes(inv);
 
-        try (Connection connection = database.getConnection()) {
-            String insertOrReplaceQuery = """
+        try (Connection c = database.getConnection()) {
+            String query = """
                 INSERT OR REPLACE INTO player_kits (player_uuid, kit_type, kit_items)
                 VALUES (?, ?, ?);
             """;
-            try (PreparedStatement insertStatement = connection.prepareStatement(insertOrReplaceQuery)) {
-                insertStatement.setString(1, uuid.toString());
-                insertStatement.setString(2, kitType.name());
-                insertStatement.setBytes(3, serializedInv);
-                insertStatement.executeUpdate();
+            try (PreparedStatement s = c.prepareStatement(query)) {
+                s.setString(1, uuid.toString());
+                s.setString(2, kitType.name());
+                s.setBytes(3, serializedInv);
+                s.executeUpdate();
             }
         } catch (SQLException e) {
             plugin.getLogger().severe("Error when saving inventory with the UUID " + uuid.toString() + " and KitType " + kitType.name() + ": " + e.getMessage());

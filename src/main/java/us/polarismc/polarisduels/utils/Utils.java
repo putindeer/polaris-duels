@@ -48,11 +48,13 @@ public class Utils {
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.sendMessage(prefix.append(chat(c)));
         }
+        Bukkit.getConsoleSender().sendMessage(prefix.append(chat(c)));
     }
     public void broadcast(Component c) {
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.sendMessage(prefix.append(chat(c)));
         }
+        Bukkit.getConsoleSender().sendMessage(prefix.append(chat(c)));
     }
 
     /**
@@ -65,12 +67,14 @@ public class Utils {
             p.sendMessage(prefix.append(chat(c)));
             p.playSound(p.getLocation(), s, 10, 1);
         }
+        Bukkit.getConsoleSender().sendMessage(prefix.append(chat(c)));
     }
     public void broadcast(Component c, Sound s) {
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.sendMessage(prefix.append(chat(c)));
             p.playSound(p.getLocation(), s, 10, 1);
         }
+        Bukkit.getConsoleSender().sendMessage(prefix.append(chat(c)));
     }
 
     /**
@@ -147,6 +151,6 @@ public class Utils {
     }
 
     public void setMaxHealth(Player p) {
-        Objects.requireNonNull(p.getAttribute(Attribute.MAX_HEALTH)).setBaseValue(Objects.requireNonNull(p.getAttribute(Attribute.MAX_HEALTH)).getDefaultValue());
+        p.setHealth(Objects.requireNonNull(p.getAttribute(Attribute.MAX_HEALTH)).getDefaultValue());
     }
 }

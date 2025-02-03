@@ -47,8 +47,8 @@ public class Debug implements CommandExecutor {
         for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(onlinePlayer);
             plugin.getLogger().info("--- Player: " + onlinePlayer.getName() + " ---");
-            plugin.getLogger().info("In Queue: " + duelsPlayer.inQueue());
-            plugin.getLogger().info("In Duel: " + duelsPlayer.inDuel());
+            plugin.getLogger().info("In Queue: " + duelsPlayer.isQueue());
+            plugin.getLogger().info("In Duel: " + duelsPlayer.isDuel());
             plugin.getLogger().info("Team: " + duelsPlayer.getTeam());
 
             // Find the arena the player is in

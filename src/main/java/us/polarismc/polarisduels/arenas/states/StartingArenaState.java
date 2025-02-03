@@ -1,9 +1,11 @@
 package us.polarismc.polarisduels.arenas.states;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
@@ -18,7 +20,7 @@ public class StartingArenaState implements ArenaState, Listener {
     private ArenaEntity arena;
     @Override
     public void onEnable(ArenaEntity arena) {
-        Bukkit.getPluginManager().registerEvents(this, plugin);
+        Bukkit.getPluginManager().registerEvents(this, Main.pl);
         this.arena = arena;
         for (Player p : arena.getPlayerList()) {
             plugin.getPlayerManager().getDuelsPlayer(p).setQueue(false);
@@ -33,6 +35,7 @@ public class StartingArenaState implements ArenaState, Listener {
     @Override
     public void onDisable(ArenaEntity arena) {
         plugin.getLogger().info("StartingArenaState disabled");
+        HandlerList.unregisterAll(this);
     }
 
     public void setKit(Player p, ArenaEntity arena) {

@@ -2,12 +2,13 @@ package us.polarismc.polarisduels.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.Getter;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+@Getter
 public class Database {
     private final HikariDataSource dataSource;
 
@@ -22,10 +23,6 @@ public class Database {
 
     public Connection getConnection() throws SQLException {
         return dataSource.getConnection();
-    }
-
-    public DataSource getDataSource() {
-        return dataSource;
     }
 
     public void close() {

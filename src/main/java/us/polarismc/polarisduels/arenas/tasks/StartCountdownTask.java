@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
@@ -13,7 +12,6 @@ import us.polarismc.polarisduels.arenas.states.WaitingArenaState;
 
 @AllArgsConstructor
 public class StartCountdownTask extends BukkitRunnable {
-
     private final Main plugin;
     private final ArenaEntity arena;
     private int secondsUntilStart;

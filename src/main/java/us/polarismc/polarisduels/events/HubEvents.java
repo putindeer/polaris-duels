@@ -9,10 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -78,7 +75,7 @@ public class HubEvents implements Listener {
     }
 
     @EventHandler
-    public void onLeft (PlayerQuitEvent e) {
+    public void onLeft(PlayerQuitEvent e) {
         Player p = e.getPlayer();
         e.quitMessage(plugin.utils.chat("&8(&c-&8) " + p.getName()));
         FastBoard board = plugin.boards.remove(p.getUniqueId());
@@ -94,7 +91,7 @@ public class HubEvents implements Listener {
            return;
         }
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-        if (!duelsPlayer.inDuel()) {
+        if (!duelsPlayer.isDuel()) {
             e.setCancelled(true);
         }
     }
@@ -106,7 +103,7 @@ public class HubEvents implements Listener {
             return;
         }
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-        if (!duelsPlayer.inDuel()) {
+        if (!duelsPlayer.isDuel()) {
             e.setCancelled(true);
         }
     }
@@ -115,9 +112,21 @@ public class HubEvents implements Listener {
     public void onHungerChange(FoodLevelChangeEvent e) {
         if (e.getEntity() instanceof Player p) {
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-            if (!duelsPlayer.inDuel()) {
+            if (!duelsPlayer.isDuel()) {
                 e.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void onConsume(PlayerItemConsumeEvent e) {
+        Player p = e.getPlayer();
+        if (p.getGameMode().equals(GameMode.CREATIVE)) {
+            return;
+        }
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
+        if (!duelsPlayer.isDuel()) {
+            e.setCancelled(true);
         }
     }
 
@@ -125,7 +134,7 @@ public class HubEvents implements Listener {
     public void onDamage(EntityDamageEvent e) {
         if (e.getEntity() instanceof Player p) {
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-            if (!duelsPlayer.inDuel()) {
+            if (!duelsPlayer.isDuel()) {
                 e.setCancelled(true);
             }
         }
@@ -138,7 +147,7 @@ public class HubEvents implements Listener {
             return;
         }
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-        if (!duelsPlayer.inDuel()) {
+        if (!duelsPlayer.isDuel()) {
             e.setCancelled(true);
         }
     }
@@ -150,7 +159,20 @@ public class HubEvents implements Listener {
                 return;
             }
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-            if (!duelsPlayer.inDuel()) {
+            if (!duelsPlayer.isDuel()) {
+                e.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onBowOrCrossbowShot(EntityShootBowEvent e) {
+        if (e.getEntity() instanceof Player p) {
+            if (p.getGameMode().equals(GameMode.CREATIVE)) {
+                return;
+            }
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
+            if (!duelsPlayer.isDuel()) {
                 e.setCancelled(true);
             }
         }
@@ -212,7 +234,6 @@ public class HubEvents implements Listener {
             ItemMeta meta = item.getItemMeta();
 
             if (p.getGameMode() == GameMode.SPECTATOR) return;
-            if (meta == null) return;
 
             switch (item.getType()) {
                 case BARRIER -> {
@@ -236,9 +257,16 @@ public class HubEvents implements Listener {
                         new QueueGUI(p, 3, plugin);
                     }
                 }
-
+                default -> {
+                    if (p.getGameMode().equals(GameMode.CREATIVE)) {
+                        return;
+                    }
+                    DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
+                    if (!duelsPlayer.isDuel()) {
+                        e.setCancelled(true);
+                    }
+                }
             }
         }
     }
-
 }
