@@ -4,15 +4,14 @@ import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Sound;
+import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
@@ -37,7 +36,9 @@ public class ActiveArenaState implements ArenaState, Listener {
         alivePlayers = new ArrayList<>(arena.getPlayers());
         int i = 0;
         for (Player player : arena.getPlayerList()) {
-            savedInventories.put(player.getUniqueId(), player.getInventory().getContents());
+            final ItemStack[] items = player.getInventory().getContents();
+            savedInventories.put(player.getUniqueId(), plugin.getKitManager().loadKit(player.getUniqueId(), arena.getKit()));
+            plugin.getLogger().info("[DEBUG] Items found and saved: " + Arrays.toString(player.getInventory().getContents()));
             DuelTeam TeamBlue;
             DuelTeam TeamRed;
             plugin.utils.message(player, Sound.BLOCK_ANCIENT_DEBRIS_BREAK, "&cThe Match has started!");
@@ -252,6 +253,23 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     @EventHandler
+    public void onItemHeldChange(PlayerItemHeldEvent event) {
+        Player p = event.getPlayer();
+        if (!arena.hasPlayer(p)) return;
+        ItemStack oldItem = p.getInventory().getItem(event.getPreviousSlot());
+        ItemStack newItem = p.getInventory().getItem(event.getNewSlot());
+
+        if (oldItem != null && oldItem.getType() == Material.LAVA_BUCKET) {
+            plugin.getLogger().info("INTERACTION RANGE 4.5");
+            Objects.requireNonNull(p.getAttribute(Attribute.BLOCK_INTERACTION_RANGE)).setBaseValue(4.5);
+        }
+        if (newItem != null && newItem.getType() == Material.LAVA_BUCKET) {
+            plugin.getLogger().info("INTERACTION RANGE 5.0");
+            Objects.requireNonNull(p.getAttribute(Attribute.BLOCK_INTERACTION_RANGE)).setBaseValue(5.0);
+        }
+    }
+
+    @EventHandler
     private void onQuit(PlayerQuitEvent event){
         Player p = event.getPlayer();
         if (!arena.hasPlayer(p)) return;
@@ -264,7 +282,9 @@ public class ActiveArenaState implements ArenaState, Listener {
             if (alivePlayers.size() == 1) {
                 UUID winnerUUID = alivePlayers.getFirst();
                 Player winner = Bukkit.getPlayer(winnerUUID);
-                Win(winner);
+                assert winner != null;
+                plugin.utils.message(arena.getPlayerList(), "&a" + winner.getName() + " has won!");
+                winner.showTitle(Title.title(plugin.utils.chat("&cYou won."), Component.empty()));
             } else {
                 plugin.utils.message(arena.getPlayerList(), "&cNo alive players... Game over.");
             }

@@ -1,7 +1,6 @@
 package us.polarismc.polarisduels.arenas.states;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,7 +23,6 @@ public class StartingArenaState implements ArenaState, Listener {
         this.arena = arena;
         for (Player p : arena.getPlayerList()) {
             plugin.getPlayerManager().getDuelsPlayer(p).setQueue(false);
-            p.getInventory().clear();
             setKit(p, arena);
         }
         this.startCountdownTask =  new StartCountdownTask(plugin, arena, 10);
