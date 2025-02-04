@@ -104,17 +104,9 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     private void restoreInventory(Player p) {
-        plugin.getLogger().info("[DEBUG] Restoring inventory for: " + p.getName());
         ItemStack[] items = savedInventories.get(p.getUniqueId());
-        if (items == null) {
-            plugin.getLogger().info("[DEBUG] No saved inventory found for: " + p.getName());
-            return;
-        }
-
-        plugin.getLogger().info("[DEBUG] Items found: " + Arrays.toString(items));
         p.getInventory().clear();
         p.getInventory().setContents(items);
-        plugin.getLogger().info("[DEBUG] Inventory restored for: " + p.getName());
     }
 
     @EventHandler
@@ -236,7 +228,6 @@ public class ActiveArenaState implements ArenaState, Listener {
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             int lastSpawnId = 0;
             for (Player player : arena.getPlayerList()) {
-                plugin.getLogger().info("[DEBUG] Restoring inventory for: " + player.getName());
                 player.setGameMode(GameMode.SURVIVAL);
                 restoreInventory(player);
                 player.showTitle(Title.title(plugin.utils.chat("&b&lGO!"), Component.empty()));
