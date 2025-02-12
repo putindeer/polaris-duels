@@ -53,6 +53,7 @@ public class PlayerRollBackManager {
         player.setFoodLevel(previousHungerValue.getOrDefault(player.getUniqueId(), 20));
         player.setLevel(previousLevelMap.getOrDefault(player.getUniqueId(), 0));
         player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
+        player.setSaturation(0);
 
         previousHungerValue.remove(player.getUniqueId());
         previousLevelMap.remove(player.getUniqueId());

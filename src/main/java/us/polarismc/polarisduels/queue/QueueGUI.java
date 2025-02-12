@@ -27,7 +27,7 @@ public class QueueGUI extends FastInv {
         // UHC
         setItem(13, new ItemBuilder(Material.GOLDEN_APPLE).name("&#d1bb00&lUHC").lore("&7Placeholder Lore for UHC").hideAll().build(), e -> setQueue(p, teamsize, plugin, KitType.UHC));
         // DIAMONDPOT
-        setItem(14, new ItemBuilder(Material.SPLASH_POTION).potionType(PotionType.HEALING).name("&#ff0000DiamondPot").lore("&7Placeholder Lore for DiamondPot").hideAll().build(), e -> setQueue(p, teamsize, plugin, KitType.DIAMONDPOT));
+        setItem(14, new ItemBuilder(Material.SPLASH_POTION).potionType(PotionType.HEALING).name("&#ff0000&lDiamondPot").lore("&7Placeholder Lore for DiamondPot").hideAll().build(), e -> setQueue(p, teamsize, plugin, KitType.DIAMONDPOT));
         // SWORD
         setItem(15, new ItemBuilder(Material.DIAMOND_SWORD).name("&#00fff3&lSword").lore("&7Placeholder Lore for Sword").hideAll().build(), e -> setQueue(p, teamsize, plugin, KitType.SWORD));
         // CUSTOM

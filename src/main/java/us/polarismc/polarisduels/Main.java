@@ -1,11 +1,13 @@
 package us.polarismc.polarisduels;
 
-import fr.mrmicky.fastboard.FastBoard;
+import fr.mrmicky.fastboard.adventure.FastBoard;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import us.polarismc.polarisduels.arenas.ArenaManager;
+import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
+import us.polarismc.polarisduels.arenas.states.ActiveArenaState;
 import us.polarismc.polarisduels.duel.DuelManager;
 import us.polarismc.polarisduels.database.Database;
 import us.polarismc.polarisduels.database.DatabaseInitializer;
@@ -50,6 +52,12 @@ public final class Main extends JavaPlugin {
             if (duelsPlayer.getTeam() != null) {
                 duelsPlayer.deleteTeam(duelsPlayer.getTeam());
                 duelsPlayer.removeTeam();
+            }
+        }
+        for (ArenaEntity arena : arenaManager.getArenas()) {
+            if (arena.getArenaState() instanceof ActiveArenaState state) {
+                state.resetArenaEntities();
+                state.resetArenaBlocks();
             }
         }
         database.close();

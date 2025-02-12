@@ -29,13 +29,13 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 public class ArenaEntity {
-
     private String displayName;
     private String name;
     private Location spawnOne;
     private Location spawnTwo;
+    private Location cornerOne;
+    private Location cornerTwo;
     private Location center;
-    private boolean beingUsed;
     private ItemStack blockLogo;
     private ArenaState arenaState;
     @Getter
@@ -82,9 +82,9 @@ public class ArenaEntity {
                         .build()
         );
         if (players.size() == 1) {
-            player.teleport(spawnOne);
+            player.teleportAsync(spawnOne);
         } else {
-            player.teleport(spawnTwo);
+            player.teleportAsync(spawnTwo);
         }
 
         if (players.size() == playersNeeded) {
@@ -131,5 +131,8 @@ public class ArenaEntity {
     }
     public boolean hasPlayer(Player player){
         return players.contains(player.getUniqueId());
+    }
+    public boolean hasPlayer(UUID uuid){
+        return players.contains(uuid);
     }
 }

@@ -1,5 +1,5 @@
 name: PolarisDuels
-version: '1.0-SNAPSHOT'
+version: ${project.version}
 main: us.polarismc.polarisduels.Main
 api-version: '1.21'
 authors: [putandar, woxan, zowi]
@@ -14,17 +14,18 @@ commands:
   broadcast:
     description: Broadcast a message to all players
     aliases: [bc]
+    permission: duels.admin
   gmc:
-    permission: duels.gamemode
+    permission: duels.admin
   gmsp:
-    permission: duels.gamemode
+    permission: duels.admin
   gms:
-    permission: duels.gamemode
+    permission: duels.admin
   gma:
-    permission: duels.gamemode
+    permission: duels.admin
   gm:
     aliases: [gamemode]
-    permission: duels.gamemode
+    permission: duels.admin
   links:
     description: Display the links of the server to a player
   msg:
@@ -32,6 +33,8 @@ commands:
   reply:
     description: Reply to a private-message
     aliases: [r]
+  duel:
+    description: Sends a duel to a specified player
   debug:
     permission: duels.dev
   test:

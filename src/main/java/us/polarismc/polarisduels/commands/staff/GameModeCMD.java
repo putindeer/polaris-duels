@@ -29,7 +29,7 @@ public class GameModeCMD implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         Player p = (Player) sender;
-        if (!sender.hasPermission("uhc.gamemode")) {
+        if (!sender.hasPermission("duels.admin")) {
             plugin.utils.message(sender, "&cYou don't have permission to execute this command");
             return true;
         }

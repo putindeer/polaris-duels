@@ -1,7 +1,8 @@
 package us.polarismc.polarisduels.events;
 
-import fr.mrmicky.fastboard.FastBoard;
+import fr.mrmicky.fastboard.adventure.FastBoard;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,6 +11,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -22,16 +25,16 @@ import us.polarismc.polarisduels.queue.QueueGUI;
 import us.polarismc.polarisduels.player.DuelsPlayer;
 import us.polarismc.polarisduels.utils.ItemBuilder;
 
+import java.text.DecimalFormat;
 import java.util.Objects;
 import java.util.Optional;
 
 public class HubEvents implements Listener {
     private final Main plugin;
     private static final String JOIN_1V1_QUEUE = "&c1v1 Queue";
-    private static final String JOIN_2v2_QUEUE = "&c2v2 Queue";
-    private static final String JOIN_3v3_QUEUE = "&c3v3 Queue";
-    private static final String CREATE_PARTY = "&aCreate Party";
-    private static final String KIT_EDITOR = "&9Kit Editor";
+    private static final String JOIN_2v2_QUEUE = "&c2v2 Queue (NOT WORKING)";
+    private static final String JOIN_3v3_QUEUE = "&c3v3 Queue (NOT WORKING)";
+    private static final String CREATE_PARTY = "&aCreate Party (NOT WORKING)";
     public static final String LEAVE_QUEUE = "&cLeave Queue";
 
     public HubEvents(Main plugin) {
@@ -46,10 +49,13 @@ public class HubEvents implements Listener {
         plugin.getPlayerManager().playerJoin(p);
 
         FastBoard board = new FastBoard(p);
-        board.updateTitle("Polaris Duels");
+        board.updateTitle(plugin.utils.chat("&9&lPolaris Duels"));
         plugin.boards.put(p.getUniqueId(), board);
+        p.sendPlayerListHeaderAndFooter(
+                plugin.utils.chat("&9&lPolaris Duels"),
+                plugin.utils.chat("&7Ping: &9" + p.getPing() + " &8| &7Tps: &9" + new DecimalFormat("##").format(plugin.getServer().getTPS()[0])));
 
-        Location loc = new Location(Bukkit.getWorld("lobby"), 0, 100, 0);
+        Location loc = new Location(Bukkit.getWorld("lobby"), -0.5, 100, 0.5);
         p.teleport(loc);
         p.setGameMode(GameMode.SURVIVAL);
         for (PotionEffect effect : p.getActivePotionEffects()) {
@@ -58,8 +64,11 @@ public class HubEvents implements Listener {
         p.setHealth(20);
         plugin.utils.setMaxHealth(p);
         p.setFoodLevel(20);
+        p.setSaturation(0);
         p.setLevel(0);
         p.setExp(0.0f);
+
+        Objects.requireNonNull(p.getAttribute(Attribute.BLOCK_INTERACTION_RANGE)).setBaseValue(Objects.requireNonNull(p.getAttribute(Attribute.BLOCK_INTERACTION_RANGE)).getDefaultValue());
         giveJoinItems(p);
     }
     public static void giveJoinItems(Player p) {
@@ -70,8 +79,7 @@ public class HubEvents implements Listener {
         inv.addItem(new ItemBuilder(Material.NAME_TAG).name(JOIN_2v2_QUEUE).lore("&7Use this item to enter to the 2v2 Queue").build());
         inv.addItem(new ItemBuilder(Material.NAME_TAG).name(JOIN_3v3_QUEUE).lore("&7Use this item to enter to the 3v3 Queue").build());
 
-        inv.setItem(7, new ItemBuilder(Material.ENDER_PEARL).name(CREATE_PARTY).lore("&7Use this item to create a party!").build());
-        inv.setItem(8, new ItemBuilder(Material.DIAMOND_AXE).name(KIT_EDITOR).lore("&7Use this item to edit your kit.").build());
+        inv.setItem(8, new ItemBuilder(Material.ENDER_PEARL).name(CREATE_PARTY).lore("&7Use this item to create a party!").build());
     }
 
     @EventHandler
@@ -119,6 +127,18 @@ public class HubEvents implements Listener {
     }
 
     @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player p)) return;
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
+        if (duelsPlayer.isDuel()) return;
+        if (event.getClickedInventory() == null) return;
+
+        if (event.getClickedInventory().getType() != InventoryType.PLAYER) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     public void onConsume(PlayerItemConsumeEvent e) {
         Player p = e.getPlayer();
         if (p.getGameMode().equals(GameMode.CREATIVE)) {
@@ -131,11 +151,21 @@ public class HubEvents implements Listener {
     }
 
     @EventHandler
-    public void onDamage(EntityDamageEvent e) {
+    public void onDamageReceive(EntityDamageEvent e) {
         if (e.getEntity() instanceof Player p) {
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
             if (!duelsPlayer.isDuel()) {
                 e.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onDamage(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player p) {
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
+            if (!duelsPlayer.isDuel()) {
+                event.setCancelled(true);
             }
         }
     }
@@ -221,8 +251,12 @@ public class HubEvents implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent e) {
-        if (e.getPlayer().getWorld().getName().equals("lobby") && e.getPlayer().getLocation().getBlockY() <= -64)
-            e.getPlayer().teleport(new Location(Bukkit.getWorld("lobby"), 0, 100, 0));
+        if (e.getPlayer().getWorld().getName().equals("lobby") && e.getPlayer().getLocation().getBlockY() <= -64) {
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(e.getPlayer());
+            if (!duelsPlayer.isDuel()) {
+                e.getPlayer().teleport(new Location(Bukkit.getWorld("lobby"), 0, 100, 0));
+            }
+        }
     }
 
     @EventHandler
@@ -250,12 +284,12 @@ public class HubEvents implements Listener {
                     if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_1V1_QUEUE))) {
                         new QueueGUI(p, 1, plugin);
                     }
-                    if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_2v2_QUEUE))) {
+                    /*if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_2v2_QUEUE))) {
                         new QueueGUI(p, 2, plugin);
                     }
                     if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_3v3_QUEUE))) {
                         new QueueGUI(p, 3, plugin);
-                    }
+                    }*/
                 }
                 default -> {
                     if (p.getGameMode().equals(GameMode.CREATIVE)) {

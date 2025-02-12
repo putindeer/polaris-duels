@@ -115,17 +115,17 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         Component message = e.message();
         String m = ((TextComponent) message).content();
         switch (session.getStep()) {
-            case 1:
+            case 1 -> {
                 session.getArena().setName(m);
                 session.setStep(2);
                 plugin.utils.message(p, "&#10e8f3Step 2: Please enter the Display Name of the arena");
-                break;
-            case 2:
+            }
+            case 2 -> {
                 session.getArena().setDisplayName(m);
                 session.setStep(3);
                 plugin.utils.message(p, "&#10e8f3Step 3: Please stand on the spawn point 1 and say 'loc1' to save");
-                break;
-            case 3:
+            }
+            case 3 -> {
                 if (message.equals(Component.text("loc1"))) {
                     session.getArena().setSpawnOne(p.getLocation());
                     session.setStep(4);
@@ -133,24 +133,44 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
                 } else {
                     plugin.utils.message(p, "&cPlease say 'loc1' to save the spawn point 1");
                 }
-                break;
-            case 4:
+            }
+            case 4 -> {
                 if (message.equals(Component.text("loc2"))) {
                     session.getArena().setSpawnTwo(p.getLocation());
                     session.setStep(5);
-                    plugin.utils.message(p, "&#10e8f3Step 5: Please place an item in your hand for the Arena Logo and say 'go'");
+                    plugin.utils.message(p, "&#10e8f3Step 5: Please stand on the first corner and say 'corner1' to save");
                 } else {
                     plugin.utils.message(p, "&cPlease say 'loc2' to save the spawn point 2");
                 }
-                break;
-            case 5:
+            }
+            case 5 -> {
+                if (message.equals(Component.text("corner1"))) {
+                    session.getArena().setCornerOne(p.getLocation());
+                    session.setStep(6);
+                    plugin.utils.message(p, "&#10e8f3Step 6: Please stand on the second corner and say 'corner2' to save");
+                } else {
+                    plugin.utils.message(p, "&cPlease say 'corner1' to save the first corner.");
+                }
+            }
+            case 6 -> {
+                if (message.equals(Component.text("corner2"))) {
+                    session.getArena().setCornerTwo(p.getLocation());
+                    session.setStep(7);
+                    plugin.utils.message(p, "&#10e8f3Step 7: Please place an item in your hand for the Arena Logo and say 'go'");
+                } else {
+                    plugin.utils.message(p, "&cPlease say 'corner2' to save the second corner.");
+                }
+            }
+            case 7 -> {
                 if (message.equals(Component.text("go")) && !p.getInventory().getItemInMainHand().getType().isAir()) {
                     session.getArena().setBlockLogo(p.getInventory().getItemInMainHand());
-                    session.setStep(6);
-                    plugin.utils.message(p, "&#10e8f3Step 6: Please select the center of the arena by right-clicking");
+                    session.setStep(8);
+                    plugin.utils.message(p, "&#10e8f3Step 8: Please select the center of the arena by right-clicking");
                 } else {
                     plugin.utils.message(p, "&cThere's not any item in your hand");
                 }
+            }
+
         }
     }
 
@@ -165,7 +185,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         if (!setupSessions.containsKey(p.getUniqueId())) return;
 
         ArenaSetupSession session = setupSessions.get(p.getUniqueId());
-        if (session.getStep() == 6) {
+        if (session.getStep() == 8) {
             if (e.getClickedBlock() == null) return;
             session.getArena().setCenter(e.getClickedBlock().getLocation());
             session.setStep(6);

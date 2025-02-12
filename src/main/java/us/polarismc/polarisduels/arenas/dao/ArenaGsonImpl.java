@@ -1,9 +1,6 @@
 package us.polarismc.polarisduels.arenas.dao;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -43,7 +40,7 @@ public class ArenaGsonImpl implements ArenaDAO {
      */
     @Override
     public void saveArenas(List<ArenaEntity> arenas) {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         JsonArray arenasArray = new JsonArray();
 
         for (ArenaEntity arena : arenas) {
@@ -54,7 +51,8 @@ public class ArenaGsonImpl implements ArenaDAO {
             arenaJson.add("spawnOne", locationToJson(arena.getSpawnOne()));
             arenaJson.add("spawnTwo", locationToJson(arena.getSpawnTwo()));
             arenaJson.add("center", locationToJson(arena.getCenter()));
-            arenaJson.addProperty("beingUsed", arena.isBeingUsed());
+            arenaJson.add("cornerOne", locationToJson(arena.getCornerOne()));
+            arenaJson.add("cornerTwo", locationToJson(arena.getCornerTwo()));
             if (arena.getBlockLogo() != null) {
                 arenaJson.add("blockLogo", itemStackToJson(arena.getBlockLogo()));
             }
@@ -111,7 +109,7 @@ public class ArenaGsonImpl implements ArenaDAO {
      */
     @Override
     public List<ArenaEntity> loadArenas() {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         List<ArenaEntity> arenas = new ArrayList<>();
 
         try (FileReader reader = new FileReader(file)) {
@@ -129,7 +127,8 @@ public class ArenaGsonImpl implements ArenaDAO {
                 Location spawnOne = jsonToLocation(arenaJson.getAsJsonObject("spawnOne"));
                 Location spawnTwo = jsonToLocation(arenaJson.getAsJsonObject("spawnTwo"));
                 Location center = jsonToLocation(arenaJson.getAsJsonObject("center"));
-                boolean beingUsed = arenaJson.get("beingUsed").getAsBoolean();
+                Location cornerOne = jsonToLocation(arenaJson.getAsJsonObject("cornerOne"));
+                Location cornerTwo = jsonToLocation(arenaJson.getAsJsonObject("cornerTwo"));
 
 
                 ArenaEntity arena = new ArenaEntity();
@@ -138,7 +137,8 @@ public class ArenaGsonImpl implements ArenaDAO {
                 arena.setSpawnOne(spawnOne);
                 arena.setSpawnTwo(spawnTwo);
                 arena.setCenter(center);
-                arena.setBeingUsed(beingUsed);
+                arena.setCornerOne(cornerOne);
+                arena.setCornerTwo(cornerTwo);
                 if (arenaJson.has("blockLogo")) {
                     arena.setBlockLogo(jsonToItemStack(arenaJson.getAsJsonObject("blockLogo")));
                 }

@@ -1,9 +1,11 @@
 package us.polarismc.polarisduels.utils;
 
+import lombok.NoArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
@@ -12,9 +14,12 @@ import org.bukkit.entity.Player;
 import java.util.Collection;
 import java.util.Objects;
 
+@NoArgsConstructor
 @SuppressWarnings("unused")
 public class Utils {
-    public Utils() {}
+    /**
+     * Prefix del plugin
+     */
     public final Component prefix = chat("&bDuels &7» &r");
 
     /**
@@ -25,7 +30,6 @@ public class Utils {
     public Component chat(String s){
         return MiniMessage.miniMessage().deserialize(convert(s));
     }
-
     public Component chat(Component s){
         return MiniMessage.miniMessage().deserialize(convert(PlainTextComponentSerializer.plainText().serialize(s)));
     }
@@ -150,7 +154,37 @@ public class Utils {
         p.playSound(p.getLocation(), s, 10, 1);
     }
 
+    /**
+     * Restablece la vida del jugador al máximo
+     * @param p El jugador
+     */
     public void setMaxHealth(Player p) {
         p.setHealth(Objects.requireNonNull(p.getAttribute(Attribute.MAX_HEALTH)).getDefaultValue());
+    }
+
+    /**
+     * Determina si una localización está dentro de un area determinada
+     * @param loc Localización a determinar
+     * @param cornerOne Primera esquina del area determinada
+     * @param cornerTwo Segunda esquina del area determinada
+     * @return Si la localización está dentro devuelve 'true', si está fuera, devuelve 'false'
+     */
+    public boolean isInside(Location loc, Location cornerOne, Location cornerTwo) {
+        if (cornerOne == null || cornerTwo == null) return false;
+
+        double minX = Math.min(cornerOne.getX(), cornerTwo.getX());
+        double maxX = Math.max(cornerOne.getX(), cornerTwo.getX());
+        double minY = Math.min(cornerOne.getY(), cornerTwo.getY());
+        double maxY = Math.max(cornerOne.getY(), cornerTwo.getY());
+        double minZ = Math.min(cornerOne.getZ(), cornerTwo.getZ());
+        double maxZ = Math.max(cornerOne.getZ(), cornerTwo.getZ());
+
+        double x = loc.getX();
+        double y = loc.getY();
+        double z = loc.getZ();
+
+        return x >= minX && x <= maxX &&
+                y >= minY && y <= maxY &&
+                z >= minZ && z <= maxZ;
     }
 }
