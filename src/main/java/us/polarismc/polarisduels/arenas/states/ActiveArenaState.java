@@ -46,14 +46,11 @@ public class ActiveArenaState implements ArenaState, Listener {
         int i = 0;
         for (Player player : arena.getPlayerList()) {
             savedInventories.put(player.getUniqueId(), plugin.getKitManager().loadKit(player.getUniqueId(), arena.getKit()));
-            plugin.getLogger().info("[DEBUG] Items found and saved: " + Arrays.toString(player.getInventory().getContents()));
             DuelTeam TeamBlue;
             DuelTeam TeamRed;
             plugin.utils.message(player, Sound.BLOCK_ANCIENT_DEBRIS_BREAK, "&cThe Match has started!");
 
             winsPlayer.put(player.getUniqueId(), 0);
-
-            plugin.getLogger().info("jugador: " + Objects.requireNonNull(Bukkit.getPlayer(player.getUniqueId())).getName() + ", rondas: " + ActiveArenaState.winsPlayer.get(player.getUniqueId()));
 
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
             duelsPlayer.setDuel(true);
@@ -130,81 +127,63 @@ public class ActiveArenaState implements ArenaState, Listener {
 
     @EventHandler
     private void onDamage(EntityDamageEvent event) {
-        // Verifica si la entidad es un jugador
         if (!(event.getEntity() instanceof Player player)) return;
-        // Mensaje de depuración: jugador dañado
-        plugin.getLogger().info("[DEBUG] Player " + player.getName() + " took damage: " + event.getFinalDamage());
-        plugin.getLogger().info("[DEBUG] hasPlayer(" + player.getName() + ") returned: " + arena.hasPlayer(player));
         if (!arena.hasPlayer(player)) return;
 
         event.setCancelled(false);
 
-        // Si el daño final es mayor o igual a la salud del jugador
         if (event.getFinalDamage() >= player.getHealth()) {
-            plugin.getLogger().info("[DEBUG] Player " + player.getName() + " would die from this damage.");
             event.setCancelled(true);
 
             // Cambia el estado del jugador
             alivePlayers.remove(player.getUniqueId());
             player.setGameMode(GameMode.SPECTATOR);
-            plugin.getLogger().info("[DEBUG] Player " + player.getName() + " set to spectator mode and removed from alivePlayers.");
 
             // Comprueba si queda un solo jugador con vida
             if (alivePlayers.size() <= 1) {
-                plugin.getLogger().info("[DEBUG] Remaining alive players: " + alivePlayers.size());
 
                 if (alivePlayers.size() == 1) {
                     UUID winnerUUID = alivePlayers.getFirst();
-                    plugin.getLogger().info("[DEBUG] Round winner UUID: " + winnerUUID);
 
                     winsPlayer.put(winnerUUID, winsPlayer.get(winnerUUID) + 1);
-                    plugin.getLogger().info("[DEBUG] Updated wins for player " + winnerUUID + ": " + winsPlayer.get(winnerUUID));
 
                     if (arena.getRounds() == winsPlayer.get(winnerUUID)) {
                         Player winner = Bukkit.getPlayer(winnerUUID);
                         assert winner != null;
-                        plugin.getLogger().info("[DEBUG] Game winner: " + winner.getName());
                         Win(winner);
                     } else {
                         UUID roundWinnerUUID = alivePlayers.getFirst();
                         Player roundWinner = Bukkit.getPlayer(roundWinnerUUID);
                         assert roundWinner != null;
-                        plugin.getLogger().info("[DEBUG] Preparing for next round. Round winner: " + roundWinner.getName());
 
                         nextRound(roundWinner);
                         return;
                     }
                 } else {
-                    plugin.getLogger().info("[DEBUG] No alive players remaining. Game over.");
                     plugin.utils.message(arena.getPlayerList(), "&cNo alive players... Game over.");
                 }
 
                 plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                    plugin.getLogger().info("[DEBUG] Resetting players and rolling back the arena.");
                     for (Player p : arena.getPlayerList()) {
                         plugin.utils.setMaxHealth(p);
                         plugin.getArenaManager().getRollBackManager().restore(p, plugin);
                         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
 
                         if (duelsPlayer.getTeam() != null) {
-                            plugin.getLogger().info("[DEBUG] Deleting team for player " + p.getName());
                             duelsPlayer.deleteTeam(duelsPlayer.getTeam());
                             duelsPlayer.removeTeam();
                         }
                         duelsPlayer.setDuel(false);
                         arena.removePlayer(p, plugin);
                         winsPlayer.remove(p.getUniqueId());
-                        plugin.getLogger().info("[DEBUG] Removed player " + p.getName() + " from winsPlayer.");
                     }
 
                     resetArenaBlocks();
                     resetArenaEntities();
                     plugin.getArenaManager().setInactiveState(arena);
-                    plugin.getLogger().info("[DEBUG] Arena set to inactive state.");
                 }, 20 * 5);
             } else {
                 plugin.utils.message(arena.getPlayerList(), "&c" + player.getName() + " died.");
-                plugin.getLogger().info("[DEBUG] Player " + player.getName() + " died. Remaining players: " + alivePlayers.size());
             }
         }
     }
@@ -241,7 +220,6 @@ public class ActiveArenaState implements ArenaState, Listener {
             }
         }
 
-        plugin.getLogger().info("[DEBUG] Starting next round");
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             int lastSpawnId = 0;
             if (!arena.getKit().hasAttribute(ArenaAttribute.NO_ARENA_REGENERATION)) {
