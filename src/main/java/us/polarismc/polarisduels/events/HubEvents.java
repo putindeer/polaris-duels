@@ -208,7 +208,7 @@ public class HubEvents implements Listener {
         }
     }
 
-    @EventHandler
+    /*@EventHandler
     public void EntityInteractEvent(PlayerInteractAtEntityEvent e) {
         if (e.getPlayer().getGameMode() == GameMode.SPECTATOR) {
             if (e.getRightClicked().getType() == EntityType.PLAYER) {
@@ -217,7 +217,7 @@ public class HubEvents implements Listener {
                 p.chat("/examine " + t);
             }
         }
-    }
+    }*/
 
     @EventHandler
     public void teleportingNether(PlayerTeleportEvent e) {
@@ -281,17 +281,15 @@ public class HubEvents implements Listener {
                     }
                 }
                 case NAME_TAG -> {
+                    e.setCancelled(true);
                     if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_1V1_QUEUE))) {
                         new QueueGUI(p, 1, plugin);
-                        e.setCancelled(true);
                     }
                     /*if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_2v2_QUEUE))) {
                         new QueueGUI(p, 2, plugin);
-                        e.setCancelled(true);
                     }
                     if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_3v3_QUEUE))) {
                         new QueueGUI(p, 3, plugin);
-                        e.setCancelled(true);
                     }*/
                 }
                 default -> {
