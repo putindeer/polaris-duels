@@ -145,7 +145,7 @@ public enum KitType {
             new ItemBuilder(Material.DIAMOND_CHESTPLATE).enchant(Enchantment.PROTECTION, 3).build(),
             new ItemBuilder(Material.DIAMOND_HELMET).enchant(Enchantment.PROTECTION, 3).build(),
             null
-    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK, ArenaAttribute.NO_NATURAL_REGEN, ArenaAttribute.NO_HUNGER)),
+    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK, ArenaAttribute.NO_COMPLETE_HUNGER_LOSS)),
 
     CUSTOM(new ItemStack[] {
             new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),

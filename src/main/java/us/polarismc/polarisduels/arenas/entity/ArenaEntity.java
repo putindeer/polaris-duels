@@ -97,13 +97,18 @@ public class ArenaEntity {
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
         if (duelsPlayer.getTeam() != null) {
             duelsPlayer.deleteTeam(duelsPlayer.getTeam());
-            duelsPlayer.removeTeam();
         }
         if (duelsPlayer.isQueue()) {
             duelsPlayer.setQueue(false);
         }
         if (duelsPlayer.isDuel()){
             duelsPlayer.setDuel(false);
+        }
+        if (duelsPlayer.isStartingDuel()) {
+            duelsPlayer.setStartingDuel(false);
+        }
+        if (duelsPlayer.isOnHold()) {
+            duelsPlayer.setOnHold(false);
         }
 
         if (player.isOnline()) {

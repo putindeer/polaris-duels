@@ -13,8 +13,8 @@ public class Scoreboards {
         board.updateLines(
                 headfooter,
                 plugin.utils.chat("&oOnline &r&8» &b" + plugin.getServer().getOnlinePlayers().size()),
-                plugin.utils.chat("&oPlaying &r&8» &b" + inDuel()),
-                plugin.utils.chat("&oIn Queue &r&8» &b" + inQueue()),
+                plugin.utils.chat("&oPlaying &r&8» &b" + duelingCount()),
+                plugin.utils.chat("&oIn Queue &r&8» &b" + queueCount()),
                 Component.empty(),
                 plugin.utils.chat("&oPing &r&8» &b" + board.getPlayer().getPing()),
                 headfooter,
@@ -22,15 +22,15 @@ public class Scoreboards {
         );
     }
 
-    public static Integer inQueue() {
+    public static Integer queueCount() {
         return (int) plugin.getPlayerManager().getPlayerList().stream()
                 .filter(DuelsPlayer::isQueue)
                 .count();
     }
 
-    public static Integer inDuel() {
+    public static Integer duelingCount() {
         return (int) plugin.getPlayerManager().getPlayerList().stream()
-                .filter(DuelsPlayer::isDuel)
+                .filter(p -> p.isDuel() || p.isStartingDuel())
                 .count();
     }
 }

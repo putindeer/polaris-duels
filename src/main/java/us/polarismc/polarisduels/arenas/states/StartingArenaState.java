@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.arenas.tasks.StartCountdownTask;
+import us.polarismc.polarisduels.player.DuelsPlayer;
 
 public class StartingArenaState implements ArenaState, Listener {
     private final Main plugin = Main.getInstance();
@@ -22,7 +23,9 @@ public class StartingArenaState implements ArenaState, Listener {
         Bukkit.getPluginManager().registerEvents(this, Main.pl);
         this.arena = arena;
         for (Player p : arena.getPlayerList()) {
-            plugin.getPlayerManager().getDuelsPlayer(p).setQueue(false);
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
+            duelsPlayer.setQueue(false);
+            duelsPlayer.setStartingDuel(true);
             setKit(p, arena);
         }
         this.startCountdownTask =  new StartCountdownTask(plugin, arena, 10);

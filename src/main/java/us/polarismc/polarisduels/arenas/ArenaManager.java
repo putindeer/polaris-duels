@@ -11,6 +11,8 @@ import us.polarismc.polarisduels.arenas.states.WaitingArenaState;
 import us.polarismc.polarisduels.queue.KitType;
 import us.polarismc.polarisduels.player.PlayerRollBackManager;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +39,9 @@ public class ArenaManager {
     }
 
     public Optional<ArenaEntity> findOpenArena(KitType kit, int playersNeeded, int rounds){
-        Optional<ArenaEntity> arena = getArenas().stream().filter(a -> a.getArenaState() instanceof InactiveArenaState).findAny();
+        List<ArenaEntity> arenaList = new ArrayList<>(getArenas());
+        Collections.shuffle(arenaList);
+        Optional<ArenaEntity> arena = arenaList.stream().filter(a -> a.getArenaState() instanceof InactiveArenaState).findAny();
         arena.ifPresent(arenaEntity -> arenaEntity.setArenaState(new WaitingArenaState(arenaEntity, kit, playersNeeded, rounds)));
         return arena;
     }

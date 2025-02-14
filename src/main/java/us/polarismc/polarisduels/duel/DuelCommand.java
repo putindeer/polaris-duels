@@ -119,19 +119,27 @@ public class DuelCommand implements CommandExecutor, TabExecutor {
 
         List<String> completions = new ArrayList<>();
 
-        if (args.length == 1) {
-            completions.addAll(Arrays.asList("accept", "deny", "list"));
-            Bukkit.getOnlinePlayers().stream()
-                    .filter(p -> !p.equals(player))
-                    .map(Player::getName)
-                    .forEach(completions::add);
-        } else if (!args[0].equalsIgnoreCase("accept") && !args[0].equalsIgnoreCase("deny") && !args[0].equalsIgnoreCase("list")) {
-            if (args.length == 2) {
-                completions.addAll(kits);
-            } else if (args.length == 3) {
-                completions.addAll(Arrays.asList("1", "3", "5", "10"));
+        switch (args.length) {
+            case 1 -> {
+                completions.addAll(Arrays.asList("accept", "deny", "list"));
+                Bukkit.getOnlinePlayers().stream()
+                        .filter(p -> !p.equals(player))
+                        .map(Player::getName)
+                        .forEach(completions::add);
+            }
+            case 2 -> {
+                switch (args[0].toLowerCase()) {
+                    case "accept", "deny" -> completions.addAll(plugin.getDuelManager().getPlayerRequests(player));
+                    case "list" -> {}
+                    default -> completions.addAll(kits);
+                }
+            }
+            case 3 -> {
+                if (!Arrays.asList("accept", "deny", "list").contains(args[0].toLowerCase()))
+                    completions.addAll(Arrays.asList("1", "3", "5", "10"));
             }
         }
+
         completions.removeIf(s -> s == null || !s.toLowerCase().startsWith(args[args.length - 1].toLowerCase()));
         Collections.sort(completions);
         return completions;

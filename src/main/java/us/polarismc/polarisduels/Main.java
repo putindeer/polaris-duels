@@ -51,7 +51,6 @@ public final class Main extends JavaPlugin {
             DuelsPlayer duelsPlayer = this.getPlayerManager().getDuelsPlayer(p);
             if (duelsPlayer.getTeam() != null) {
                 duelsPlayer.deleteTeam(duelsPlayer.getTeam());
-                duelsPlayer.removeTeam();
             }
         }
         for (ArenaEntity arena : arenaManager.getArenas()) {

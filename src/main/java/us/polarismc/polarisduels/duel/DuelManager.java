@@ -10,6 +10,7 @@ import us.polarismc.polarisduels.player.DuelsPlayer;
 import us.polarismc.polarisduels.queue.KitType;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DuelManager {
     private final Main plugin;
@@ -109,6 +110,16 @@ public class DuelManager {
         }
     }
 
+    public List<String> getPlayerRequests(Player p) {
+        List<DuelRequest> requestList = requests.get(p.getUniqueId());
+        if (requestList == null) return new ArrayList<>();
+
+        return requestList.stream()
+                .map(e -> e.requestor().getName())
+                .collect(Collectors.toList());
+    }
+
+
     private void createDuel(DuelRequest request) {
         Optional<ArenaEntity> arena = plugin.getArenaManager().findOpenArena(request.kit(), 2, request.rounds());
         if (arena.isPresent()) {
@@ -126,7 +137,7 @@ public class DuelManager {
             plugin.utils.message(requestor, "&cYou can't send a duel request while you're in queue.");
             return false;
         }
-        if (dpRequestor.isDuel()) {
+        if (dpRequestor.isDuel() || dpRequestor.isStartingDuel()) {
             plugin.utils.message(requestor, "&cYou can't send a duel request while you're dueling.");
             return false;
         }
@@ -135,7 +146,7 @@ public class DuelManager {
             plugin.utils.message(requestor, "&cYou can't send a duel request to someone who is in queue.");
             return false;
         }
-        if (dpRequested.isDuel()) {
+        if (dpRequested.isDuel() || dpRequested.isStartingDuel()) {
             plugin.utils.message(requestor, "&cYou can't send a duel request to someone who is dueling.");
             return false;
         }
@@ -148,7 +159,7 @@ public class DuelManager {
             plugin.utils.message(requested, "&cYou can't accept a duel request while you're in queue.");
             return false;
         }
-        if (dpRequested.isDuel()) {
+        if (dpRequested.isDuel() || dpRequested.isStartingDuel()) {
             plugin.utils.message(requested, "&cYou can't accept a duel request while you're already dueling.");
             return false;
         }
@@ -157,7 +168,7 @@ public class DuelManager {
             plugin.utils.message(requested, "&cYou can't accept a duel request from someone who is in queue.");
             return false;
         }
-        if (dpRequestor.isDuel()) {
+        if (dpRequestor.isDuel() || dpRequestor.isStartingDuel()) {
             plugin.utils.message(requested, "&cYou can't accept a duel request from someone who is currently dueling.");
             return false;
         }

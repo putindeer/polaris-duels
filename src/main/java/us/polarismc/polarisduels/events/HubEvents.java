@@ -3,6 +3,8 @@ package us.polarismc.polarisduels.events;
 import fr.mrmicky.fastboard.adventure.FastBoard;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.Waterlogged;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,6 +21,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.Team;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.queue.QueueGUI;
@@ -47,6 +50,14 @@ public class HubEvents implements Listener {
         event.joinMessage(plugin.utils.chat("&8(&a+&8) " + p.getName()));
 
         plugin.getPlayerManager().playerJoin(p);
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
+        if (duelsPlayer.getTeam() != null) {
+            duelsPlayer.deleteTeam(duelsPlayer.getTeam());
+        }
+        Team team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam(p.getName());
+        if (team != null) {
+            team.unregister();
+        }
 
         FastBoard board = new FastBoard(p);
         board.updateTitle(plugin.utils.chat("&9&lPolaris Duels"));
@@ -64,7 +75,7 @@ public class HubEvents implements Listener {
         p.setHealth(20);
         plugin.utils.setMaxHealth(p);
         p.setFoodLevel(20);
-        p.setSaturation(0);
+        p.setSaturation(5.0f);
         p.setLevel(0);
         p.setExp(0.0f);
 
@@ -99,7 +110,7 @@ public class HubEvents implements Listener {
            return;
         }
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-        if (!duelsPlayer.isDuel()) {
+        if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
             e.setCancelled(true);
         }
     }
@@ -111,7 +122,7 @@ public class HubEvents implements Listener {
             return;
         }
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-        if (!duelsPlayer.isDuel()) {
+        if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
             e.setCancelled(true);
         }
     }
@@ -120,7 +131,7 @@ public class HubEvents implements Listener {
     public void onHungerChange(FoodLevelChangeEvent e) {
         if (e.getEntity() instanceof Player p) {
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-            if (!duelsPlayer.isDuel()) {
+            if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
                 e.setCancelled(true);
             }
         }
@@ -130,7 +141,7 @@ public class HubEvents implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player p)) return;
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-        if (duelsPlayer.isDuel()) return;
+        if (duelsPlayer.isDuel() && !duelsPlayer.isOnHold()) return;
         if (event.getClickedInventory() == null) return;
 
         if (event.getClickedInventory().getType() != InventoryType.PLAYER) {
@@ -145,7 +156,7 @@ public class HubEvents implements Listener {
             return;
         }
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-        if (!duelsPlayer.isDuel()) {
+        if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
             e.setCancelled(true);
         }
     }
@@ -154,7 +165,7 @@ public class HubEvents implements Listener {
     public void onDamageReceive(EntityDamageEvent e) {
         if (e.getEntity() instanceof Player p) {
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-            if (!duelsPlayer.isDuel()) {
+            if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
                 e.setCancelled(true);
             }
         }
@@ -164,7 +175,7 @@ public class HubEvents implements Listener {
     public void onDamage(EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof Player p) {
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-            if (!duelsPlayer.isDuel()) {
+            if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
                 event.setCancelled(true);
             }
         }
@@ -177,7 +188,7 @@ public class HubEvents implements Listener {
             return;
         }
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-        if (!duelsPlayer.isDuel()) {
+        if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
             e.setCancelled(true);
         }
     }
@@ -189,7 +200,7 @@ public class HubEvents implements Listener {
                 return;
             }
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-            if (!duelsPlayer.isDuel()) {
+            if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
                 e.setCancelled(true);
             }
         }
@@ -202,9 +213,21 @@ public class HubEvents implements Listener {
                 return;
             }
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-            if (!duelsPlayer.isDuel()) {
+            if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
                 e.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+        Player p = event.getPlayer();
+        if (p.getGameMode().equals(GameMode.CREATIVE)) {
+            return;
+        }
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
+        if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
+            event.setCancelled(true);
         }
     }
 
@@ -253,16 +276,18 @@ public class HubEvents implements Listener {
     public void onMove(PlayerMoveEvent e) {
         if (e.getPlayer().getWorld().getName().equals("lobby") && e.getPlayer().getLocation().getBlockY() <= -64) {
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(e.getPlayer());
-            if (!duelsPlayer.isDuel()) {
+            if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
                 e.getPlayer().teleport(new Location(Bukkit.getWorld("lobby"), 0, 100, 0));
             }
         }
     }
 
     @EventHandler
-    public void onInteract(PlayerInteractEvent e){
+    public void onInteract(PlayerInteractEvent e) {
         if (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             Player p = e.getPlayer();
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
+            if (duelsPlayer.isDuel() && !duelsPlayer.isOnHold()) return;
 
             ItemStack item = p.getInventory().getItemInMainHand();
             ItemMeta meta = item.getItemMeta();
@@ -296,10 +321,7 @@ public class HubEvents implements Listener {
                     if (p.getGameMode().equals(GameMode.CREATIVE)) {
                         return;
                     }
-                    DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-                    if (!duelsPlayer.isDuel()) {
-                        e.setCancelled(true);
-                    }
+                    e.setCancelled(true);
                 }
             }
         }

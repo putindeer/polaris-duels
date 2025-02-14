@@ -1,9 +1,6 @@
 package us.polarismc.polarisduels.player;
 
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -53,7 +50,8 @@ public class PlayerRollBackManager {
         player.setFoodLevel(previousHungerValue.getOrDefault(player.getUniqueId(), 20));
         player.setLevel(previousLevelMap.getOrDefault(player.getUniqueId(), 0));
         player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
-        player.setSaturation(0);
+        player.setSaturation(5.0f);
+        player.setItemOnCursor(new ItemStack(Material.AIR));
 
         previousHungerValue.remove(player.getUniqueId());
         previousLevelMap.remove(player.getUniqueId());

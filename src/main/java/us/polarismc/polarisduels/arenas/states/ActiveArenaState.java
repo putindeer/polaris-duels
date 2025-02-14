@@ -22,6 +22,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scoreboard.Team;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaAttribute;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
@@ -46,6 +47,7 @@ public class ActiveArenaState implements ArenaState, Listener {
         int i = 0;
         for (Player player : arena.getPlayerList()) {
             savedInventories.put(player.getUniqueId(), plugin.getKitManager().loadKit(player.getUniqueId(), arena.getKit()));
+            player.setSaturation(5.0f);
             DuelTeam TeamBlue;
             DuelTeam TeamRed;
             plugin.utils.message(player, Sound.BLOCK_ANCIENT_DEBRIS_BREAK, "&cThe Match has started!");
@@ -53,7 +55,17 @@ public class ActiveArenaState implements ArenaState, Listener {
             winsPlayer.put(player.getUniqueId(), 0);
 
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
+            duelsPlayer.setStartingDuel(false);
             duelsPlayer.setDuel(true);
+
+            if (duelsPlayer.getTeam() != null) {
+                duelsPlayer.deleteTeam(duelsPlayer.getTeam());
+            }
+            Team team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam(player.getName());
+            if (team != null) {
+                team.unregister();
+            }
+
             if (arena.getPlayers().size() == 2){
                 if (i == 0){
                     TeamBlue = new DuelTeam(duelsPlayer, ChatColor.RED, "RED");
@@ -122,6 +134,9 @@ public class ActiveArenaState implements ArenaState, Listener {
         p.getActivePotionEffects().forEach(potionEffect -> p.removePotionEffect(potionEffect.getType()));
         p.setLevel(0);
         p.setExp(0.0f);
+        p.setFireTicks(0);
+        p.setItemOnCursor(new ItemStack(Material.AIR));
+        p.setInvulnerable(false);
         removeFluidBoost(p);
     }
 
@@ -133,6 +148,8 @@ public class ActiveArenaState implements ArenaState, Listener {
         event.setCancelled(false);
 
         if (event.getFinalDamage() >= player.getHealth()) {
+            if (hasTotem(player)) return;
+
             event.setCancelled(true);
 
             // Cambia el estado del jugador
@@ -171,9 +188,10 @@ public class ActiveArenaState implements ArenaState, Listener {
 
                         if (duelsPlayer.getTeam() != null) {
                             duelsPlayer.deleteTeam(duelsPlayer.getTeam());
-                            duelsPlayer.removeTeam();
                         }
                         duelsPlayer.setDuel(false);
+                        player.setInvulnerable(false);
+                        removeFluidBoost(p);
                         arena.removePlayer(p, plugin);
                         winsPlayer.remove(p.getUniqueId());
                     }
@@ -188,6 +206,15 @@ public class ActiveArenaState implements ArenaState, Listener {
         }
     }
 
+    /**
+     * Comprueba si el jugador está sosteniendo un totem
+     * @param player El jugador a comprobar
+     * @return Si el jugador sostiene un totem, devuelve 'true', si no, devuelve 'false'
+     */
+    private boolean hasTotem(Player player) {
+        return player.getInventory().getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING || player.getInventory().getItemInMainHand().getType() == Material.TOTEM_OF_UNDYING;
+    }
+
     private void Win(Player winner) {
         if (winner == null || !winner.isOnline()) {
             plugin.utils.message(arena.getPlayerList(), "&cWinner could not be found... Game Over");
@@ -196,6 +223,7 @@ public class ActiveArenaState implements ArenaState, Listener {
             int score1 = winsPlayer.get(arena.getPlayers().get(0));
             int score2 = winsPlayer.get(arena.getPlayers().get(1));
             for (Player player : arena.getPlayerList()) {
+                player.setInvulnerable(true);
                 if (player == winner){
                     player.showTitle(Title.title(plugin.utils.chat("&cYou won."), plugin.utils.chat("&7Score: &c" + score1 + " &7- &9" + score2)));
                 } else {
@@ -212,6 +240,9 @@ public class ActiveArenaState implements ArenaState, Listener {
         plugin.utils.message(arena.getPlayerList(), "&7Score: &c" + score1 + " &7- &9" + score2);
 
         for (Player player : arena.getPlayerList()) {
+            player.setInvulnerable(true);
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
+            duelsPlayer.setOnHold(true);
             if (player == roundWinner) {
                 player.showTitle(Title.title(plugin.utils.chat("&aYou won."), plugin.utils.chat("&7Score: &c" + score1 + " &7- &9" + score2)));
             } else {
@@ -229,6 +260,8 @@ public class ActiveArenaState implements ArenaState, Listener {
             for (Player player : arena.getPlayerList()) {
                 player.setGameMode(GameMode.SURVIVAL);
                 restorePlayer(player);
+                DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
+                duelsPlayer.setOnHold(false);
                 player.showTitle(Title.title(plugin.utils.chat("&b&lGO!"), Component.empty()));
                 if (lastSpawnId == 0) {
                     player.teleport(arena.getSpawnOne());
@@ -615,6 +648,7 @@ public class ActiveArenaState implements ArenaState, Listener {
         Player p = event.getPlayer();
         if (!arena.hasPlayer(p)) return;
         arena.removePlayer(p, plugin);
+        if (p.isInvulnerable()) p.setInvulnerable(false);
 
         bucketHoldingPlayers.remove(p);
 
@@ -639,7 +673,6 @@ public class ActiveArenaState implements ArenaState, Listener {
                     DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
                     if (duelsPlayer.getTeam() != null) {
                         duelsPlayer.deleteTeam(duelsPlayer.getTeam());
-                        duelsPlayer.removeTeam();
                     }
                     winsPlayer.remove(player.getUniqueId());
                 }

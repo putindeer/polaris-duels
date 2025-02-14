@@ -10,22 +10,17 @@ import us.polarismc.polarisduels.duel.DuelTeam;
 import java.util.Objects;
 import java.util.UUID;
 
+@Getter
+@Setter
 public class DuelsPlayer {
-
     private final Main plugin;
-    @Getter
     private final UUID uid;
-    @Getter
     private final String name;
     private final String ip;
-    @Getter
-    @Setter
-    private boolean duel = false;
-    @Getter
-    @Setter
     private boolean queue = false;
-    @Getter
-    @Setter
+    private boolean startingDuel = false;
+    private boolean duel = false;
+    private boolean onHold = false;
     private DuelTeam team = null;
 
     public DuelsPlayer(UUID uid, String name) {
@@ -50,13 +45,10 @@ public class DuelsPlayer {
         return ip;
     }
 
-    public synchronized void removeTeam() {
-        this.team = null;
-    }
-
     public void deleteTeam(DuelTeam team) {
         team.getTeam().unregister();
         team.getMembers().forEach(p -> p.setTeam(null));
         team.getTeams().remove(team);
+        this.team = null;
     }
 }
