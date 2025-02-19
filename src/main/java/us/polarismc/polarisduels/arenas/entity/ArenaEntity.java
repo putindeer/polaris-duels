@@ -50,7 +50,6 @@ public class ArenaEntity {
     @Setter
     private int rounds;
 
-
     public void setArenaState(ArenaState state) {
         if (this.arenaState != null) {
             this.arenaState.onDisable(this);

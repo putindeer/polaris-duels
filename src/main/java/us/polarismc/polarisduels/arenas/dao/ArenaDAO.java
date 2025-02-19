@@ -7,6 +7,8 @@ import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import java.util.List;
 
 public interface ArenaDAO {
+    void loadArenaWorlds();
+
     void saveArenas(List<ArenaEntity> arenas);
 
     JsonObject locationToJson(Location location);

@@ -39,7 +39,7 @@ public final class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         pl = this;
-        utils = new Utils();
+        utils = new Utils(this);
         new StartThings(this);
         initializeDatabase();
         initializeManagers();

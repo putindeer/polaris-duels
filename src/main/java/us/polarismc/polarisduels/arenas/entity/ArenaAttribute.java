@@ -2,6 +2,7 @@ package us.polarismc.polarisduels.arenas.entity;
 
 public enum ArenaAttribute {
     NO_BLOCK_BREAK,
+    NO_ARENA_DESTRUCTION,
     NO_BLOCK_PLACE,
     NO_NATURAL_REGEN,
     NO_CRAFTING,

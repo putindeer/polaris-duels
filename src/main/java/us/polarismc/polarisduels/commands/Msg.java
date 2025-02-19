@@ -39,8 +39,9 @@ public class Msg implements CommandExecutor {
                     message.append(args[i]).append(" ");
                 }
                 String msg = message.toString().trim();
-                plugin.utils.message(sender, "&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg);
-                plugin.utils.message(target, Sound.BLOCK_NOTE_BLOCK_BELL, "&8(&3" + sender.getName() + " &7» &bYou&8)&7: " + msg);
+                sender.sendMessage(plugin.utils.chat("&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg));
+                target.sendMessage(plugin.utils.chat("&8(&3" + sender.getName() + " &7» &bYou&8)&7: " + msg));
+                target.playSound(target.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 10, 1);
                 reply.put(target,sender);
                 reply.put(sender,target);
             }
@@ -61,9 +62,10 @@ public class Msg implements CommandExecutor {
                     message.append(arg).append(" ");
                 }
                 String msg = message.toString().trim();
-                plugin.utils.message(sender, "&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg);
-                if (target instanceof Player) {
-                    plugin.utils.message(target, Sound.BLOCK_NOTE_BLOCK_BELL, "&8(&3" + sender.getName() + " &7» &bYou&8)&7: " + msg);
+                sender.sendMessage(plugin.utils.chat("&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg));
+                if (target instanceof Player p) {
+                    p.sendMessage(plugin.utils.chat("&8(&3" + sender.getName() + " &7» &bYou&8)&7: " + msg));
+                    p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 10, 1);
                 }
             }
         }

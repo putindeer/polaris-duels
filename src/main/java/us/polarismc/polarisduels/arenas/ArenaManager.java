@@ -26,6 +26,7 @@ public class ArenaManager {
     public ArenaManager(Main plugin) {
         this.plugin = plugin;
         arenaFile = new ArenaGsonImpl(plugin);
+        arenaFile.loadArenaWorlds();
         arenas = arenaFile.loadArenas();
         this.rollBackManager = new PlayerRollBackManager();
     }

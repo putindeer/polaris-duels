@@ -1,9 +1,7 @@
 package us.polarismc.polarisduels.arenas.dao;
 
 import com.google.gson.*;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
@@ -30,6 +28,20 @@ public class ArenaGsonImpl implements ArenaDAO {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    @Override
+    public void loadArenaWorlds() {
+        File[] dir = Bukkit.getWorldContainer().listFiles(File::isDirectory);
+        if (dir == null) return;
+
+        for (File folder : dir) {
+            String name = folder.getName();
+
+            if (Bukkit.getWorld(name) != null) continue;
+
+            new WorldCreator(name).createWorld();
         }
     }
 

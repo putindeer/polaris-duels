@@ -190,7 +190,7 @@ public class ActiveArenaState implements ArenaState, Listener {
                             duelsPlayer.deleteTeam(duelsPlayer.getTeam());
                         }
                         duelsPlayer.setDuel(false);
-                        player.setInvulnerable(false);
+                        p.setInvulnerable(false);
                         removeFluidBoost(p);
                         arena.removePlayer(p, plugin);
                         winsPlayer.remove(p.getUniqueId());

@@ -1,22 +1,25 @@
 package us.polarismc.polarisduels.utils;
 
-import lombok.NoArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import us.polarismc.polarisduels.Main;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Objects;
 
-@NoArgsConstructor
 @SuppressWarnings("unused")
 public class Utils {
+    private final Main plugin;
+
+    public Utils(Main plugin) {
+        this.plugin = plugin;
+    }
     /**
      * Prefix del plugin
      */
@@ -186,5 +189,47 @@ public class Utils {
         return x >= minX && x <= maxX &&
                 y >= minY && y <= maxY &&
                 z >= minZ && z <= maxZ;
+    }
+
+    /**
+     * Crea un mundo completamente vacio con un bloque de cristal en [0,64,0]
+     * @param name El nombre del mundo
+     * @return Devuelve el mundo creado
+     */
+    public World createVoidWorld(String name) {
+        WorldCreator creator = new WorldCreator(name);
+        creator.generator(new VoidGenerator());
+        creator.createWorld();
+
+        World world = Bukkit.getWorld(name);
+
+        if (world != null) {
+            world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+            world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+            world.setGameRule(GameRule.DO_MOB_SPAWNING, false);
+            world.setGameRule(GameRule.DO_PATROL_SPAWNING, false);
+            world.setGameRule(GameRule.DO_TRADER_SPAWNING, false);
+            world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
+            world.setGameRule(GameRule.SPAWN_CHUNK_RADIUS, 0);
+            world.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
+
+            return world;
+        } else {
+            plugin.getLogger().severe("The world '" + name + "' was not loaded.");
+            return null;
+        }
+    }
+
+    /**
+     * Ejecuta una tarea ({@link Runnable}) después de un tiempo especificado.
+     * @param delay El tiempo de espera en ticks antes de ejecutar.
+     * @param run La tarea a ejecutar, implementada como un {@code Runnable}.
+     */
+    public void delay(int delay, Runnable run) {
+        Bukkit.getScheduler().runTaskLater(Main.pl, run,delay);
+    }
+
+    public void delay(Runnable run) {
+        delay(1, run);
     }
 }
