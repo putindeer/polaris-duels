@@ -43,6 +43,7 @@ public class ActiveArenaState implements ArenaState, Listener {
         alivePlayers = new ArrayList<>(arena.getPlayers());
         int i = 0;
         for (Player player : arena.getPlayerList()) {
+            player.setInvulnerable(false);
             savedInventories.put(player.getUniqueId(), plugin.getKitManager().loadKit(player.getUniqueId(), arena.getKit()));
             player.setSaturation(5.0f);
             DuelTeam TeamBlue;
