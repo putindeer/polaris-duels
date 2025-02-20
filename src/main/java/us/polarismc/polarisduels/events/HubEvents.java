@@ -30,6 +30,7 @@ import us.polarismc.polarisduels.player.DuelsPlayer;
 import us.polarismc.polarisduels.utils.ItemBuilder;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -191,6 +192,10 @@ public class HubEvents implements Listener {
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
         if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
             e.setCancelled(true);
+            ItemStack item = e.getItemDrop().getItemStack();
+            if (!plugin.utils.canCompletelyStore(p.getInventory(), item)) {
+                p.setItemOnCursor(item);
+            }
         }
     }
 

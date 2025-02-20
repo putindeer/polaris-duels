@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
+import us.polarismc.polarisduels.arenas.entity.ArenaSize;
 import us.polarismc.polarisduels.arenas.session.ArenaSetupSession;
 import us.polarismc.polarisduels.arenas.states.InactiveArenaState;
 
@@ -94,6 +95,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
                 boolean success = cloneArena(arenaName, copies);
                 if (success) {
                     sender.sendMessage(plugin.utils.chat("&#10e8f3Arena '" + arenaName + "' cloned " + copies + " times."));
+                    sender.sendMessage(plugin.utils.chat("&#10e8f3Now, please restart the server to avoid performance issues or fatal errors."));
                 } else {
                     sender.sendMessage(plugin.utils.chat("&cAn exception happened while cloning the arenas."));
                 }
@@ -147,7 +149,8 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
             case 2 -> {
                 session.getArena().setDisplayName(m);
                 World world = plugin.utils.createVoidWorld(session.getArena().getName());
-                p.teleportAsync(new Location(world, 0.5, 65, 0.5));
+                p.teleport(new Location(world, 0.5, 65, 0.5));
+                session.getArena().setWorld(world);
                 session.setStep(3);
                 plugin.utils.message(p, "&#10e8f3Step 3: Please stand on the spawn point 1 and say 'loc1' to save");
             }
@@ -191,12 +194,26 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
                 if (m.equalsIgnoreCase("go") && !p.getInventory().getItemInMainHand().getType().isAir()) {
                     session.getArena().setBlockLogo(p.getInventory().getItemInMainHand());
                     session.setStep(8);
-                    plugin.utils.message(p, "&#10e8f3Step 8: Please select the center of the arena by right-clicking");
+                    plugin.utils.message(p, "&#10e8f3Step 8: Please enter the arena size (small, medium, large)");
                 } else {
                     plugin.utils.message(p, "&cThere's not any item in your hand");
                 }
             }
+            case 8 -> {
+                switch (m.toLowerCase()) {
+                    case "small" -> session.getArena().setArenaSize(ArenaSize.SMALL);
+                    case "medium" -> session.getArena().setArenaSize(ArenaSize.MEDIUM);
+                    case "large" -> session.getArena().setArenaSize(ArenaSize.LARGE);
+                    default -> {
+                        plugin.utils.message(p, "&cInvalid size! Please enter 'small', 'medium', or 'large'.");
+                        return;
+                    }
+                }
 
+                plugin.utils.message(p, "&#10e8f3Arena size set to: " + session.getArena().getArenaSize());
+                session.setStep(9);
+                plugin.utils.message(p, "&#10e8f3Step 9: Please select the center of the arena by right-clicking");
+            }
         }
     }
 
@@ -218,7 +235,12 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
             session.getArena().setArenaState(new InactiveArenaState());
             plugin.getArenaManager().arenas.add(session.getArena());
             plugin.utils.message(p, "&#FFC300Arena setup completed!");
+            Location loc = new Location(Bukkit.getWorld("lobby"), -0.5, 100, 0.5);
+            p.teleport(loc);
 
+            Bukkit.unloadWorld(session.getArena().getWorld(), true);
+
+            plugin.getArenaManager().arenaFile.loadArenaWorlds();
             plugin.getArenaManager().arenaFile.saveArenas(plugin.getArenaManager().arenas);
 
             setupSessions.remove(p.getUniqueId());
@@ -235,7 +257,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         }
 
         ArenaEntity originalArena = originalArenaOpt.get();
-        World source = originalArena.getCenter().getWorld();
+        World source = originalArena.getWorld();
         if (source == null) return false;
         
         File oldFolder = new File(Bukkit.getWorldContainer(), originalArena.getName());

@@ -5,10 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
@@ -31,23 +28,18 @@ import java.util.stream.Collectors;
 public class ArenaEntity {
     private String displayName;
     private String name;
+    private World world;
     private Location spawnOne;
     private Location spawnTwo;
     private Location cornerOne;
     private Location cornerTwo;
     private Location center;
     private ItemStack blockLogo;
+    private ArenaSize arenaSize;
     private ArenaState arenaState;
-    @Getter
     private List<UUID> players = new ArrayList<>();
-    @Getter
-    @Setter
     private KitType kit;
-    @Getter
-    @Setter
     private int playersNeeded;
-    @Getter
-    @Setter
     private int rounds;
 
     public void setArenaState(ArenaState state) {
@@ -81,9 +73,9 @@ public class ArenaEntity {
                         .build()
         );
         if (players.size() == 1) {
-            player.teleportAsync(spawnOne);
+            player.teleport(spawnOne);
         } else {
-            player.teleportAsync(spawnTwo);
+            player.teleport(spawnTwo);
         }
 
         if (players.size() == playersNeeded) {

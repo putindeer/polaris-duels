@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -11,6 +12,8 @@ import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.arenas.states.ActiveArenaState;
 import us.polarismc.polarisduels.arenas.states.WaitingArenaState;
+
+import java.util.HashMap;
 
 @AllArgsConstructor
 public class StartCountdownTask extends BukkitRunnable {
@@ -46,13 +49,13 @@ public class StartCountdownTask extends BukkitRunnable {
     private void saveKits() {
         for (Player p : arena.getPlayerList()) {
             if (p.getItemOnCursor().getType() != Material.AIR) {
-                if (p.getInventory().firstEmpty() == -1) {
-                    p.setItemOnCursor(new ItemStack(Material.AIR));
+                ItemStack item = p.getItemOnCursor().clone();
+                p.setItemOnCursor(new ItemStack(Material.AIR));
+                HashMap<Integer, ItemStack> remaining = p.getInventory().addItem(item);
+                if (!remaining.isEmpty()) {
+                    p.setItemOnCursor(remaining.values().iterator().next());
                     plugin.utils.message(p, "&cYou were holding an item on your cursor while your inventory was full. Your kit could not be saved because of this. Please avoid doing this.");
                     continue;
-                } else {
-                    p.getInventory().addItem(p.getItemOnCursor());
-                    p.setItemOnCursor(new ItemStack(Material.AIR));
                 }
             }
             plugin.getKitManager().saveKit(p.getUniqueId(), arena.getKit(), p.getInventory().getContents());

@@ -114,7 +114,7 @@ public enum KitType {
             new ItemBuilder(Material.DIAMOND_CHESTPLATE).enchant(Enchantment.PROTECTION, 2).build(),
             new ItemBuilder(Material.DIAMOND_HELMET).enchant(Enchantment.PROTECTION, 3).build(),
             new ItemStack(Material.SHIELD)
-    }, EnumSet.of(ArenaAttribute.NO_CRAFTING, ArenaAttribute.NO_NATURAL_REGEN, ArenaAttribute.NO_HUNGER)),
+    }, EnumSet.of(ArenaAttribute.NO_CRAFTING, ArenaAttribute.NO_NATURAL_REGEN, ArenaAttribute.NO_HUNGER, ArenaAttribute.NO_ARENA_DESTRUCTION)),
 
     DIAMONDPOT(new ItemStack[] {
             new ItemBuilder(Material.DIAMOND_SWORD).enchant(Enchantment.SHARPNESS, 5).build(),

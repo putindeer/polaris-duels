@@ -7,6 +7,8 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 
 import java.io.File;
@@ -191,6 +193,10 @@ public class Utils {
                 z >= minZ && z <= maxZ;
     }
 
+    public boolean isInWorld(Location loc, World world) {
+        return loc.getWorld().getName().equalsIgnoreCase(world.getName());
+    }
+
     /**
      * Crea un mundo completamente vacio con un bloque de cristal en [0,64,0]
      * @param name El nombre del mundo
@@ -231,5 +237,35 @@ public class Utils {
 
     public void delay(Runnable run) {
         delay(1, run);
+    }
+
+    /**
+     * Verifica si un inventario tiene espacio suficiente para un ItemStack específico,
+     * considerando la posibilidad de apilarlo con stacks existentes en el inventario.
+     * <p>
+     * Es útil para determinar si, al agregar un ítem, este será almacenado correctamente
+     * o si terminará en el cursor del jugador o eliminado por falta de espacio.
+     *
+     * @param inv  El inventario al que se quiere añadir el ítem.
+     * @param item El ítem que se quiere añadir.
+     * @return {@code true} si el ítem se puede almacenar completamente, {@code false} si no hay espacio suficiente.
+     */
+    public boolean canCompletelyStore(Inventory inv, ItemStack item) {
+        int toStore = item.getAmount();
+
+        for (ItemStack stack : inv.getContents()) {
+            if (stack == null || stack.getType() == Material.AIR) {
+                toStore -= item.getMaxStackSize();
+            }
+            else if (stack.isSimilar(item)) {
+                int space = stack.getMaxStackSize() - stack.getAmount();
+                toStore -= space;
+            }
+
+            if (toStore <= 0) {
+                return true;
+            }
+        }
+        return false;
     }
 }

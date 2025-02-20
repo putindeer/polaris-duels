@@ -59,6 +59,7 @@ public final class Main extends JavaPlugin {
                 state.resetArenaBlocks();
             }
         }
+        arenaManager.arenaFile.saveArenas(arenaManager.arenas);
         database.close();
     }
 

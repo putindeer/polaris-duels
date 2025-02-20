@@ -5,6 +5,7 @@ import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
+import us.polarismc.polarisduels.arenas.entity.ArenaSize;
 import us.polarismc.polarisduels.arenas.states.InactiveArenaState;
 
 import java.io.File;
@@ -47,7 +48,6 @@ public class ArenaGsonImpl implements ArenaDAO {
 
     /**
      * Saves the arenas to the JSON
-     *
      * @param arenas map of the arenas
      */
     @Override
@@ -60,6 +60,7 @@ public class ArenaGsonImpl implements ArenaDAO {
 
             arenaJson.addProperty("name", arena.getName());
             arenaJson.addProperty("displayName", arena.getDisplayName());
+            arenaJson.addProperty("world", arena.getWorld().getName());
             arenaJson.add("spawnOne", locationToJson(arena.getSpawnOne()));
             arenaJson.add("spawnTwo", locationToJson(arena.getSpawnTwo()));
             arenaJson.add("center", locationToJson(arena.getCenter()));
@@ -68,6 +69,8 @@ public class ArenaGsonImpl implements ArenaDAO {
             if (arena.getBlockLogo() != null) {
                 arenaJson.add("blockLogo", itemStackToJson(arena.getBlockLogo()));
             }
+            arenaJson.addProperty("size", arena.getArenaSize().name());
+
 
             arenasArray.add(arenaJson);
         }
@@ -136,16 +139,22 @@ public class ArenaGsonImpl implements ArenaDAO {
                 JsonObject arenaJson = element.getAsJsonObject();
                 String name = arenaJson.get("name").getAsString();
                 String displayName = arenaJson.get("displayName").getAsString();
+                World world/* = Bukkit.getWorld(arenaJson.get("world").getAsString())*/;
                 Location spawnOne = jsonToLocation(arenaJson.getAsJsonObject("spawnOne"));
                 Location spawnTwo = jsonToLocation(arenaJson.getAsJsonObject("spawnTwo"));
                 Location center = jsonToLocation(arenaJson.getAsJsonObject("center"));
                 Location cornerOne = jsonToLocation(arenaJson.getAsJsonObject("cornerOne"));
                 Location cornerTwo = jsonToLocation(arenaJson.getAsJsonObject("cornerTwo"));
 
-
                 ArenaEntity arena = new ArenaEntity();
                 arena.setName(name);
                 arena.setDisplayName(displayName);
+                if (arenaJson.has("world")) {
+                    world = Bukkit.getWorld(arenaJson.get("world").getAsString());
+                } else {
+                    world = center != null ? center.getWorld() : null;
+                }
+                arena.setWorld(world);
                 arena.setSpawnOne(spawnOne);
                 arena.setSpawnTwo(spawnTwo);
                 arena.setCenter(center);
@@ -154,6 +163,15 @@ public class ArenaGsonImpl implements ArenaDAO {
                 if (arenaJson.has("blockLogo")) {
                     arena.setBlockLogo(jsonToItemStack(arenaJson.getAsJsonObject("blockLogo")));
                 }
+                if (arenaJson.has("size")) {
+                    try {
+                        ArenaSize size = ArenaSize.valueOf(arenaJson.get("size").getAsString().toUpperCase());
+                        arena.setArenaSize(size);
+                    } catch (IllegalArgumentException e) {
+                        plugin.getLogger().warning("Invalid arena size in JSON for arena: " + name + ". Defaulting to MEDIUM.");
+                        arena.setArenaSize(ArenaSize.LARGE);
+                    }
+                } else arena.setArenaSize(ArenaSize.LARGE);
                 arena.setArenaState(new InactiveArenaState());
                 arenas.add(arena);
             }

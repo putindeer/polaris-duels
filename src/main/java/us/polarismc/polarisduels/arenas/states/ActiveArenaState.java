@@ -14,10 +14,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.*;
@@ -380,47 +377,45 @@ public class ActiveArenaState implements ArenaState, Listener {
      * (O en caso de que la regeneración de la arena esté desactivada, hasta el final del duel)
      */
     private final Map<Location, Material> modifiedBlocks = new HashMap<>();
+    private final Set<Location> placedBlocks = new HashSet<>();
 
     /**
      * Guarda cuando se rompe un bloque en la arena.
      * @param event El evento a registrar
      */
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (event.isCancelled()) return;
-        Player p = event.getPlayer();
-        if (!arena.hasPlayer(p)) return;
         Block block = event.getBlock();
         Location loc = block.getLocation();
+        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
         modifiedBlocks.putIfAbsent(loc, block.getType());
     }
 
     /**
      * Guarda cuando se pone un bloque en la arena.
+     * Si no se puede romper la arena en el kit, guarda el bloque que puso el jugador.
      * @param event El evento a registrar
      */
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        if (event.isCancelled()) return;
-        Player p = event.getPlayer();
-        if (!arena.hasPlayer(p)) return;
         Block block = event.getBlock();
         Location loc = block.getLocation();
+        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
         modifiedBlocks.putIfAbsent(loc, Material.AIR);
+        if (arena.getKit().hasAttribute(ArenaAttribute.NO_ARENA_DESTRUCTION)) {
+            placedBlocks.add(event.getBlock().getLocation());
+        }
     }
 
     /**
      * Guarda cuando se pone un fluido en la arena.
      * @param event El evento a registrar
      */
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
-        if (event.isCancelled()) return;
-        Player p = event.getPlayer();
-        if (!arena.hasPlayer(p)) return;
-
         Block block = event.getBlock();
         Location loc = block.getLocation();
+        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
 
         if (block.getBlockData() instanceof Waterlogged waterlogged) {
             if (!waterlogged.isWaterlogged()) {
@@ -433,42 +428,57 @@ public class ActiveArenaState implements ArenaState, Listener {
      * Guarda cuando se expande un fluido en la arena.
      * @param event El evento a registrar
      */
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onFluidFlow(BlockFromToEvent event) {
-        if (event.isCancelled()) return;
         Block block = event.getBlock();
-        if (block.getType() == Material.WATER || block.getType() == Material.LAVA) {
-            Location loc = block.getLocation();
-            if (!plugin.utils.isInside(loc, arena.getCornerOne(), arena.getCornerTwo())) return;
+        if (block.isLiquid()) {
+            Location loc = event.getToBlock().getLocation();
+            if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
             modifiedBlocks.putIfAbsent(loc, Material.AIR);
         }
     }
 
     /**
      * Guarda cuando se crea cobblestone con agua y lava en la arena.
+     * Si no se puede romper la arena en el kit, guarda los bloques que generó el lavacast.
      * @param event El evento a registrar
      */
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onLavaCast(BlockFormEvent event) {
-        if (event.isCancelled()) return;
         Block block = event.getBlock();
         Location loc = block.getLocation();
-        if (!plugin.utils.isInside(loc, arena.getCornerOne(), arena.getCornerTwo())) return;
+        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
 
         modifiedBlocks.putIfAbsent(loc, Material.AIR);
+        if (arena.getKit().hasAttribute(ArenaAttribute.NO_ARENA_DESTRUCTION)) {
+            placedBlocks.add(loc);
+        }
+    }
+
+    /**
+     * Guarda cuando un bloque se quema en la arena debido al fuego.
+     * @param event El evento a registrar
+     */
+    @EventHandler(ignoreCancelled = true)
+    public void onBlockBurn(BlockBurnEvent event) {
+        Block block = event.getBlock();
+        Location loc = block.getLocation();
+
+        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
+
+        modifiedBlocks.putIfAbsent(loc, block.getType());
     }
 
     /**
      * Guarda cuando un bloque de grass se transforma en uno de tierra en la arena.
      * @param event El evento a registrar
      */
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onGrassFade(BlockFadeEvent event) {
-        if (event.isCancelled()) return;
         Block block = event.getBlock();
         Location loc = block.getLocation();
         if (block.getType() == Material.GRASS_BLOCK && event.getNewState().getType() == Material.DIRT) {
-            if (!plugin.utils.isInside(loc, arena.getCornerOne(), arena.getCornerTwo())) return;
+            if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
             modifiedBlocks.putIfAbsent(loc, block.getType());
         }
     }
@@ -477,24 +487,28 @@ public class ActiveArenaState implements ArenaState, Listener {
      * Guarda cuando creas una farmland o un path con una azada o una pala en la arena.
      * @param event El evento a registrar
      */
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockTransform(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         ItemStack item = event.getItem();
         if (item == null) return;
 
-        Player p = event.getPlayer();
-        if (!arena.hasPlayer(p)) return;
-
         Block block = event.getClickedBlock();
         if (block == null) return;
 
         Location loc = block.getLocation();
+        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
         Material blockType = block.getType();
 
         if ((item.getType().toString().endsWith("_HOE") || item.getType().toString().endsWith("_SHOVEL")) && (blockType == Material.GRASS_BLOCK || blockType == Material.DIRT)) {
             modifiedBlocks.putIfAbsent(loc, blockType);
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onExplode(EntityExplodeEvent event) {
+        if (!plugin.utils.isInWorld(event.getLocation(), arena.getWorld())) return;
+        event.blockList().forEach(b -> modifiedBlocks.putIfAbsent(b.getLocation(), b.getType()));
     }
 
     /**
@@ -515,8 +529,7 @@ public class ActiveArenaState implements ArenaState, Listener {
      * Si la regeneración de arena está desactivada, las borra después del duel.
      */
     public void resetArenaEntities() {
-        arena.getCenter().getWorld().getEntities().stream()
-                .filter(entity -> plugin.utils.isInside(entity.getLocation(), arena.getCornerOne(), arena.getCornerTwo()))
+        arena.getWorld().getEntities().stream()
                 .filter(entity -> !(entity instanceof Player))
                 .forEach(Entity::remove);
     }
@@ -529,6 +542,7 @@ public class ActiveArenaState implements ArenaState, Listener {
     //////////////////////////////////////
     /**
      * Si no se pueden romper bloques en el kit, cancela el evento.
+     * Si no se puede romper la arena en el kit, y el bloque no fue puesto por un jugador, cancela el evento.
      * @param event El evento a registrar
      */
     @EventHandler(priority = EventPriority.LOWEST)
@@ -540,6 +554,10 @@ public class ActiveArenaState implements ArenaState, Listener {
             event.setCancelled(true);
             p.sendActionBar(plugin.utils.chat("&cBreaking blocks is disabled in this kit!"));
         }
+        if (arena.getKit().hasAttribute(ArenaAttribute.NO_ARENA_DESTRUCTION) && !placedBlocks.contains(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+            p.sendActionBar(plugin.utils.chat("&cBreaking the arena is disabled in this kit!"));
+        }
     }
 
     /**
@@ -548,6 +566,7 @@ public class ActiveArenaState implements ArenaState, Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlace(BlockPlaceEvent event) {
+        if (event.isCancelled()) return;
         Player p = event.getPlayer();
         if (!arena.hasPlayer(p)) return;
 
