@@ -1,15 +1,9 @@
 package us.polarismc.polarisduels.utils;
 
-import fr.mrmicky.fastboard.adventure.FastBoard;
 import fr.mrmicky.fastinv.FastInvManager;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.*;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.commands.ArenaCommands;
 import us.polarismc.polarisduels.commands.Links;
@@ -22,8 +16,8 @@ import us.polarismc.polarisduels.duel.DuelCommand;
 import us.polarismc.polarisduels.events.HubEvents;
 
 import java.text.DecimalFormat;
+import java.util.Objects;
 
-@SuppressWarnings("ResultOfMethodCallIgnored")
 public class StartThings {
     private final Main plugin;
     public StartThings(Main plugin) {
@@ -36,7 +30,11 @@ public class StartThings {
         registerCommands();
         FastInvManager.register(plugin);
         if (!plugin.getDataFolder().exists()) {
-            plugin.getDataFolder().mkdir();
+            if (plugin.getDataFolder().mkdir()) {
+                plugin.getLogger().info("Plugin directory created successfully.");
+            } else {
+                plugin.getLogger().warning("The plugin directory could not be created.");
+            }
         }
         // Scoreboard
         plugin.getServer().getScheduler().runTaskTimer(plugin, () -> plugin.boards.values().forEach(Scoreboards::updateBoard), 0, 20);
@@ -74,14 +72,13 @@ public class StartThings {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 
         if (scoreboard.getObjective("HealthNamePL") == null) {
-            scoreboard.registerNewObjective("HealthNamePL", "Dummy").setDisplayName(ChatColor.RED + "❤");
-            scoreboard.getObjective("HealthNamePL").setDisplaySlot(DisplaySlot.BELOW_NAME);
+            scoreboard.registerNewObjective("HealthNamePL", Criteria.DUMMY, plugin.utils.chat("&c❤")).setDisplaySlot(DisplaySlot.BELOW_NAME);
         }
 
         plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
             for (Player player : Bukkit.getServer().getOnlinePlayers()) {
                 Objective objective = scoreboard.getObjective("HealthNamePL");
-                Score score = objective.getScore(player.getName());
+                Score score = Objects.requireNonNull(objective).getScore(player.getName());
                 double totalhealth = player.getHealth() + player.getAbsorptionAmount();
                 score.setScore((int) Math.floor((totalhealth / 20) * 100));
             }
