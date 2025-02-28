@@ -14,7 +14,7 @@ import java.util.UUID;
 @Setter
 public class DuelsPlayer {
     private final Main plugin;
-    private final UUID uid;
+    private final UUID uuid;
     private final String name;
     private final String ip;
     private boolean queue = false;
@@ -23,32 +23,25 @@ public class DuelsPlayer {
     private boolean onHold = false;
     private DuelTeam team = null;
 
-    public DuelsPlayer(UUID uid, String name) {
+    public DuelsPlayer(UUID uuid, String name) {
         this.plugin = Main.getInstance();
 
-        this.uid = uid;
+        this.uuid = uuid;
         this.name = name;
         this.ip = Objects.requireNonNull(getPlayer().getAddress()).getAddress().getHostAddress();
     }
 
     public Player getPlayer() {
-        return Bukkit.getPlayer(uid);
+        return Bukkit.getPlayer(uuid);
     }
 
     public boolean isOnline() {
-        Player p = Bukkit.getPlayer(uid);
+        Player p = Bukkit.getPlayer(uuid);
         return p != null;
     }
 
     public String getIp() {
         if (isOnline()) return Objects.requireNonNull(getPlayer().getAddress()).getAddress().getHostAddress();
         return ip;
-    }
-
-    public void deleteTeam(DuelTeam team) {
-        team.getTeam().unregister();
-        team.getMembers().forEach(p -> p.setTeam(null));
-        team.getTeams().remove(team);
-        this.team = null;
     }
 }

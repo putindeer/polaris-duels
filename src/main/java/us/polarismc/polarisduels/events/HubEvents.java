@@ -3,8 +3,6 @@ package us.polarismc.polarisduels.events;
 import fr.mrmicky.fastboard.adventure.FastBoard;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.block.Block;
-import org.bukkit.block.data.Waterlogged;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -30,7 +28,6 @@ import us.polarismc.polarisduels.player.DuelsPlayer;
 import us.polarismc.polarisduels.utils.ItemBuilder;
 
 import java.text.DecimalFormat;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -54,7 +51,7 @@ public class HubEvents implements Listener {
         plugin.getPlayerManager().playerJoin(p);
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
         if (duelsPlayer.getTeam() != null) {
-            duelsPlayer.deleteTeam(duelsPlayer.getTeam());
+            duelsPlayer.getTeam().deleteTeam();
         }
         Team team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam(p.getName());
         if (team != null) {
@@ -316,12 +313,12 @@ public class HubEvents implements Listener {
                     if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_1V1_QUEUE))) {
                         new QueueGUI(p, 1, plugin);
                     }
-                    /*if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_2v2_QUEUE))) {
+                    if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_2v2_QUEUE))) {
                         new QueueGUI(p, 2, plugin);
                     }
                     if (Objects.equals(meta.displayName(), plugin.utils.chat(JOIN_3v3_QUEUE))) {
                         new QueueGUI(p, 3, plugin);
-                    }*/
+                    }
                 }
                 default -> {
                     if (p.getGameMode().equals(GameMode.CREATIVE)) {

@@ -19,8 +19,8 @@ import java.util.Optional;
 @Getter
 public class ArenaManager {
     private final Main plugin;
-    public List<ArenaEntity> arenas;
-    public ArenaDAO arenaFile;
+    public final List<ArenaEntity> arenas;
+    public final ArenaDAO arenaFile;
     @Getter
     private final PlayerRollBackManager rollBackManager;
     public ArenaManager(Main plugin) {

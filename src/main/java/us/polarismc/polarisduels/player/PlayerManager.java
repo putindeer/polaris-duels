@@ -34,7 +34,7 @@ public class PlayerManager {
     }
     public DuelsPlayer getDuelsPlayer(UUID uid) {
         for (DuelsPlayer p : getPlayerList()) {
-            if (p.getUid().equals(uid)) {
+            if (p.getUuid().equals(uid)) {
                 return p;
             }
         }

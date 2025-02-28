@@ -11,7 +11,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.Objects;
 

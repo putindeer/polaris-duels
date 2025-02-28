@@ -1,6 +1,8 @@
 package us.polarismc.polarisduels.arenas.states;
 
+import it.unimi.dsi.fastutil.Pair;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -19,7 +21,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scoreboard.Team;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaAttribute;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
@@ -29,93 +30,212 @@ import us.polarismc.polarisduels.player.DuelsPlayer;
 import java.util.*;
 
 public class ActiveArenaState implements ArenaState, Listener {
-    private List<UUID> alivePlayers;
+    //region [Metodos al activar y desactivar la arena]
     private final Main plugin = Main.getInstance();
     private ArenaEntity arena;
-    private final HashMap<UUID, ItemStack[]> savedInventories = new HashMap<>();
-    public static HashMap<UUID, Integer> winsPlayer = new HashMap<>();
-
     @Override
     public void onEnable(ArenaEntity arena) {
         Bukkit.getPluginManager().registerEvents(this, plugin);
-        Main.pl.getLogger().info("ActiveArenaState enabled");
         this.arena = arena;
-        alivePlayers = new ArrayList<>(arena.getPlayers());
-        int i = 0;
-        for (Player player : arena.getPlayerList()) {
-            player.setInvulnerable(false);
-            savedInventories.put(player.getUniqueId(), plugin.getKitManager().loadKit(player.getUniqueId(), arena.getKit()));
-            player.setSaturation(5.0f);
-            DuelTeam TeamBlue;
-            DuelTeam TeamRed;
-            plugin.utils.message(player, Sound.BLOCK_ANCIENT_DEBRIS_BREAK, "&cThe Match has started!");
+        startDuel();
+    }
 
-            winsPlayer.put(player.getUniqueId(), 0);
+    @Override
+    public void onDisable(ArenaEntity arena) {
+        HandlerList.unregisterAll(this);
+    }
+    //endregion
+
+    //region [Sistema para iniciar el duel]
+    private void startDuel() {
+        List<Player> playerList = arena.getPlayerList();
+
+        // Si es 1v1, mostramos título con nombres reales
+        if (arena.getPlayersNeeded() == 2) {
+            String name1 = Objects.requireNonNull(Bukkit.getPlayer(arena.getPlayers().get(0))).getName();
+            String name2 = Objects.requireNonNull(Bukkit.getPlayer(arena.getPlayers().get(1))).getName();
+            for (Player player : playerList) {
+                player.showTitle(Title.title(
+                        plugin.utils.chat("&b&lGO!"),
+                        plugin.utils.chat("&c" + name1 + " &7vs &9" + name2)
+                ));
+            }
+        } else {
+            // Para partidas en equipo, título general
+            for (Player player : playerList) {
+                player.showTitle(Title.title(
+                        plugin.utils.chat("&b&lGO!"),
+                        plugin.utils.chat("&cRED &7vs &9BLUE")
+                ));
+            }
+        }
+
+        List<DuelsPlayer> teamRedPlayers = new ArrayList<>();
+        List<DuelsPlayer> teamBluePlayers = new ArrayList<>();
+
+        for (int i = 0; i < playerList.size(); i++) {
+            Player player = playerList.get(i);
+            player.setInvulnerable(false);
+            player.setSaturation(5.0f);
+            savedInventories.put(player.getUniqueId(), plugin.getKitManager().loadKit(player.getUniqueId(), arena.getKit()));
+            plugin.utils.message(player, Sound.BLOCK_ANCIENT_DEBRIS_BREAK, "&cThe Match has started!");
 
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
             duelsPlayer.setStartingDuel(false);
             duelsPlayer.setDuel(true);
 
             if (duelsPlayer.getTeam() != null) {
-                duelsPlayer.deleteTeam(duelsPlayer.getTeam());
-            }
-            Team team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam(player.getName());
-            if (team != null) {
-                team.unregister();
-            }
-
-            if (arena.getPlayers().size() == 2){
-                if (i == 0){
-                    TeamBlue = new DuelTeam(duelsPlayer, ChatColor.RED, "RED");
-                    i = 1;
-                } else  {
-                    TeamRed = new DuelTeam(duelsPlayer, ChatColor.BLUE, "BLUE");
-                    i = 0;
+                if (duelsPlayer.getTeam().getColor() == NamedTextColor.RED) {
+                    teamRedPlayers.add(duelsPlayer);
+                } else {
+                    teamBluePlayers.add(duelsPlayer);
                 }
-
-            }
-            if (arena.getPlayersNeeded() == 2) {
-                String playerOneName = Objects.requireNonNull(Bukkit.getPlayer(arena.getPlayers().get(0))).getName();
-                String playerTwoName = Objects.requireNonNull(Bukkit.getPlayer(arena.getPlayers().get(1))).getName();
-                player.showTitle(Title.title(plugin.utils.chat("&b&lGO!"), plugin.utils.chat("&c" + playerOneName + " &7vs &9" + playerTwoName)));
             } else {
-                player.showTitle(Title.title(plugin.utils.chat("&b&lGO!"), plugin.utils.chat("&cRED &7vs &9Blue")));
+                if (i < (playerList.size() / 2)) {
+                    teamRedPlayers.add(duelsPlayer);
+                } else {
+                    teamBluePlayers.add(duelsPlayer);
+                }
             }
-
-
         }
 
+        DuelTeam redTeam = (teamRedPlayers.isEmpty())
+                ? new DuelTeam(NamedTextColor.RED, "RED")
+                : new DuelTeam(teamRedPlayers, NamedTextColor.RED, "RED");
+        winsTeam.put(redTeam, 0);
 
+        DuelTeam blueTeam = (teamBluePlayers.isEmpty())
+                ? new DuelTeam(NamedTextColor.BLUE, "BLUE")
+                : new DuelTeam(teamBluePlayers, NamedTextColor.BLUE, "BLUE");
+        winsTeam.put(blueTeam, 0);
 
-        int lastSpawnId = 0;
-
-        for (Player player : arena.getPlayerList()) {
-
-
-            // teams
-
-            if (lastSpawnId == 0){
+        for (Player player : playerList) {
+            if (redTeam.hasPlayer(player)) {
                 player.teleport(arena.getSpawnOne());
-                lastSpawnId = 1;
             } else {
                 player.teleport(arena.getSpawnTwo());
-                lastSpawnId = 0;
             }
-
-
-
-
         }
 
         if (arena.getRounds() != 1) {
-            plugin.utils.message(arena.getPlayerList(), "&7The first to win &b" + arena.getRounds() + " &7rounds get the victory!");
+            plugin.utils.message(playerList, "&7The first to win &b" + arena.getRounds() + " &7rounds get the victory!");
+        }
+    }
+    //endregion
+
+    //region [Sistema para detectar cuando un jugador muere]
+    public final static HashMap<DuelTeam, Integer> winsTeam = new HashMap<>();
+    @EventHandler
+    private void onDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (!arena.hasPlayer(player)) return;
+        if (event.getFinalDamage() < player.getHealth()) return;
+        if (hasTotem(player)) return;
+
+        event.setCancelled(true);
+
+        player.setGameMode(GameMode.SPECTATOR);
+
+        checkForWinner(player);
+    }
+
+    private void checkForWinner(Player player) {
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
+        DuelTeam team = duelsPlayer.getTeam();
+        team.getAlivePlayers().remove(player.getUniqueId());
+        if (!team.getAlivePlayers().isEmpty()) {
+            plugin.utils.message(arena.getPlayerList(), "&c" + player.getName() + " died.");
+            return;
+        }
+
+        DuelTeam winningTeam = arena.getPlayerList().stream().map(p -> plugin.getPlayerManager().getDuelsPlayer(p)).map(DuelsPlayer::getTeam)
+                .filter(t -> !t.getAlivePlayers().isEmpty()).findFirst().orElse(null);
+
+        if (winningTeam == null) {
+            plugin.utils.message(arena.getPlayerList(), "&cNo alive players... Game over.");
+            plugin.utils.delay(20 * 5, this::resetArena);
+            return;
+        }
+
+        winsTeam.put(winningTeam, winsTeam.get(winningTeam) + 1);
+
+        if (arena.getRounds() == winsTeam.get(winningTeam)) {
+            Win(winningTeam);
+        } else {
+            nextRound(winningTeam);
         }
     }
 
-    @Override
-    public void onDisable(ArenaEntity arena) {
-        HandlerList.unregisterAll(this);
-        Main.pl.getLogger().info("ActiveArenaState disabled");
+    /**
+     * Comprueba si el jugador está sosteniendo un totem
+     * @param player El jugador a comprobar
+     * @return Si el jugador sostiene un totem, devuelve 'true', si no, devuelve 'false'
+     */
+    private boolean hasTotem(Player player) {
+        return player.getInventory().getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING || player.getInventory().getItemInMainHand().getType() == Material.TOTEM_OF_UNDYING;
+    }
+    //endregion
+
+    //region [Sistema de pasar a la siguiente ronda]
+    private final HashMap<UUID, ItemStack[]> savedInventories = new HashMap<>();
+    private void nextRound(DuelTeam team) {
+        plugin.utils.message(arena.getPlayerList(), "&a" + team.getTeam().displayName() + " has won this round! &7Next Round starting in &c5s");
+        Pair<Integer, Integer> scores = getScores();
+
+        plugin.utils.message(arena.getPlayerList(), "&7Score: &c" + scores.left() + " &7- &9" + scores.right());
+
+        for (Player player : arena.getPlayerList()) {
+            player.setInvulnerable(true);
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
+            duelsPlayer.setOnHold(true);
+            if (team.hasPlayer(player)) {
+                player.showTitle(Title.title(plugin.utils.chat("&aYou won."), plugin.utils.chat("&7Score: &c" + scores.left() + " &7- &9" + scores.right())));
+            } else {
+                player.showTitle(Title.title(plugin.utils.chat("&cYou lost."), plugin.utils.chat("&7Score: &c" + scores.left() + " &7- &9" + scores.right())));
+                duelsPlayer.getTeam().getAlivePlayers().add(player.getUniqueId());
+            }
+        }
+
+        resetRound();
+    }
+
+    private void resetRound() {
+        plugin.utils.delay(20 * 5, () -> {
+            if (!arena.getKit().hasAttribute(ArenaAttribute.NO_ARENA_REGENERATION)) {
+                resetArenaBlocks();
+                resetArenaEntities();
+            }
+
+            DuelTeam redTeam = null;
+            DuelTeam blueTeam = null;
+
+            for (Player player : arena.getPlayerList()) {
+                DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
+                if (duelsPlayer.getTeam() != null) {
+                    if (redTeam == null) {
+                        redTeam = duelsPlayer.getTeam();
+                    } else if (blueTeam == null && duelsPlayer.getTeam() != redTeam) {
+                        blueTeam = duelsPlayer.getTeam();
+                    }
+                }
+            }
+
+            for (Player player : arena.getPlayerList()) {
+                player.setGameMode(GameMode.SURVIVAL);
+                restorePlayer(player);
+                DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
+                DuelTeam team = duelsPlayer.getTeam();
+                team.getAlivePlayers().remove(player.getUniqueId());
+                duelsPlayer.setOnHold(false);
+                player.showTitle(Title.title(plugin.utils.chat("&b&lGO!"), Component.empty()));
+                if (team == redTeam) {
+                    player.teleport(arena.getSpawnOne());
+                } else {
+                    player.teleport(arena.getSpawnTwo());
+                }
+            }
+            plugin.utils.message(arena.getPlayerList(), "&aNew Round has started.");
+        });
     }
 
     /**
@@ -133,149 +253,107 @@ public class ActiveArenaState implements ArenaState, Listener {
         p.setLevel(0);
         p.setExp(0.0f);
         p.setFireTicks(0);
+        p.setArrowsInBody(0);
         p.setItemOnCursor(new ItemStack(Material.AIR));
         p.setInvulnerable(false);
         removeFluidBoost(p);
     }
+    //endregion
 
-    @EventHandler
-    private void onDamage(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player player)) return;
-        if (!arena.hasPlayer(player)) return;
-
-        event.setCancelled(false);
-
-        if (event.getFinalDamage() >= player.getHealth()) {
-            if (hasTotem(player)) return;
-
-            event.setCancelled(true);
-
-            // Cambia el estado del jugador
-            alivePlayers.remove(player.getUniqueId());
-            player.setGameMode(GameMode.SPECTATOR);
-
-            // Comprueba si queda un solo jugador con vida
-            if (alivePlayers.size() <= 1) {
-
-                if (alivePlayers.size() == 1) {
-                    UUID winnerUUID = alivePlayers.getFirst();
-
-                    winsPlayer.put(winnerUUID, winsPlayer.get(winnerUUID) + 1);
-
-                    if (arena.getRounds() == winsPlayer.get(winnerUUID)) {
-                        Player winner = Bukkit.getPlayer(winnerUUID);
-                        assert winner != null;
-                        Win(winner);
-                    } else {
-                        UUID roundWinnerUUID = alivePlayers.getFirst();
-                        Player roundWinner = Bukkit.getPlayer(roundWinnerUUID);
-                        assert roundWinner != null;
-
-                        nextRound(roundWinner);
-                        return;
-                    }
-                } else {
-                    plugin.utils.message(arena.getPlayerList(), "&cNo alive players... Game over.");
-                }
-
-                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                    for (Player p : arena.getPlayerList()) {
-                        plugin.utils.setMaxHealth(p);
-                        plugin.getArenaManager().getRollBackManager().restore(p, plugin);
-                        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
-
-                        if (duelsPlayer.getTeam() != null) {
-                            duelsPlayer.deleteTeam(duelsPlayer.getTeam());
-                        }
-                        duelsPlayer.setDuel(false);
-                        p.setInvulnerable(false);
-                        removeFluidBoost(p);
-                        arena.removePlayer(p, plugin);
-                        winsPlayer.remove(p.getUniqueId());
-                    }
-
-                    resetArenaBlocks();
-                    resetArenaEntities();
-                    plugin.getArenaManager().setInactiveState(arena);
-                }, 20 * 5);
-            } else {
-                plugin.utils.message(arena.getPlayerList(), "&c" + player.getName() + " died.");
-            }
-        }
-    }
-
-    /**
-     * Comprueba si el jugador está sosteniendo un totem
-     * @param player El jugador a comprobar
-     * @return Si el jugador sostiene un totem, devuelve 'true', si no, devuelve 'false'
-     */
-    private boolean hasTotem(Player player) {
-        return player.getInventory().getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING || player.getInventory().getItemInMainHand().getType() == Material.TOTEM_OF_UNDYING;
-    }
-
-    private void Win(Player winner) {
-        if (winner == null || !winner.isOnline()) {
-            plugin.utils.message(arena.getPlayerList(), "&cWinner could not be found... Game Over");
-        } else {
-            plugin.utils.message(arena.getPlayerList(), "&a" + winner.getName() + " has won!");
-            int score1 = winsPlayer.get(arena.getPlayers().get(0));
-            int score2 = winsPlayer.get(arena.getPlayers().get(1));
-            for (Player player : arena.getPlayerList()) {
-                player.setInvulnerable(true);
-                if (player == winner){
-                    player.showTitle(Title.title(plugin.utils.chat("&cYou won."), plugin.utils.chat("&7Score: &c" + score1 + " &7- &9" + score2)));
-                } else {
-                    player.showTitle(Title.title(plugin.utils.chat("&cYou lost."), plugin.utils.chat("&7Score: &c" + score1 + " &7- &9" + score2)));
-                }
-            }
-        }
-    }
-
-    private void nextRound(Player roundWinner){
-        plugin.utils.message(arena.getPlayerList(), "&a" + roundWinner.getName() + " has won this round! &7Next Round starting in &c5s");
-        int score1 = winsPlayer.get(arena.getPlayers().get(0));
-        int score2 = winsPlayer.get(arena.getPlayers().get(1));
-        plugin.utils.message(arena.getPlayerList(), "&7Score: &c" + score1 + " &7- &9" + score2);
+    //region [Sistema de ganar la partida]
+    private void Win(DuelTeam team) {
+        plugin.utils.message(arena.getPlayerList(), "&a" + team.getTeam().displayName() + " has won!");
+        Pair<Integer, Integer> scores = getScores();
 
         for (Player player : arena.getPlayerList()) {
             player.setInvulnerable(true);
-            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
-            duelsPlayer.setOnHold(true);
-            if (player == roundWinner) {
-                player.showTitle(Title.title(plugin.utils.chat("&aYou won."), plugin.utils.chat("&7Score: &c" + score1 + " &7- &9" + score2)));
+            if (team.hasPlayer(player)) {
+                player.showTitle(Title.title(plugin.utils.chat("&cYou won."), plugin.utils.chat("&7Score: &c" + scores.left() + " &7- &9" + scores.right())));
             } else {
-                player.showTitle(Title.title(plugin.utils.chat("&cYou lost."), plugin.utils.chat("&7Score: &c" + score1 + " &7- &9" + score2)));
-                alivePlayers.add(player.getUniqueId());
+                player.showTitle(Title.title(plugin.utils.chat("&cYou lost."), plugin.utils.chat("&7Score: &c" + scores.left() + " &7- &9" + scores.right())));
             }
         }
-
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            int lastSpawnId = 0;
-            if (!arena.getKit().hasAttribute(ArenaAttribute.NO_ARENA_REGENERATION)) {
-                resetArenaBlocks();
-                resetArenaEntities();
-            }
-            for (Player player : arena.getPlayerList()) {
-                player.setGameMode(GameMode.SURVIVAL);
-                restorePlayer(player);
-                DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
-                duelsPlayer.setOnHold(false);
-                player.showTitle(Title.title(plugin.utils.chat("&b&lGO!"), Component.empty()));
-                if (lastSpawnId == 0) {
-                    player.teleport(arena.getSpawnOne());
-                    lastSpawnId = 1;
-                } else {
-                    player.teleport(arena.getSpawnTwo());
-                    lastSpawnId = 0;
-                }
-            }
-            plugin.utils.message(arena.getPlayerList(), "&aNew Round has started.");
-        }, 20 * 5);
+        plugin.utils.delay(20 * 5, this::resetArena);
     }
 
-    ////////////////////////////////////
-    // Inicio del buff de los fluidos //
-    ////////////////////////////////////
+    private void resetArena() {
+        for (Player p : arena.getPlayerList()) {
+            plugin.utils.setMaxHealth(p);
+            plugin.getArenaManager().getRollBackManager().restore(p, plugin);
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
+            if (duelsPlayer.getTeam() != null) {
+                duelsPlayer.getTeam().deleteTeam();
+            }
+            duelsPlayer.setDuel(false);
+            p.setInvulnerable(false);
+            removeFluidBoost(p);
+            arena.removePlayer(p, plugin);
+        }
+
+        winsTeam.clear();
+        resetArenaBlocks();
+        resetArenaEntities();
+        plugin.getArenaManager().setInactiveState(arena);
+    }
+    //endregion
+
+    //region [Metodos de la arena]
+    @EventHandler
+    private void onQuit(PlayerQuitEvent event){
+        Player p = event.getPlayer();
+        if (!arena.hasPlayer(p)) return;
+        arena.removePlayer(p, plugin);
+        if (p.isInvulnerable()) p.setInvulnerable(false);
+
+        bucketHoldingPlayers.remove(p);
+
+        checkForWinner(p);
+    }
+
+    private Pair<Integer, Integer> getScores() {
+        int redScore = winsTeam.entrySet().stream()
+                .filter(e -> e.getKey().getColor() == NamedTextColor.RED)
+                .mapToInt(Map.Entry::getValue)
+                .findFirst().orElse(0);
+        int blueScore = winsTeam.entrySet().stream()
+                .filter(e -> e.getKey().getColor() == NamedTextColor.BLUE)
+                .mapToInt(Map.Entry::getValue)
+                .findFirst().orElse(0);
+        return Pair.of(redScore, blueScore);
+    }
+
+    /**
+     * Cuando un jugador sale de la arena, lo devuelve a la arena, para evitar problemas.
+     * @param event El evento a registrar
+     */
+    @EventHandler
+    private void onPlayerMove(PlayerMoveEvent event) {
+        if (!event.hasExplicitlyChangedBlock()) return;
+        Player p = event.getPlayer();
+        if (!arena.hasPlayer(p)) return;
+        if (plugin.utils.isInside(event.getTo(), arena.getCornerOne(), arena.getCornerTwo())) return;
+
+        event.setCancelled(true);
+        p.teleport(event.getFrom());
+        p.sendActionBar(plugin.utils.chat("&cThis is the limit of the arena. You can't go further."));
+    }
+
+    /**
+     * Obtiene las wins del team al darle un color.
+     * @param color Color del equipo
+     * @return El número de wins
+     */
+    public int getWinsByColor(NamedTextColor color) {
+        for (Map.Entry<DuelTeam, Integer> entry : winsTeam.entrySet()) {
+            if (entry.getKey().getColor() == color) {
+                return entry.getValue();
+            }
+        }
+        return 0;
+    }
+    //endregion
+
+    //region [Buff de los fluidos]
     /**
      * Lista que guarda a los jugadores que tengan un cubo en la mano.
      */
@@ -366,13 +444,9 @@ public class ActiveArenaState implements ArenaState, Listener {
             bucketHoldingPlayers.remove(p);
         }
     }
-    /////////////////////////////////
-    // Fin del buff de los fluidos //
-    /////////////////////////////////
+    //endregion
 
-    ///////////////////////////////////////////////
-    // Inicio del sistema de reparación de arena //
-    ///////////////////////////////////////////////
+    //region [Sistema de reparación de la arena]
     /**
      * Lista que guarda todos los bloques que se modifican desde el inicio del duel hasta el final de la ronda.
      * (O en caso de que la regeneración de la arena esté desactivada, hasta el final del duel)
@@ -534,13 +608,9 @@ public class ActiveArenaState implements ArenaState, Listener {
                 .filter(entity -> !(entity instanceof Player))
                 .forEach(Entity::remove);
     }
-    ////////////////////////////////////////////
-    // Fin del sistema de reparación de arena //
-    ////////////////////////////////////////////
+    //endregion
 
-    //////////////////////////////////////
-    // Sistema de atributos de la arena //
-    //////////////////////////////////////
+    //region [Sistema de atributos de la arena]
     /**
      * Si no se pueden romper bloques en el kit, cancela el evento.
      * Si no se puede romper la arena en el kit, y el bloque no fue puesto por un jugador, cancela el evento.
@@ -643,67 +713,5 @@ public class ActiveArenaState implements ArenaState, Listener {
             event.setDamage(newDamage);
         }
     }
-    //////////////////////////////////////////////
-    // Fin del sistema de atributos de la arena //
-    //////////////////////////////////////////////
-
-    /**
-     * Cuando un jugador sale de la arena, lo devuelve a la arena, para evitar problemas.
-     * @param event El evento a registrar
-     */
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent event) {
-        if (!event.hasExplicitlyChangedBlock()) return;
-        Player p = event.getPlayer();
-        if (!arena.hasPlayer(p)) return;
-        if (plugin.utils.isInside(event.getTo(), arena.getCornerOne(), arena.getCornerTwo())) return;
-
-        event.setCancelled(true);
-        p.teleport(event.getFrom());
-        p.sendActionBar(plugin.utils.chat("&cThis is the limit of the arena. You can't go further."));
-    }
-
-    @EventHandler
-    private void onQuit(PlayerQuitEvent event){
-        Player p = event.getPlayer();
-        if (!arena.hasPlayer(p)) return;
-        arena.removePlayer(p, plugin);
-        if (p.isInvulnerable()) p.setInvulnerable(false);
-
-        bucketHoldingPlayers.remove(p);
-
-        alivePlayers.remove(p.getUniqueId());
-        winsPlayer.remove(p.getUniqueId());
-
-        if (alivePlayers.size() <= 1) {
-            if (alivePlayers.size() == 1) {
-                UUID winnerUUID = alivePlayers.getFirst();
-                Player winner = Bukkit.getPlayer(winnerUUID);
-                assert winner != null;
-                plugin.utils.message(arena.getPlayerList(), "&a" + winner.getName() + " has won!");
-                winner.showTitle(Title.title(plugin.utils.chat("&cYou won."), Component.empty()));
-            } else {
-                plugin.utils.message(arena.getPlayerList(), "&cNo alive players... Game over.");
-            }
-
-            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                for (Player player : arena.getPlayerList()) {
-                    plugin.utils.setMaxHealth(player);
-                    plugin.getArenaManager().getRollBackManager().restore(player, plugin);
-                    DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
-                    if (duelsPlayer.getTeam() != null) {
-                        duelsPlayer.deleteTeam(duelsPlayer.getTeam());
-                    }
-                    winsPlayer.remove(player.getUniqueId());
-                }
-
-                resetArenaBlocks();
-                resetArenaEntities();
-                plugin.getArenaManager().setInactiveState(arena);
-            }, 20 * 5);
-        } else {
-            plugin.utils.message(arena.getPlayerList(), "&c" + event.getPlayer().getName() + " quit.");
-        }
-
-    }
+    //endregion
 }

@@ -12,6 +12,7 @@ import us.polarismc.polarisduels.duel.DuelManager;
 import us.polarismc.polarisduels.database.Database;
 import us.polarismc.polarisduels.database.DatabaseInitializer;
 import us.polarismc.polarisduels.database.KitManager;
+import us.polarismc.polarisduels.managers.tab.TabManager;
 import us.polarismc.polarisduels.player.DuelsPlayer;
 import us.polarismc.polarisduels.player.PlayerManager;
 import us.polarismc.polarisduels.utils.StartThings;
@@ -34,7 +35,9 @@ public final class Main extends JavaPlugin {
     public PlayerManager playerManager;
     @Getter
     public KitManager kitManager;
-    public Map<UUID, FastBoard> boards = new HashMap<>();
+    @Getter
+    public TabManager tabManager;
+    public final Map<UUID, FastBoard> boards = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -50,7 +53,7 @@ public final class Main extends JavaPlugin {
         for (Player p : Bukkit.getOnlinePlayers()) {
             DuelsPlayer duelsPlayer = this.getPlayerManager().getDuelsPlayer(p);
             if (duelsPlayer.getTeam() != null) {
-                duelsPlayer.deleteTeam(duelsPlayer.getTeam());
+                duelsPlayer.getTeam().deleteTeam();
             }
         }
         for (ArenaEntity arena : arenaManager.getArenas()) {
@@ -74,6 +77,7 @@ public final class Main extends JavaPlugin {
         duelManager = new DuelManager(this);
         playerManager = new PlayerManager(this);
         kitManager = new KitManager(this, database);
+        tabManager = new TabManager(this);
     }
 
     public static Main getInstance() {

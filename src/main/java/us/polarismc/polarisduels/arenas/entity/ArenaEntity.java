@@ -1,9 +1,7 @@
 package us.polarismc.polarisduels.arenas.entity;
 
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
@@ -57,12 +55,13 @@ public class ArenaEntity {
                 .collect(Collectors.toList());
     }
 
+    //TODO - SISTEMA DE TEAMS
+
     public void addPlayer(Player player, Main plugin) {
         players.add(player.getUniqueId());
         plugin.getPlayerManager().getDuelsPlayer(player).setQueue(true);
         plugin.utils.message(getPlayerList(), player.getName() + " joined &a(" + players.size() + "/" + playersNeeded + ")");
         player.setGameMode(GameMode.SURVIVAL);
-
 
 
         plugin.getArenaManager().getRollBackManager().save(player);
@@ -72,7 +71,8 @@ public class ArenaEntity {
                         .name(HubEvents.LEAVE_QUEUE)
                         .build()
         );
-        if (players.size() == 1) {
+        int halfSize = playersNeeded / 2;
+        if (players.size() <= halfSize) {
             player.teleport(spawnOne);
         } else {
             player.teleport(spawnTwo);
@@ -87,7 +87,7 @@ public class ArenaEntity {
         players.remove(player.getUniqueId());
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
         if (duelsPlayer.getTeam() != null) {
-            duelsPlayer.deleteTeam(duelsPlayer.getTeam());
+            duelsPlayer.getTeam().removePlayer(duelsPlayer);
         }
         if (duelsPlayer.isQueue()) {
             duelsPlayer.setQueue(false);

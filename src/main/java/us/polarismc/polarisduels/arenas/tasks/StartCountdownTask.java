@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;

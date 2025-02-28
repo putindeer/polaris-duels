@@ -38,7 +38,7 @@ public enum KitType {
             new ItemBuilder(Material.NETHERITE_CHESTPLATE).enchant(Enchantment.MENDING, 1).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             new ItemBuilder(Material.NETHERITE_HELMET).enchant(Enchantment.MENDING, 1).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             new ItemBuilder(Material.SHIELD).enchant(Enchantment.MENDING, 1).enchant(Enchantment.UNBREAKING, 3).build()
-    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK)),
+    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK), 1),
 
     AXE(new ItemStack[] {
             new ItemStack(Material.DIAMOND_AXE, 1),
@@ -52,7 +52,7 @@ public enum KitType {
             new ItemStack(Material.DIAMOND_CHESTPLATE, 1),
             new ItemStack(Material.DIAMOND_HELMET, 1),
             new ItemStack(Material.SHIELD, 1)
-    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK, ArenaAttribute.NO_NATURAL_REGEN, ArenaAttribute.NO_HUNGER)),
+    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK, ArenaAttribute.NO_NATURAL_REGEN, ArenaAttribute.NO_HUNGER), 2),
 
     NETHPOT(new ItemStack[] {
             new ItemBuilder(Material.NETHERITE_SWORD).enchant(Enchantment.SHARPNESS, 5).build(),
@@ -83,7 +83,7 @@ public enum KitType {
             new ItemBuilder(Material.NETHERITE_CHESTPLATE).enchant(Enchantment.MENDING, 1).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             new ItemBuilder(Material.NETHERITE_HELMET).enchant(Enchantment.MENDING, 1).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             new ItemStack(Material.TOTEM_OF_UNDYING, 1)
-    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK)),
+    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK), 1),
 
     UHC(new ItemStack[] {
             new ItemBuilder(Material.DIAMOND_AXE).enchant(Enchantment.EFFICIENCY, 3).enchant(Enchantment.SHARPNESS, 1).build(),
@@ -114,7 +114,7 @@ public enum KitType {
             new ItemBuilder(Material.DIAMOND_CHESTPLATE).enchant(Enchantment.PROTECTION, 2).build(),
             new ItemBuilder(Material.DIAMOND_HELMET).enchant(Enchantment.PROTECTION, 3).build(),
             new ItemStack(Material.SHIELD)
-    }, EnumSet.of(ArenaAttribute.NO_CRAFTING, ArenaAttribute.NO_NATURAL_REGEN, ArenaAttribute.NO_HUNGER, ArenaAttribute.NO_ARENA_DESTRUCTION)),
+    }, EnumSet.of(ArenaAttribute.NO_CRAFTING, ArenaAttribute.NO_NATURAL_REGEN, ArenaAttribute.NO_HUNGER, ArenaAttribute.NO_ARENA_DESTRUCTION), 1),
 
     DIAMONDPOT(new ItemStack[] {
             new ItemBuilder(Material.DIAMOND_SWORD).enchant(Enchantment.SHARPNESS, 5).build(),
@@ -135,7 +135,7 @@ public enum KitType {
             new ItemBuilder(Material.DIAMOND_CHESTPLATE).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             new ItemBuilder(Material.DIAMOND_HELMET).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             new ItemStack(Material.COOKED_BEEF, 20)
-    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK, ArenaAttribute.ONE_THIRD_MORE_MELEE_DAMAGE)),
+    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK, ArenaAttribute.ONE_THIRD_MORE_MELEE_DAMAGE), 1),
 
     SWORD(new ItemStack[] {
             new ItemBuilder(Material.DIAMOND_SWORD).enchant(Enchantment.SWEEPING_EDGE, 3).build(),
@@ -145,19 +145,21 @@ public enum KitType {
             new ItemBuilder(Material.DIAMOND_CHESTPLATE).enchant(Enchantment.PROTECTION, 3).build(),
             new ItemBuilder(Material.DIAMOND_HELMET).enchant(Enchantment.PROTECTION, 3).build(),
             null
-    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK, ArenaAttribute.NO_COMPLETE_HUNGER_LOSS)),
+    }, EnumSet.of(ArenaAttribute.NO_BLOCK_PLACE, ArenaAttribute.NO_BLOCK_BREAK, ArenaAttribute.NO_COMPLETE_HUNGER_LOSS), 2),
 
     CUSTOM(new ItemStack[] {
             new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
             null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null
-    }, EnumSet.noneOf(ArenaAttribute.class));
+    }, EnumSet.noneOf(ArenaAttribute.class), 1);
 
     private final ItemStack[] defaultInv;
     private final EnumSet<ArenaAttribute> attributes;
+    private final int defaultRounds;
 
-    KitType(ItemStack[] inv, EnumSet<ArenaAttribute> attributes) {
+    KitType(ItemStack[] inv, EnumSet<ArenaAttribute> attributes, int defaultRounds) {
         this.defaultInv = inv;
         this.attributes = attributes;
+        this.defaultRounds = defaultRounds;
     }
 
     public boolean hasAttribute(ArenaAttribute attribute) {

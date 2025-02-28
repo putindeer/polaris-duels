@@ -38,7 +38,7 @@ public class QueueGUI extends FastInv {
     }
 
     private void setQueue(Player p, int teamsize, Main plugin, KitType kit) {
-        Optional<ArenaEntity> arena = plugin.getArenaManager().findCompatibleArena(kit, teamsize * 2, 2);
+        Optional<ArenaEntity> arena = plugin.getArenaManager().findCompatibleArena(kit, teamsize * 2, kit.getDefaultRounds());
         if (arena.isPresent()) {
             arena.get().addPlayer(p, plugin);
         } else plugin.utils.message(p, "&cThere are no arenas open. Try again in a bit.");
