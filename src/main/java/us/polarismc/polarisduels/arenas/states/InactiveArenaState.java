@@ -7,5 +7,5 @@ public class InactiveArenaState implements ArenaState {
     public void onEnable(ArenaEntity arena) {}
 
     @Override
-    public void onDisable(ArenaEntity arena) {}
+    public void onDisable() {}
 }

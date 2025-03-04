@@ -2,7 +2,6 @@ package us.polarismc.polarisduels.utils;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
@@ -13,6 +12,8 @@ import us.polarismc.polarisduels.Main;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public class Utils {
@@ -31,11 +32,15 @@ public class Utils {
      * @param s La 'String' que recibe
      * @return El texto convertido
      */
-    public Component chat(String s){
+    public Component chat(String s) {
         return MiniMessage.miniMessage().deserialize(convert(s));
     }
-    public Component chat(Component s){
-        return MiniMessage.miniMessage().deserialize(convert(PlainTextComponentSerializer.plainText().serialize(s)));
+
+    /**
+     * Esto está aquí únicamente para compatibilidad con algunos métodos.
+     */
+    public Component chat(Component s) {
+        return s;
     }
 
     /**
@@ -49,114 +54,78 @@ public class Utils {
     }
 
     /**
-     * Envia un mensaje a todos los jugadores del servidor
-     * @param c El texto, como 'String' o 'Component'
+     * Envía un mensaje versátil a un destinatario con múltiples opciones de configuración.<br><br>
+     * Este método permite enviar mensajes con:<br><br>
+     * - Prefijo opcional<br>
+     * - Múltiples tipos de mensajes ({@link String} o {@link Component})<br>
+     * - Reproducción opcional de sonido<br><br>
+     *
+     * Existen varios submetodos más simples en caso de que hayan argumentos innecesarios o se necesite enviar a varios jugadores:<br><br>
+     * - {@code message(receivers, messages)}: Envía mensaje con prefijo por defecto<br>
+     * - {@code message(receivers, sound, messages)}: Envía mensaje con sonido<br>
+     * - {@code message(receivers, prefix,  messages)}: Envía mensaje con prefix<br><br>
+     * También existe el método {@code broadcast(prefix, sound, messages)} que envia un mensaje a todos los jugadores, incluyendo la consola.
+     * Este método también cuenta con los submetodos anteriores.
+     *
+     * @param receiver Destinatario del mensaje (puede ser un {@link Player} o un {@link CommandSender})
+     * @param usePrefix Determina si se usa el prefix del plugin en el mensaje
+     * @param sound Sonido opcional para reproducir al enviar el mensaje (solo se aplica a {@link Player})
+     * @param messages Los mensajes ({@link String} o {@link Component}) que se tienen que enviar
+     *
      */
-    public void broadcast(String c) {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendMessage(prefix.append(chat(c)));
-        }
-        Bukkit.getConsoleSender().sendMessage(prefix.append(chat(c)));
-    }
-    public void broadcast(Component c) {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendMessage(prefix.append(chat(c)));
-        }
-        Bukkit.getConsoleSender().sendMessage(prefix.append(chat(c)));
-    }
+    public void message(CommandSender receiver, boolean usePrefix, Sound sound, Object... messages) {
+        for (Object part : messages) {
+            Component prefixComponent = usePrefix ? prefix : Component.text("");
 
-    /**
-     * Envia un mensaje y un sonido a todos los jugadores del servidor
-     * @param c El texto que quieres mostrar, como 'String' o 'Component'
-     * @param s El sonido
-     */
-    public void broadcast(String c, Sound s) {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendMessage(prefix.append(chat(c)));
-            p.playSound(p.getLocation(), s, 10, 1);
-        }
-        Bukkit.getConsoleSender().sendMessage(prefix.append(chat(c)));
-    }
-    public void broadcast(Component c, Sound s) {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            p.sendMessage(prefix.append(chat(c)));
-            p.playSound(p.getLocation(), s, 10, 1);
-        }
-        Bukkit.getConsoleSender().sendMessage(prefix.append(chat(c)));
-    }
-
-    /**
-     * Envia un mensaje a uno o más jugadores
-     * @param ps Los jugadores que recibirán los textos
-     * @param c Los textos, como 'String' o 'Component'
-     */
-    public void message(Collection<Player> ps, String... c) {
-        for (Player p : ps) {
-            for (String part : c) {
-                p.sendMessage(prefix.append(chat(part)));
+            if (part instanceof String string) {
+                receiver.sendMessage(prefixComponent.append(chat(string)));
+            } else if (part instanceof Component component) {
+                receiver.sendMessage(prefixComponent.append(chat(component)));
             }
         }
-    }
 
-    public void message(Collection<Player> ps, Component... c) {
-        for (Player p : ps) {
-            for (Component part : c) {
-                p.sendMessage(prefix.append(chat(part)));
-            }
+        if (sound != null && receiver instanceof Player player) {
+            player.playSound(player.getLocation(), sound, 10, 1);
         }
     }
 
-    public void message(CommandSender p, String... c) {
-        for (String part : c) {
-            p.sendMessage(prefix.append(chat(part)));
-        }
+    //region [Submetodos de 'message']
+    public void broadcast(Object... messages) {
+        broadcast(true, null, messages);
     }
 
-    public void message(CommandSender p, Component... c) {
-        for (Component part : c) {
-            p.sendMessage(prefix.append(chat(part)));
-        }
+    public void broadcast(Sound sound, Object... messages) {
+        broadcast(true, sound, messages);
     }
 
-    /**
-     * Envia un mensaje y un sonido a uno o más jugadores
-     * @param ps Los jugadores que recibirán los textos
-     * @param s El sonido
-     * @param c Los textos, como 'String' o 'Component'
-     */
-    public void message(Collection<Player> ps, Sound s, String... c) {
-        for (Player p : ps) {
-            for (String part : c) {
-                p.sendMessage(prefix.append(chat(part)));
-            }
-            p.playSound(p.getLocation(), s, 10, 1);
-        }
+    public void broadcast(boolean prefix, Sound sound, Object... messages) {
+        message(Stream.concat(Bukkit.getOnlinePlayers().stream().map(p -> (CommandSender) p), Stream.of(Bukkit.getConsoleSender())).collect(Collectors.toList()), prefix, sound, messages);
     }
 
-    public void message(Collection<Player> ps, Sound s, Component... c) {
-        for (Player p : ps) {
-            for (Component part : c) {
-                p.sendMessage(prefix.append(chat(part)));
-            }
-            p.playSound(p.getLocation(), s, 10, 1);
-        }
+    public void message(CommandSender receiver, Object... messages) {
+        message(receiver, true, null, messages);
     }
 
-    public void message(CommandSender cs, Sound s, String... c) {
-        Player p = (Player) cs;
-        for (String part : c) {
-            p.sendMessage(prefix.append(chat(part)));
-        }
-        p.playSound(p.getLocation(), s, 10, 1);
+    public void message(CommandSender receiver, Sound sound, Object... messages) {
+        message(receiver, true, sound, messages);
     }
 
-    public void message(CommandSender cs, Sound s, Component... c) {
-        Player p = (Player) cs;
-        for (Component part : c) {
-            p.sendMessage(prefix.append(chat(part)));
-        }
-        p.playSound(p.getLocation(), s, 10, 1);
+    public void message(Collection<? extends CommandSender> receivers, Object... messages) {
+        message(receivers, true, null, messages);
     }
+
+    public void message(Collection<? extends CommandSender> receivers, boolean prefix, Object... messages) {
+        message(receivers, prefix, null, messages);
+    }
+
+    public void message(Collection<? extends CommandSender> receivers, boolean prefix, Sound sound, Object... messages) {
+        receivers.forEach(receiver -> message(receiver, prefix, sound, messages));
+    }
+
+    public void message(CommandSender receiver, boolean prefix, Object... messages) {
+        message(receiver, prefix, null, messages);
+    }
+    //endregion
 
     /**
      * Restablece la vida del jugador al máximo
@@ -217,6 +186,7 @@ public class Utils {
             world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
             world.setGameRule(GameRule.SPAWN_CHUNK_RADIUS, 0);
             world.setGameRule(GameRule.SPECTATORS_GENERATE_CHUNKS, false);
+            world.setAutoSave(false);
 
             return world;
         } else {

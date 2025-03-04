@@ -42,7 +42,7 @@ public class ArenaEntity {
 
     public void setArenaState(ArenaState state) {
         if (this.arenaState != null) {
-            this.arenaState.onDisable(this);
+            this.arenaState.onDisable();
         }
         this.arenaState = state;
         this.arenaState.onEnable(this);
@@ -59,6 +59,8 @@ public class ArenaEntity {
 
     public void addPlayer(Player player, Main plugin) {
         players.add(player.getUniqueId());
+        plugin.getTabManager().setTabList(player, getPlayerList());
+        getPlayerList().forEach(p -> plugin.getTabManager().refreshTabList(p, getPlayerList()));
         plugin.getPlayerManager().getDuelsPlayer(player).setQueue(true);
         plugin.utils.message(getPlayerList(), player.getName() + " joined &a(" + players.size() + "/" + playersNeeded + ")");
         player.setGameMode(GameMode.SURVIVAL);
@@ -85,6 +87,7 @@ public class ArenaEntity {
 
     public void removePlayer(Player player, Main plugin) {
         players.remove(player.getUniqueId());
+        plugin.getTabManager().resetTabList(player);
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
         if (duelsPlayer.getTeam() != null) {
             duelsPlayer.getTeam().removePlayer(duelsPlayer);
@@ -103,7 +106,7 @@ public class ArenaEntity {
         }
 
         if (player.isOnline()) {
-            plugin.getArenaManager().getRollBackManager().restore(player, null);
+            plugin.getArenaManager().getRollBackManager().restore(player);
         }
 
         if (arenaState instanceof StartingArenaState) {
@@ -125,9 +128,11 @@ public class ArenaEntity {
             }
         }
     }
+
     public boolean hasPlayer(Player player){
-        return players.contains(player.getUniqueId());
+        return hasPlayer(player.getUniqueId());
     }
+
     public boolean hasPlayer(UUID uuid){
         return players.contains(uuid);
     }

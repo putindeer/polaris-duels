@@ -35,13 +35,10 @@ public class DuelsPlayer {
         return Bukkit.getPlayer(uuid);
     }
 
+    @SuppressWarnings("unused")
     public boolean isOnline() {
         Player p = Bukkit.getPlayer(uuid);
         return p != null;
     }
-
-    public String getIp() {
-        if (isOnline()) return Objects.requireNonNull(getPlayer().getAddress()).getAddress().getHostAddress();
-        return ip;
-    }
 }
+

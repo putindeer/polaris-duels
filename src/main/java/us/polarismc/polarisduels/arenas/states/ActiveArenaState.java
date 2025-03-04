@@ -41,7 +41,7 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     @Override
-    public void onDisable(ArenaEntity arena) {
+    public void onDisable() {
         HandlerList.unregisterAll(this);
     }
     //endregion
@@ -262,7 +262,7 @@ public class ActiveArenaState implements ArenaState, Listener {
 
     //region [Sistema de ganar la partida]
     private void Win(DuelTeam team) {
-        plugin.utils.message(arena.getPlayerList(), "&a" + team.getTeam().displayName() + " has won!");
+        plugin.utils.message(arena.getPlayerList(), team.getTeam().displayName().append(Component.text(" <green>has won!")));
         Pair<Integer, Integer> scores = getScores();
 
         for (Player player : arena.getPlayerList()) {
@@ -279,10 +279,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     private void resetArena() {
         for (Player p : arena.getPlayerList()) {
             plugin.utils.setMaxHealth(p);
-            plugin.getArenaManager().getRollBackManager().restore(p, plugin);
+            plugin.getArenaManager().getRollBackManager().restore(p);
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
             if (duelsPlayer.getTeam() != null) {
-                duelsPlayer.getTeam().deleteTeam();
+                duelsPlayer.getTeam().removePlayer(duelsPlayer);
             }
             duelsPlayer.setDuel(false);
             p.setInvulnerable(false);

@@ -1,8 +1,5 @@
 package us.polarismc.polarisduels.duel;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.entity.Player;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
@@ -33,19 +30,10 @@ public class DuelManager {
         requests.computeIfAbsent(requested.getUniqueId(), k -> new ArrayList<>())
                 .add(new DuelRequest(requested, requestor, kit, rounds));
 
-        //TODO - Hacer un método que funcione con TextComponent así no tengo que hacer este desastre para mandar un mensaje con click
-        TextComponent message = Component.text("§b" + requestor.getName() + " has challenged you to a duel with " + kit + " for " + rounds + " rounds.\n");
-        TextComponent accept = Component.text("§a/duel accept " + requestor.getName()).clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/duel accept " + requestor.getName()));
-        TextComponent deny = Component.text("§c/duel deny " + requestor.getName()).clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, "/duel deny " + requestor.getName()));
-
-        message = message.append(Component.text("§7Type "))
-                .append(accept)
-                .append(Component.text(" §7or "))
-                .append(deny)
-                .append(Component.text(" §7to respond."));
-
-        plugin.utils.message(requestor, "&aYou have challenged " + requested.getName() + " to a duel with " + kit + " for " + rounds + " rounds.");
-        requested.sendMessage(message);
+        plugin.utils.message(requestor, "<green>You have challenged " + requested.getName() + " to a duel with " + kit + " for " + rounds + " rounds.");
+        requested.sendMessage(plugin.utils.chat("<aqua>" + requestor.getName() + " has challenged you to a duel with " + kit + " for " + rounds + " rounds.<br>"
+                + "<gray>Type <click:run_command:/duel accept " + requestor.getName() + "><green>/duel accept " + requestor.getName() + "</click> " +
+                "<gray>or <click:run_command:/duel deny " + requestor.getName() + "><red>/duel deny " + requestor.getName() + "</click> <gray>to reply."));
     }
 
     public void acceptDuel(Player requested, Player requestor) {

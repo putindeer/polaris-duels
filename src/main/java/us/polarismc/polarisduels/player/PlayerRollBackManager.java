@@ -3,7 +3,6 @@ package us.polarismc.polarisduels.player;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.events.HubEvents;
 
@@ -12,12 +11,16 @@ import java.util.Map;
 import java.util.UUID;
 
 public class PlayerRollBackManager {
-
+    private final Main plugin;
     private final Map<UUID, Location> previousLocationMap = new HashMap<>();
     private final Map<UUID, GameMode> previousGameModeMap = new HashMap<>();
     private final Map<UUID, ItemStack[]> previousArmorContents = new HashMap<>();
     private final Map<UUID, Integer> previousHungerValue = new HashMap<>();
     private final Map<UUID, Integer> previousLevelMap = new HashMap<>();
+
+    public PlayerRollBackManager(Main plugin) {
+        this.plugin = plugin;
+    }
 
     public void save(Player player){
         previousLocationMap.put(player.getUniqueId(), player.getLocation());
@@ -28,9 +31,9 @@ public class PlayerRollBackManager {
         player.getInventory().clear();
     }
 
-    public void restore(Player player, JavaPlugin plugin){
+    public void restore(Player player) {
         player.getInventory().clear();
-        DuelsPlayer duelsPlayer = Main.pl.getPlayerManager().getDuelsPlayer(player);
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
         duelsPlayer.setDuel(false);
 
         ItemStack[] armorContents = previousArmorContents.get(player.getUniqueId());
@@ -52,6 +55,7 @@ public class PlayerRollBackManager {
         player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
         player.setSaturation(5.0f);
         player.setItemOnCursor(new ItemStack(Material.AIR));
+        plugin.tabManager.resetTabList(player);
 
         previousHungerValue.remove(player.getUniqueId());
         previousLevelMap.remove(player.getUniqueId());
@@ -61,7 +65,6 @@ public class PlayerRollBackManager {
 
         HubEvents.giveJoinItems(player);
 
-        if (plugin == null) return;
         Bukkit.getScheduler().runTaskLater(plugin, () -> player.setFireTicks(0), 2);
     }
 }

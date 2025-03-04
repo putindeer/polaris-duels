@@ -28,7 +28,7 @@ public class ArenaManager {
         arenaFile = new ArenaGsonImpl(plugin);
         arenaFile.loadArenaWorlds();
         arenas = arenaFile.loadArenas();
-        this.rollBackManager = new PlayerRollBackManager();
+        this.rollBackManager = new PlayerRollBackManager(plugin);
     }
 
     public void setInactiveState(ArenaEntity arena) {

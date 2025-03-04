@@ -1,49 +1,46 @@
 package us.polarismc.polarisduels.managers.tab;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.ListenerPriority;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.comphenix.protocol.wrappers.PlayerInfoData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.player.DuelsPlayer;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class TabManager {
+public class TabManager implements Listener {
     private final Main plugin;
-
     public TabManager(Main plugin) {
         this.plugin = plugin;
-        registerPacketListener();
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    private void registerPacketListener() {
-        ProtocolLibrary.getProtocolManager().addPacketListener(
-                new PacketAdapter(
-                        plugin,
-                        ListenerPriority.NORMAL,
-                        PacketType.Play.Server.PLAYER_INFO
-                ) {
-                    @Override
-                    public void onPacketSending(PacketEvent event) {
-                        Player receiver = event.getPlayer();
-                        DuelsPlayer duelsPlayer = TabManager.this.plugin.getPlayerManager().getDuelsPlayer(receiver);
+    /**
+     * Actualiza el TAB del jugador receptor para que solo vea a los jugadores de la lista (por ejemplo, los que están en la misma arena).
+     * @param player El jugador al que se le actualiza la lista
+     * @param list Los jugadores que deben mostrarse
+     */
+    public void setTabList(Player player, List<Player> list) {
+        Bukkit.getOnlinePlayers().stream().filter(p -> !list.contains(p)).forEach(player::unlistPlayer);
+    }
 
-                        if (duelsPlayer == null || !shouldFilterTab(duelsPlayer)) {
-                            return;
-                        }
+    /**
+     * Actualiza el TAB del jugador receptor para que vea a jugadores que se han añadido a la lista.
+     * @param player El jugador al que se le actualiza la lista
+     * @param list Los jugadores que deben mostrarse
+     */
+    public void refreshTabList(Player player, List<Player> list) {
+        list.stream().filter(p -> !player.isListed(p)).forEach(player::listPlayer);
+    }
 
-                        filterTabByWorld(event, receiver);
-                    }
-                }
-        );
+    /**
+     * Reinicia el TAB del jugador receptor para que vea a todos los players.
+     * @param player El jugador al que se le reinicia la lista
+     */
+    public void resetTabList(Player player) {
+        Bukkit.getOnlinePlayers().forEach(player::listPlayer);
     }
 
     private boolean shouldFilterTab(DuelsPlayer duelsPlayer) {
@@ -52,47 +49,12 @@ public class TabManager {
                 || duelsPlayer.isStartingDuel();
     }
 
-    private void filterTabByWorld(PacketEvent event, Player receiver) {
-        PacketContainer originalPacket = event.getPacket();
+    private boolean shouldFilterTab(Player player) {
+        return shouldFilterTab(plugin.getPlayerManager().getDuelsPlayer(player));
+    }
 
-        try {
-            // Verificamos que existan los campos necesarios
-            if (originalPacket.getPlayerInfoAction().size() == 0 ||
-                    originalPacket.getPlayerInfoDataLists().size() == 0) {
-                return;
-            }
-
-            // Leemos la acción del paquete, por ejemplo, ADD_PLAYER
-            EnumWrappers.PlayerInfoAction action = originalPacket.getPlayerInfoAction().read(0);
-            // Solo actuamos para la acción ADD_PLAYER (podrías agregar más si es necesario)
-            if (action != EnumWrappers.PlayerInfoAction.ADD_PLAYER) {
-                return;
-            }
-
-            // Obtenemos la lista de jugadores
-            List<PlayerInfoData> list = originalPacket.getPlayerInfoDataLists().read(0);
-            // Filtramos para que queden solo los jugadores del mismo mundo del receptor
-            List<PlayerInfoData> filteredList = list.stream()
-                    .filter(data -> {
-                        Player target = Bukkit.getPlayer(data.getProfile().getUUID());
-                        return target != null && target.getWorld().equals(receiver.getWorld());
-                    })
-                    .collect(Collectors.toList());
-
-            // Cancelamos el paquete original para evitar que se muestre la info sin filtrar
-            event.setCancelled(true);
-
-            // Si hay jugadores que mostrar, creamos y enviamos un nuevo paquete con la lista filtrada
-            if (!filteredList.isEmpty()) {
-                PacketContainer newPacket = ProtocolLibrary.getProtocolManager().createPacket(PacketType.Play.Server.PLAYER_INFO);
-                newPacket.getPlayerInfoAction().write(0, action);
-                newPacket.getPlayerInfoDataLists().write(0, filteredList);
-
-                ProtocolLibrary.getProtocolManager().sendServerPacket(receiver, newPacket);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        Bukkit.getOnlinePlayers().stream().filter(this::shouldFilterTab).forEach(p -> p.unlistPlayer(event.getPlayer()));
     }
 }

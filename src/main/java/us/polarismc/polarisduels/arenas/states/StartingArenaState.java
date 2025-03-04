@@ -33,7 +33,7 @@ public class StartingArenaState implements ArenaState, Listener {
     }
 
     @Override
-    public void onDisable(ArenaEntity arena) {
+    public void onDisable() {
         HandlerList.unregisterAll(this);
     }
 

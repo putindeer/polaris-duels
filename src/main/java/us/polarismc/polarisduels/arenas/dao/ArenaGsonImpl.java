@@ -42,7 +42,9 @@ public class ArenaGsonImpl implements ArenaDAO {
 
             if (Bukkit.getWorld(name) != null) continue;
 
-            new WorldCreator(name).createWorld();
+            World world = new WorldCreator(name).createWorld();
+            assert world != null;
+            world.setAutoSave(false);
         }
     }
 
