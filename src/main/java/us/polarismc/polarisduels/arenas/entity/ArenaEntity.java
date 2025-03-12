@@ -90,7 +90,6 @@ public class ArenaEntity {
         plugin.getTabManager().resetTabList(player);
         getPlayerList().forEach(p -> plugin.getTabManager().setTabList(p, getPlayerList()));
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
-        plugin.utils.message(getPlayerList(), player.getName() + " quit &c(" + players.size() + "/" + playersNeeded + ")");
         if (duelsPlayer.getTeam() != null) {
             duelsPlayer.getTeam().removePlayer(duelsPlayer);
         }
@@ -125,6 +124,7 @@ public class ArenaEntity {
             }
         }
         if (arenaState instanceof WaitingArenaState) {
+            plugin.utils.message(getPlayerList(), player.getName() + " quit &c(" + players.size() + "/" + playersNeeded + ")");
             if (players.isEmpty()) {
                 plugin.getArenaManager().setInactiveState(this);
             }

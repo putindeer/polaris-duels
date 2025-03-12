@@ -243,7 +243,6 @@ public class ActiveArenaState implements ArenaState, Listener {
                 player.showTitle(Title.title(plugin.utils.chat("&aYou won."), plugin.utils.chat("&7Score: &c" + scores.left() + " &7- &9" + scores.right())));
             } else {
                 player.showTitle(Title.title(plugin.utils.chat("&cYou lost."), plugin.utils.chat("&7Score: &c" + scores.left() + " &7- &9" + scores.right())));
-                duelsPlayer.getTeam().getAlivePlayers().add(player.getUniqueId());
             }
         }
 
@@ -276,7 +275,7 @@ public class ActiveArenaState implements ArenaState, Listener {
                 restorePlayer(player);
                 DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
                 DuelTeam team = duelsPlayer.getTeam();
-                team.getAlivePlayers().remove(player.getUniqueId());
+                team.getAlivePlayers().add(player.getUniqueId());
                 duelsPlayer.setOnHold(false);
                 player.showTitle(Title.title(plugin.utils.chat("&b&lGO!"), Component.empty()));
                 if (team == redTeam) {

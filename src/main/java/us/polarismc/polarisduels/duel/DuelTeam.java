@@ -10,15 +10,13 @@ import org.bukkit.scoreboard.Team;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.player.DuelsPlayer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 public class DuelTeam {
     private final Main plugin = Main.getInstance();
     private final List<DuelsPlayer> members = new ArrayList<>();
-    private final List<UUID> alivePlayers = new ArrayList<>();
+    private final Set<UUID> alivePlayers = new HashSet<>();
     private final Scoreboard scoreboard;
     private final Team team;
     private NamedTextColor color;
