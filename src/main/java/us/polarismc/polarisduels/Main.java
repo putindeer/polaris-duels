@@ -50,12 +50,6 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            DuelsPlayer duelsPlayer = this.getPlayerManager().getDuelsPlayer(p);
-            if (duelsPlayer.getTeam() != null) {
-                duelsPlayer.getTeam().deleteTeam();
-            }
-        }
         for (ArenaEntity arena : arenaManager.getArenas()) {
             if (arena.getArenaState() instanceof ActiveArenaState state) {
                 state.resetArenaEntities();

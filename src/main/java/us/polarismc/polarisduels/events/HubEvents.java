@@ -20,7 +20,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scoreboard.Team;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.queue.QueueGUI;
@@ -51,11 +50,7 @@ public class HubEvents implements Listener {
         plugin.getPlayerManager().playerJoin(p);
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
         if (duelsPlayer.getTeam() != null) {
-            duelsPlayer.getTeam().deleteTeam();
-        }
-        Team team = Bukkit.getScoreboardManager().getMainScoreboard().getTeam(p.getName());
-        if (team != null) {
-            team.unregister();
+            duelsPlayer.getTeam().removePlayer(duelsPlayer);
         }
 
         FastBoard board = new FastBoard(p);
@@ -64,6 +59,7 @@ public class HubEvents implements Listener {
         p.sendPlayerListHeaderAndFooter(
                 plugin.utils.chat("&9&lPolaris Duels"),
                 plugin.utils.chat("&7Ping: &9" + p.getPing() + " &8| &7Tps: &9" + new DecimalFormat("##").format(plugin.getServer().getTPS()[0])));
+        p.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 
         Location loc = new Location(Bukkit.getWorld("lobby"), -0.5, 100, 0.5);
         p.teleport(loc);

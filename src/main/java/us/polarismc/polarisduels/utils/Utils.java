@@ -22,6 +22,7 @@ public class Utils {
     public Utils(Main plugin) {
         this.plugin = plugin;
     }
+
     /**
      * Prefix del plugin
      */
@@ -211,7 +212,7 @@ public class Utils {
     /**
      * Verifica si un inventario tiene espacio suficiente para un ItemStack específico,
      * considerando la posibilidad de apilarlo con stacks existentes en el inventario.
-     * <p>
+     * <br>
      * Es útil para determinar si, al agregar un ítem, este será almacenado correctamente
      * o si terminará en el cursor del jugador o eliminado por falta de espacio.
      *

@@ -21,6 +21,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scoreboard.*;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaAttribute;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
@@ -47,10 +48,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     //endregion
 
     //region [Sistema para iniciar el duel]
+    private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
     private void startDuel() {
         List<Player> playerList = arena.getPlayerList();
 
-        // Si es 1v1, mostramos título con nombres reales
         if (arena.getPlayersNeeded() == 2) {
             String name1 = Objects.requireNonNull(Bukkit.getPlayer(arena.getPlayers().get(0))).getName();
             String name2 = Objects.requireNonNull(Bukkit.getPlayer(arena.getPlayers().get(1))).getName();
@@ -61,7 +62,6 @@ public class ActiveArenaState implements ArenaState, Listener {
                 ));
             }
         } else {
-            // Para partidas en equipo, título general
             for (Player player : playerList) {
                 player.showTitle(Title.title(
                         plugin.utils.chat("&b&lGO!"),
@@ -100,13 +100,13 @@ public class ActiveArenaState implements ArenaState, Listener {
         }
 
         DuelTeam redTeam = (teamRedPlayers.isEmpty())
-                ? new DuelTeam(NamedTextColor.RED, "RED")
-                : new DuelTeam(teamRedPlayers, NamedTextColor.RED, "RED");
+                ? new DuelTeam( scoreboard, NamedTextColor.RED, "RED")
+                : new DuelTeam( scoreboard, teamRedPlayers, NamedTextColor.RED, "RED");
         winsTeam.put(redTeam, 0);
 
         DuelTeam blueTeam = (teamBluePlayers.isEmpty())
-                ? new DuelTeam(NamedTextColor.BLUE, "BLUE")
-                : new DuelTeam(teamBluePlayers, NamedTextColor.BLUE, "BLUE");
+                ? new DuelTeam( scoreboard, NamedTextColor.BLUE, "BLUE")
+                : new DuelTeam( scoreboard, teamBluePlayers, NamedTextColor.BLUE, "BLUE");
         winsTeam.put(blueTeam, 0);
 
         for (Player player : playerList) {
@@ -119,6 +119,34 @@ public class ActiveArenaState implements ArenaState, Listener {
 
         if (arena.getRounds() != 1) {
             plugin.utils.message(playerList, "&7The first to win &b" + arena.getRounds() + " &7rounds get the victory!");
+        }
+
+        if (arena.getKit().hasAttribute(ArenaAttribute.HEALTH_INDICATOR)) {
+            addHealthIndicator();
+        }
+    }
+
+    private int healthTaskId = -1;
+
+    private void addHealthIndicator() {
+        if (scoreboard.getObjective("HealthNamePL") == null) {
+            scoreboard.registerNewObjective("HealthNamePL", Criteria.DUMMY, plugin.utils.chat("&c❤")).setDisplaySlot(DisplaySlot.BELOW_NAME);
+        }
+
+        healthTaskId = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+                Objective objective = scoreboard.getObjective("HealthNamePL");
+                Score score = Objects.requireNonNull(objective).getScore(player.getName());
+                double totalhealth = player.getHealth() + player.getAbsorptionAmount();
+                score.setScore((int) Math.floor((totalhealth / 20) * 100));
+            }
+        },0,5);
+    }
+
+    private void stopHealthIndicator() {
+        if (healthTaskId != -1) {
+            plugin.getServer().getScheduler().cancelTask(healthTaskId);
+            healthTaskId = -1;
         }
     }
     //endregion
@@ -142,10 +170,13 @@ public class ActiveArenaState implements ArenaState, Listener {
     private void checkForWinner(Player player) {
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
         DuelTeam team = duelsPlayer.getTeam();
-        team.getAlivePlayers().remove(player.getUniqueId());
-        if (!team.getAlivePlayers().isEmpty()) {
-            plugin.utils.message(arena.getPlayerList(), "&c" + player.getName() + " died.");
-            return;
+        if (team != null) {
+            team.getAlivePlayers().remove(player.getUniqueId());
+            if (!team.getAlivePlayers().isEmpty()) {
+                plugin.utils.message(arena.getPlayerList(), "&c" + player.getName() + " died.");
+                dropItems(player);
+                return;
+            }
         }
 
         DuelTeam winningTeam = arena.getPlayerList().stream().map(p -> plugin.getPlayerManager().getDuelsPlayer(p)).map(DuelsPlayer::getTeam)
@@ -157,13 +188,25 @@ public class ActiveArenaState implements ArenaState, Listener {
             return;
         }
 
-        winsTeam.put(winningTeam, winsTeam.get(winningTeam) + 1);
+        winsTeam.put(winningTeam, winsTeam.getOrDefault(winningTeam, 0) + 1);
 
         if (arena.getRounds() == winsTeam.get(winningTeam)) {
             Win(winningTeam);
         } else {
             nextRound(winningTeam);
         }
+    }
+
+    private void dropItems(Player player) {
+        Location location = player.getLocation();
+
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null && item.getType() != Material.AIR) {
+                player.getWorld().dropItemNaturally(location, item);
+            }
+        }
+
+        player.getInventory().clear();
     }
 
     /**
@@ -179,7 +222,15 @@ public class ActiveArenaState implements ArenaState, Listener {
     //region [Sistema de pasar a la siguiente ronda]
     private final HashMap<UUID, ItemStack[]> savedInventories = new HashMap<>();
     private void nextRound(DuelTeam team) {
-        plugin.utils.message(arena.getPlayerList(), "&a" + team.getTeam().displayName() + " has won this round! &7Next Round starting in &c5s");
+        if (arena.getPlayersNeeded() == 2) {
+            Player winner = Bukkit.getPlayer(team.getMembers().getFirst().getUuid());
+            if (winner != null) {
+                plugin.utils.message(arena.getPlayerList(), "&a" + winner.getName() + " has won this round! &7Next Round starting in &c5s");
+            }
+        } else {
+            plugin.utils.message(arena.getPlayerList(), "&a" + team.getTeamName() + " has won this round! &7Next Round starting in &c5s");
+        }
+
         Pair<Integer, Integer> scores = getScores();
 
         plugin.utils.message(arena.getPlayerList(), "&7Score: &c" + scores.left() + " &7- &9" + scores.right());
@@ -262,19 +313,30 @@ public class ActiveArenaState implements ArenaState, Listener {
 
     //region [Sistema de ganar la partida]
     private void Win(DuelTeam team) {
-        plugin.utils.message(arena.getPlayerList(), team.getTeam().displayName().append(Component.text(" <green>has won!")));
         Pair<Integer, Integer> scores = getScores();
+
+        if (arena.getPlayersNeeded() == 2) {
+            Player winner = Bukkit.getPlayer(team.getMembers().getFirst().getUuid());
+            if (winner != null) {
+                plugin.utils.message(arena.getPlayerList(), "<green>" + winner.getName() + " has won!");
+            }
+        } else {
+            plugin.utils.message(arena.getPlayerList(), "<green>" + team.getTeamName() + " has won!");
+        }
 
         for (Player player : arena.getPlayerList()) {
             player.setInvulnerable(true);
             if (team.hasPlayer(player)) {
-                player.showTitle(Title.title(plugin.utils.chat("&cYou won."), plugin.utils.chat("&7Score: &c" + scores.left() + " &7- &9" + scores.right())));
+                player.showTitle(Title.title(plugin.utils.chat("&cYou won."),
+                        plugin.utils.chat("&7Score: &c" + scores.left() + " &7- &9" + scores.right())));
             } else {
-                player.showTitle(Title.title(plugin.utils.chat("&cYou lost."), plugin.utils.chat("&7Score: &c" + scores.left() + " &7- &9" + scores.right())));
+                player.showTitle(Title.title(plugin.utils.chat("&cYou lost."),
+                        plugin.utils.chat("&7Score: &c" + scores.left() + " &7- &9" + scores.right())));
             }
         }
         plugin.utils.delay(20 * 5, this::resetArena);
     }
+
 
     private void resetArena() {
         for (Player p : arena.getPlayerList()) {
@@ -282,12 +344,15 @@ public class ActiveArenaState implements ArenaState, Listener {
             plugin.getArenaManager().getRollBackManager().restore(p);
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
             if (duelsPlayer.getTeam() != null) {
-                duelsPlayer.getTeam().removePlayer(duelsPlayer);
+                duelsPlayer.getTeam().deleteTeam();
             }
             duelsPlayer.setDuel(false);
             p.setInvulnerable(false);
             removeFluidBoost(p);
             arena.removePlayer(p, plugin);
+        }
+        if (arena.getKit().hasAttribute(ArenaAttribute.HEALTH_INDICATOR)) {
+            stopHealthIndicator();
         }
 
         winsTeam.clear();
@@ -302,12 +367,12 @@ public class ActiveArenaState implements ArenaState, Listener {
     private void onQuit(PlayerQuitEvent event){
         Player p = event.getPlayer();
         if (!arena.hasPlayer(p)) return;
-        arena.removePlayer(p, plugin);
         if (p.isInvulnerable()) p.setInvulnerable(false);
 
         bucketHoldingPlayers.remove(p);
 
         checkForWinner(p);
+        arena.removePlayer(p, plugin);
     }
 
     private Pair<Integer, Integer> getScores() {
