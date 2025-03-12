@@ -33,8 +33,8 @@ import java.util.Optional;
 public class HubEvents implements Listener {
     private final Main plugin;
     private static final String JOIN_1V1_QUEUE = "&c1v1 Queue";
-    private static final String JOIN_2v2_QUEUE = "&c2v2 Queue (NOT WORKING)";
-    private static final String JOIN_3v3_QUEUE = "&c3v3 Queue (NOT WORKING)";
+    private static final String JOIN_2v2_QUEUE = "&c2v2 Queue";
+    private static final String JOIN_3v3_QUEUE = "&c3v3 Queue";
     private static final String CREATE_PARTY = "&aCreate Party (NOT WORKING)";
     public static final String LEAVE_QUEUE = "&cLeave Queue";
 
