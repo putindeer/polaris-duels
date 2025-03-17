@@ -32,11 +32,13 @@ public class WaitingArenaState implements ArenaState, Listener {
 
     @Override
     public void onEnable(ArenaEntity arena) {
+        plugin.getLogger().info("WaitingArenaState enabled");
         Bukkit.getPluginManager().registerEvents(this, Main.pl);
     }
 
     @Override
     public void onDisable() {
+        plugin.getLogger().info("WaitingArenaState disabled");
         HandlerList.unregisterAll(this);
     }
 

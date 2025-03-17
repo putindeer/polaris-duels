@@ -22,6 +22,7 @@ public class DuelsPlayer {
     private boolean duel = false;
     private boolean onHold = false;
     private DuelTeam team = null;
+    private boolean disconnecting = false;
 
     public DuelsPlayer(UUID uuid, String name) {
         this.plugin = Main.getInstance();
@@ -35,10 +36,10 @@ public class DuelsPlayer {
         return Bukkit.getPlayer(uuid);
     }
 
-    @SuppressWarnings("unused")
     public boolean isOnline() {
         Player p = Bukkit.getPlayer(uuid);
-        return p != null;
+        if (disconnecting) return false;
+        else return p != null;
     }
 }
 

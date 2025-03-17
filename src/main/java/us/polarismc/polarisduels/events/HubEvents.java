@@ -281,6 +281,16 @@ public class HubEvents implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void setDisconnecting(PlayerQuitEvent e) {
+        plugin.getPlayerManager().getDuelsPlayer(e.getPlayer()).setDisconnecting(true);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void removeDisconnecting(PlayerQuitEvent e) {
+        plugin.getPlayerManager().getDuelsPlayer(e.getPlayer()).setDisconnecting(false);
+    }
+
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
         if (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {

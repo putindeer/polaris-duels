@@ -26,9 +26,9 @@ public class StartCountdownTask extends BukkitRunnable {
                 cancel();
                 return;
             }
+            cancel();
             saveKits();
             arena.setArenaState(new ActiveArenaState());
-            cancel();
             return;
         }
 

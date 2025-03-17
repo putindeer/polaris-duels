@@ -29,6 +29,7 @@ import us.polarismc.polarisduels.duel.DuelTeam;
 import us.polarismc.polarisduels.player.DuelsPlayer;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ActiveArenaState implements ArenaState, Listener {
     //region [Metodos al activar y desactivar la arena]
@@ -39,11 +40,13 @@ public class ActiveArenaState implements ArenaState, Listener {
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.arena = arena;
         startDuel();
+        Main.pl.getLogger().info("ActiveArenaState enabled");
     }
 
     @Override
     public void onDisable() {
         HandlerList.unregisterAll(this);
+        Main.pl.getLogger().info("ActiveArenaState disabled");
     }
     //endregion
 
@@ -152,7 +155,7 @@ public class ActiveArenaState implements ArenaState, Listener {
     //endregion
 
     //region [Sistema para detectar cuando un jugador muere]
-    public final static HashMap<DuelTeam, Integer> winsTeam = new HashMap<>();
+    private final HashMap<DuelTeam, Integer> winsTeam = new HashMap<>();
     @EventHandler
     private void onDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
@@ -188,13 +191,22 @@ public class ActiveArenaState implements ArenaState, Listener {
             return;
         }
 
-        winsTeam.put(winningTeam, winsTeam.getOrDefault(winningTeam, 0) + 1);
+        winsTeam.compute(winningTeam, (t, wins) -> wins == null ? 1 : wins + 1);
 
-        if (arena.getRounds() == winsTeam.get(winningTeam)) {
+        if (arena.getRounds() == winsTeam.get(winningTeam) || !multipleConnectedTeams()) {
             Win(winningTeam);
         } else {
             nextRound(winningTeam);
         }
+    }
+
+    private boolean multipleConnectedTeams() {
+        Set<DuelTeam> onlineTeams = arena.getPlayerList().stream()
+                .map(p -> plugin.getPlayerManager().getDuelsPlayer(p).getTeam())
+                .filter(t -> t != null && t.getMembers().stream().anyMatch(p -> p != null && p.isOnline()))
+                .collect(Collectors.toSet());
+        plugin.getLogger().info("" + onlineTeams.size());
+        return onlineTeams.size() > 1;
     }
 
     private void dropItems(Player player) {

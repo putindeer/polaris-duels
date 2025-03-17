@@ -30,10 +30,12 @@ public class StartingArenaState implements ArenaState, Listener {
         }
         this.startCountdownTask =  new StartCountdownTask(plugin, arena, 10);
         this.startCountdownTask.runTaskTimer(plugin, 0, 20);
+        plugin.getLogger().info("StartingArenaState enabled");
     }
 
     @Override
     public void onDisable() {
+        plugin.getLogger().info("StartingArenaState disabled");
         HandlerList.unregisterAll(this);
     }
 
