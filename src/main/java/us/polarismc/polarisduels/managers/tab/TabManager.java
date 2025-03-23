@@ -43,6 +43,11 @@ public class TabManager implements Listener {
         Bukkit.getOnlinePlayers().forEach(player::listPlayer);
     }
 
+    /**
+     * Comprueba si debe filtrarle el TAB al jugador
+     * @param duelsPlayer
+     * @return
+     */
     private boolean shouldFilterTab(DuelsPlayer duelsPlayer) {
         return duelsPlayer.isDuel()
                 || duelsPlayer.isQueue()

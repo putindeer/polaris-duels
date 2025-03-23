@@ -1,9 +1,10 @@
 package us.polarismc.polarisduels.arenas.tasks;
 
 import lombok.AllArgsConstructor;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -39,7 +40,7 @@ public class StartCountdownTask extends BukkitRunnable {
 
         for (Player player : arena.getPlayerList()) {
             player.showTitle(Title.title(plugin.utils.chat("&b" + secondsUntilStart), plugin.utils.chat("&fOrganize your inventory!")));
-            plugin.utils.message(player, Sound.BLOCK_NOTE_BLOCK_BIT, "The game is starting in &b" + secondsUntilStart + "&f seconds.");
+            plugin.utils.message(player, Sound.sound(Key.key("block.note_block.bit"), Sound.Source.MASTER, 10f, 1f), "The game is starting in &b" + secondsUntilStart + "&f seconds.");
         }
 
         secondsUntilStart--;

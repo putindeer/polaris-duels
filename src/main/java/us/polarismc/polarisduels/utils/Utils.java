@@ -1,5 +1,6 @@
 package us.polarismc.polarisduels.utils;
 
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.*;
@@ -10,6 +11,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -74,58 +76,96 @@ public class Utils {
      * @param messages Los mensajes ({@link String} o {@link Component}) que se tienen que enviar
      *
      */
-    public void message(CommandSender receiver, boolean usePrefix, Sound sound, Object... messages) {
-        for (Object part : messages) {
+    public void message(CommandSender receiver, boolean usePrefix, Sound sound, Component... messages) {
+        for (Component component : messages) {
             Component prefixComponent = usePrefix ? prefix : Component.text("");
-
-            if (part instanceof String string) {
-                receiver.sendMessage(prefixComponent.append(chat(string)));
-            } else if (part instanceof Component component) {
-                receiver.sendMessage(prefixComponent.append(chat(component)));
-            }
+            receiver.sendMessage(prefixComponent.append(chat(component)));
         }
 
         if (sound != null && receiver instanceof Player player) {
-            player.playSound(player.getLocation(), sound, 10, 1);
+            player.playSound(sound);
         }
     }
 
     //region [Submetodos de 'message']
-    public void broadcast(Object... messages) {
+    //region [Metodos de String]
+    public void broadcast(String... messages) {
         broadcast(true, null, messages);
     }
 
-    public void broadcast(Sound sound, Object... messages) {
+    public void broadcast(Sound sound, String... messages) {
         broadcast(true, sound, messages);
     }
 
-    public void broadcast(boolean prefix, Sound sound, Object... messages) {
+    public void broadcast(boolean prefix, Sound sound, String... messages) {
         message(Stream.concat(Bukkit.getOnlinePlayers().stream().map(p -> (CommandSender) p), Stream.of(Bukkit.getConsoleSender())).collect(Collectors.toList()), prefix, sound, messages);
     }
 
-    public void message(CommandSender receiver, Object... messages) {
+    public void message(CommandSender receiver, String... messages) {
         message(receiver, true, null, messages);
     }
 
-    public void message(CommandSender receiver, Sound sound, Object... messages) {
+    public void message(CommandSender receiver, Sound sound, String... messages) {
         message(receiver, true, sound, messages);
     }
 
-    public void message(Collection<? extends CommandSender> receivers, Object... messages) {
+    public void message(CommandSender receiver, boolean prefix, String... messages) {
+        message(receiver, prefix, null, messages);
+    }
+
+    public void message(Collection<? extends CommandSender> receivers, String... messages) {
         message(receivers, true, null, messages);
     }
 
-    public void message(Collection<? extends CommandSender> receivers, boolean prefix, Object... messages) {
+    public void message(Collection<? extends CommandSender> receivers, boolean prefix, String... messages) {
         message(receivers, prefix, null, messages);
     }
 
-    public void message(Collection<? extends CommandSender> receivers, boolean prefix, Sound sound, Object... messages) {
+    public void message(Collection<? extends CommandSender> receivers, boolean prefix, Sound sound, String... messages) {
+        receivers.forEach(receiver -> message(receiver, prefix, sound, Arrays.stream(messages).map(this::chat).toArray(Component[]::new)));
+    }
+
+    public void message(CommandSender receiver, boolean prefix, Sound sound, String... messages) {
+        message(receiver, prefix, sound, Arrays.stream(messages).map(this::chat).toArray(Component[]::new));
+    }
+    //endregion
+    //region [Métodos de Component]
+    public void broadcast(Component... messages) {
+        broadcast(true, null, messages);
+    }
+
+    public void broadcast(Sound sound, Component... messages) {
+        broadcast(true, sound, messages);
+    }
+
+    public void broadcast(boolean prefix, Sound sound, Component... messages) {
+        message(Stream.concat(Bukkit.getOnlinePlayers().stream().map(p -> (CommandSender) p), Stream.of(Bukkit.getConsoleSender())).collect(Collectors.toList()), prefix, sound, messages);
+    }
+
+    public void message(CommandSender receiver, Component... messages) {
+        message(receiver, true, null, messages);
+    }
+
+    public void message(CommandSender receiver, Sound sound, Component... messages) {
+        message(receiver, true, sound, messages);
+    }
+
+    public void message(Collection<? extends CommandSender> receivers, Component... messages) {
+        message(receivers, true, null, messages);
+    }
+
+    public void message(Collection<? extends CommandSender> receivers, boolean prefix, Component... messages) {
+        message(receivers, prefix, null, messages);
+    }
+
+    public void message(Collection<? extends CommandSender> receivers, boolean prefix, Sound sound, Component... messages) {
         receivers.forEach(receiver -> message(receiver, prefix, sound, messages));
     }
 
-    public void message(CommandSender receiver, boolean prefix, Object... messages) {
+    public void message(CommandSender receiver, boolean prefix, Component... messages) {
         message(receiver, prefix, null, messages);
     }
+    //endregion
     //endregion
 
     /**

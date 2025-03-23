@@ -1,7 +1,8 @@
 package us.polarismc.polarisduels.commands.staff;
 
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -32,7 +33,7 @@ public class Broadcast implements CommandExecutor {
                 if (msg.equals(Component.empty())) msg = Component.text(part);
                 else msg = msg.append(Component.text(" ").append(Component.text(part)));
             }
-            plugin.utils.broadcast(msg, Sound.BLOCK_NOTE_BLOCK_BIT);
+            plugin.utils.broadcast(Sound.sound(Key.key("block.note_block.bit"), Sound.Source.MASTER, 10f, 1f), msg);
         }
         return false;
     }

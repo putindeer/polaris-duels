@@ -1,6 +1,8 @@
 package us.polarismc.polarisduels.arenas.states;
 
 import it.unimi.dsi.fastutil.Pair;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
@@ -81,7 +83,7 @@ public class ActiveArenaState implements ArenaState, Listener {
             player.setInvulnerable(false);
             player.setSaturation(5.0f);
             savedInventories.put(player.getUniqueId(), plugin.getKitManager().loadKit(player.getUniqueId(), arena.getKit()));
-            plugin.utils.message(player, Sound.BLOCK_ANCIENT_DEBRIS_BREAK, "&cThe Match has started!");
+            plugin.utils.message(player, Sound.sound(Key.key("block.ancient_debris.break"), Sound.Source.MASTER, 10f, 1f), "&cThe Match has started!");
 
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
             duelsPlayer.setStartingDuel(false);
