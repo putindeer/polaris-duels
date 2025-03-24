@@ -6,6 +6,7 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import us.polarismc.api.util.builder.ItemBuilder;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.states.ArenaState;
 import us.polarismc.polarisduels.arenas.states.StartingArenaState;
@@ -13,7 +14,6 @@ import us.polarismc.polarisduels.arenas.states.WaitingArenaState;
 import us.polarismc.polarisduels.queue.KitType;
 import us.polarismc.polarisduels.events.HubEvents;
 import us.polarismc.polarisduels.player.DuelsPlayer;
-import us.polarismc.polarisduels.utils.ItemBuilder;
 
 import java.util.ArrayList;
 import java.util.List;

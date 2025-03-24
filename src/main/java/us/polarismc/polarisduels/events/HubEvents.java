@@ -20,11 +20,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
+import us.polarismc.api.util.builder.ItemBuilder;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.queue.QueueGUI;
 import us.polarismc.polarisduels.player.DuelsPlayer;
-import us.polarismc.polarisduels.utils.ItemBuilder;
 
 import java.text.DecimalFormat;
 import java.util.Objects;

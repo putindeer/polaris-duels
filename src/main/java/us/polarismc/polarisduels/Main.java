@@ -2,9 +2,8 @@ package us.polarismc.polarisduels;
 
 import fr.mrmicky.fastboard.adventure.FastBoard;
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import us.polarismc.api.util.PluginUtils;
 import us.polarismc.polarisduels.arenas.ArenaManager;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.arenas.states.ActiveArenaState;
@@ -13,10 +12,8 @@ import us.polarismc.polarisduels.database.Database;
 import us.polarismc.polarisduels.database.DatabaseInitializer;
 import us.polarismc.polarisduels.database.KitManager;
 import us.polarismc.polarisduels.managers.tab.TabManager;
-import us.polarismc.polarisduels.player.DuelsPlayer;
 import us.polarismc.polarisduels.player.PlayerManager;
 import us.polarismc.polarisduels.utils.StartThings;
-import us.polarismc.polarisduels.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +21,7 @@ import java.util.UUID;
 
 public final class Main extends JavaPlugin {
     public static Main pl;
-    public Utils utils;
+    public PluginUtils utils;
     public Database database;
     public DatabaseInitializer databaseInitializer;
     @Getter
@@ -42,7 +39,7 @@ public final class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         pl = this;
-        utils = new Utils(this);
+        utils = new PluginUtils(this, "&bDuels &7» &r");
         new StartThings(this);
         initializeDatabase();
         initializeManagers();

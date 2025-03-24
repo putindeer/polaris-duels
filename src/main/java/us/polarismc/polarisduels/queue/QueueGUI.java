@@ -5,9 +5,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionType;
+import us.polarismc.api.util.builder.ItemBuilder;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
-import us.polarismc.polarisduels.utils.ItemBuilder;
 
 import java.util.Optional;
 

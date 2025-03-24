@@ -5,8 +5,8 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionType;
+import us.polarismc.api.util.builder.ItemBuilder;
 import us.polarismc.polarisduels.arenas.entity.ArenaAttribute;
-import us.polarismc.polarisduels.utils.ItemBuilder;
 
 import java.util.EnumSet;
 
