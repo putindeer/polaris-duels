@@ -122,9 +122,9 @@
             <version>6.2.1</version>
         </dependency>
         <dependency>
-            <groupId>com.github.polaris-mc</groupId>
+            <groupId>us.polarismc</groupId>
             <artifactId>polaris-api</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
     </dependencies>
 </project>
