@@ -45,8 +45,8 @@ public class TabManager implements Listener {
 
     /**
      * Comprueba si debe filtrarle el TAB al jugador
-     * @param duelsPlayer
-     * @return
+     * @param duelsPlayer El jugador al que filtrarle el TAB
+     * @return Si se debería filtrar o no
      */
     private boolean shouldFilterTab(DuelsPlayer duelsPlayer) {
         return duelsPlayer.isDuel()

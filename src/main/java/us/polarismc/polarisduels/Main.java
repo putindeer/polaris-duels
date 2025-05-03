@@ -39,7 +39,7 @@ public final class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         pl = this;
-        utils = new PluginUtils(this, "&bDuels &7» &r");
+        utils = new PluginUtils(this, "<blue>Duels <dark_gray>» <reset>");
         new StartThings(this);
         initializeDatabase();
         initializeManagers();

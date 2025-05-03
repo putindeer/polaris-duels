@@ -1,11 +1,10 @@
-name: PolarisDuels
+name: polaris-duels
 version: ${project.version}
 main: us.polarismc.polarisduels.Main
 api-version: '1.21'
 authors: [putindeer, tmpst, wixent]
 description: A Minimalist Duels Plugin for Polaris
 website: https://github.com/polaris-mc
-depend: [ProtocolLib]
 
 commands:
   arena:
