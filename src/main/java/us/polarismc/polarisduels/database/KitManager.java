@@ -3,23 +3,42 @@ package us.polarismc.polarisduels.database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.queue.KitType;
-
 import java.sql.ResultSet;
 import java.util.UUID;
 
+/**
+ * Manages player kit data storage and retrieval in the database.
+ * Handles saving and loading of kit inventories for different kit types.
+ */
 public class KitManager {
+    /** The main plugin instance */
     private final Main plugin;
+    
+    /** The database instance for kit storage */
     private final Database database;
 
+    /**
+     * Creates a new KitManager with the specified plugin and database.
+     *
+     * @param plugin The main plugin instance
+     * @param database The database to use for kit storage
+     */
     public KitManager(Main plugin, Database database) {
         this.plugin = plugin;
         this.database = database;
     }
 
+    /**
+     * Saves a player's kit to the database.
+     * If a kit already exists for this player and kit type, it will be replaced.
+     *
+     * @param uuid The UUID of the player
+     * @param kitType The type of kit to save
+     * @param inv The inventory contents to save as a kit
+     */
     public void saveKit(UUID uuid, KitType kitType, ItemStack[] inv) {
         byte[] serializedInv = ItemStack.serializeItemsAsBytes(inv);
 
@@ -42,6 +61,14 @@ public class KitManager {
         }
     }
 
+    /**
+     * Loads a player's kit from the database.
+     * If no kit is found, returns the default kit for the specified type.
+     *
+     * @param uuid The UUID of the player
+     * @param kitType The type of kit to load
+     * @return The loaded kit inventory, or default kit if not found
+     */
     public ItemStack[] loadKit(UUID uuid, KitType kitType) {
         try (Connection connection = database.getConnection()) {
             String query = "SELECT kit_items FROM player_kits WHERE player_uuid = ? AND kit_type = ?";
