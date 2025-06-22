@@ -2,7 +2,6 @@ package us.polarismc.polarisduels.duel;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
@@ -12,14 +11,34 @@ import us.polarismc.polarisduels.queue.KitType;
 
 import java.util.*;
 
-public class DuelCommand implements CommandExecutor, TabExecutor {
+/**
+ * Handles the /duel command and its subcommands for player vs player duels.
+ * This class manages duel requests, accept/deny functionality, and tab completion.
+ * It implements both CommandExecutor and TabExecutor for command handling.
+ */
+public class DuelCommand implements TabExecutor {
     private final Main plugin;
 
+    /**
+     * Initializes the DuelCommand and registers it as a command executor.
+     *
+     * @param plugin The main plugin instance
+     * @throws NullPointerException if the 'duel' command is not found in plugin.yml
+     */
     public DuelCommand(Main plugin) {
         this.plugin = plugin;
         Objects.requireNonNull(plugin.getCommand("duel")).setExecutor(this);
     }
 
+    /**
+     * Processes the duel command and its subcommands.
+     *
+     * @param sender The command sender (must be a player)
+     * @param cmd The command that was executed
+     * @param label The alias of the command used
+     * @param args The command arguments
+     * @return true if the command was processed successfully, false otherwise
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player p)) {
@@ -72,6 +91,13 @@ public class DuelCommand implements CommandExecutor, TabExecutor {
     }
 
 
+    /**
+     * Handles sending a duel request from one player to another.
+     * Validates the target player, kit type, and number of rounds.
+     *
+     * @param sender The player sending the duel request
+     * @param args The command arguments containing target, kit, and rounds
+     */
     private void sendDuelRequest(Player sender, String[] args) {
         if (args.length < 3) {
             plugin.utils.message(sender, "&cUsage: /duel <player> <kit> <rounds>");
@@ -112,7 +138,18 @@ public class DuelCommand implements CommandExecutor, TabExecutor {
         plugin.getDuelManager().sendRequest(target, sender, kit, rounds);
     }
 
+    /** List of available kit types for tab completion */
     private final List<String> kits = List.of("SMP", "AXE", "NETHPOT", "UHC", "DIAMONDPOT", "SWORD");
+    
+    /**
+     * Provides tab completion for the duel command.
+     *
+     * @param sender The command sender
+     * @param cmd The command being executed
+     * @param label The alias of the command used
+     * @param args The current command arguments
+     * @return A list of possible completions for the current argument
+     */
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player)) return new ArrayList<>();
