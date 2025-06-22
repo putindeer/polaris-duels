@@ -1,7 +1,7 @@
 name: polaris-duels
 version: ${project.version}
 main: us.polarismc.polarisduels.Main
-api-version: '1.21'
+api-version: '1.21.5'
 authors: [putindeer, tmpst, wixent]
 description: A Minimalist Duels Plugin for Polaris
 website: https://github.com/polaris-mc
@@ -26,8 +26,6 @@ commands:
   gm:
     aliases: [gamemode]
     permission: duels.admin
-  links:
-    description: Display the links of the server to a player
   msg:
     description: Private-message a player
   reply:
@@ -39,3 +37,7 @@ commands:
     permission: duels.dev
   test:
     permission: duels.dev
+  createvoidworld:
+    permission: duels.admin
+  world:
+    permission: duels.admin
