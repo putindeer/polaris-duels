@@ -16,7 +16,7 @@ import java.util.UUID;
 public class PlayerManager {
     /** List of all active DuelsPlayer instances */
     @Getter
-    public final List<DuelsPlayer> players;
+    public final List<DuelsPlayer> playerList;
 
     /**
      * Initializes a new PlayerManager with the specified plugin instance.
@@ -24,7 +24,7 @@ public class PlayerManager {
      * @param plugin The main plugin instance
      */
     public PlayerManager(Main plugin) {
-        players = new ArrayList<>();
+        playerList = new ArrayList<>();
     }
 
     /**
@@ -54,7 +54,7 @@ public class PlayerManager {
      * @return The DuelsPlayer instance, or null if not found
      */
     public DuelsPlayer getDuelsPlayer(String name) {
-        for (DuelsPlayer p : players) {
+        for (DuelsPlayer p : playerList) {
             if (p.getName().equalsIgnoreCase(name)) {
                 return p;
             }
@@ -69,7 +69,7 @@ public class PlayerManager {
      * @return The DuelsPlayer instance, or null if not found
      */
     public DuelsPlayer getDuelsPlayer(UUID uid) {
-        for (DuelsPlayer p : players) {
+        for (DuelsPlayer p : playerList) {
             if (p.getUuid().equals(uid)) {
                 return p;
             }
@@ -107,6 +107,6 @@ public class PlayerManager {
      */
     public void newDuelsPlayer(UUID uid, String name) {
         DuelsPlayer newPlayer = new DuelsPlayer(uid,name);
-        players.add(newPlayer);
+        playerList.add(newPlayer);
     }
 }
