@@ -63,7 +63,7 @@ public class PlayerRollBackManager {
         previousGameModeMap.remove(player.getUniqueId());
         previousArmorContents.remove(player.getUniqueId());
 
-        HubEvents.giveJoinItems(player);
+        HubEvents.giveLobbyItems(player);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> player.setFireTicks(0), 2);
     }
