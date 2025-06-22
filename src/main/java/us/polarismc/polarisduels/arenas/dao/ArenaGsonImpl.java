@@ -3,7 +3,9 @@ package us.polarismc.polarisduels.arenas.dao;
 import com.google.gson.*;
 import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
+import us.polarismc.api.util.generator.VoidGenerator;
 import us.polarismc.polarisduels.Main;
+import us.polarismc.polarisduels.arenas.commands.GridPos;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.arenas.entity.ArenaSize;
 import us.polarismc.polarisduels.arenas.states.InactiveArenaState;
@@ -15,11 +17,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Implementation of ArenaDAO that uses JSON for data persistence.
+ * Handles loading and saving arena data to/from a JSON file.
+ */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class ArenaGsonImpl implements ArenaDAO {
     private final Main plugin;
     private final File file;
+
+    /**
+     * Creates a new ArenaGsonImpl instance and initializes the data file.
+     *
+     * @param plugin The main plugin instance
+     */
     public ArenaGsonImpl(Main plugin) {
         this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "arenas.json");
@@ -32,6 +43,10 @@ public class ArenaGsonImpl implements ArenaDAO {
         }
     }
 
+    /**
+     * Loads all arena worlds and initializes them with a void generator.
+     * Skips worlds that are already loaded.
+     */
     @Override
     public void loadArenaWorlds() {
         File[] dir = Bukkit.getWorldContainer().listFiles(File::isDirectory);
@@ -42,15 +57,17 @@ public class ArenaGsonImpl implements ArenaDAO {
 
             if (Bukkit.getWorld(name) != null) continue;
 
-            World world = new WorldCreator(name).createWorld();
+            World world = new WorldCreator(name).generator(new VoidGenerator()).createWorld();
             assert world != null;
             world.setAutoSave(false);
         }
     }
 
     /**
-     * Saves the arenas to the JSON
-     * @param arenas map of the arenas
+     * Saves the list of arenas to a JSON file.
+     * Converts each arena's properties to JSON format including locations and settings.
+     *
+     * @param arenas List of ArenaEntity objects to save
      */
     @Override
     public void saveArenas(List<ArenaEntity> arenas) {
@@ -68,6 +85,16 @@ public class ArenaGsonImpl implements ArenaDAO {
             arenaJson.add("center", locationToJson(arena.getCenter()));
             arenaJson.add("cornerOne", locationToJson(arena.getCornerOne()));
             arenaJson.add("cornerTwo", locationToJson(arena.getCornerTwo()));
+            arenaJson.add("playableCornerOne", locationToJson(arena.getPlayableCornerOne()));
+            arenaJson.add("playableCornerTwo", locationToJson(arena.getPlayableCornerTwo()));
+
+            if (arena.getQuadrant() != null) {
+                JsonObject quadrantJson = new JsonObject();
+                quadrantJson.addProperty("x", arena.getQuadrant().x());
+                quadrantJson.addProperty("z", arena.getQuadrant().z());
+                arenaJson.add("quadrant", quadrantJson);
+            }
+            
             if (arena.getBlockLogo() != null) {
                 arenaJson.add("blockLogo", itemStackToJson(arena.getBlockLogo()));
             }
@@ -89,10 +116,10 @@ public class ArenaGsonImpl implements ArenaDAO {
     }
 
     /**
-     * Translates item stacks to json
+     * Converts an ItemStack to a JSON object.
      *
-     * @param item the item
-     * @return the json object
+     * @param item The ItemStack to convert
+     * @return JsonObject containing the item's type and amount
      */
     private JsonObject itemStackToJson(ItemStack item) {
         JsonObject itemJson = new JsonObject();
@@ -102,27 +129,30 @@ public class ArenaGsonImpl implements ArenaDAO {
     }
 
     /**
-     * Translates Location to json
+     * Converts a Location to a JSON object.
      *
-     * @param location Location
-     * @return the json object
+     * @param location The Location to convert
+     * @return JsonObject containing the location's coordinates and world
      */
     @Override
     public JsonObject locationToJson(Location location) {
         JsonObject locationJson = new JsonObject();
-        locationJson.addProperty("world", location.getWorld().getName());
         locationJson.addProperty("x", location.getX());
         locationJson.addProperty("y", location.getY());
         locationJson.addProperty("z", location.getZ());
         locationJson.addProperty("yaw", location.getYaw());
         locationJson.addProperty("pitch", location.getPitch());
+        if (location.getWorld() != null) {
+            locationJson.addProperty("world", location.getWorld().getName());
+        }
         return locationJson;
     }
 
     /**
-     * Load the arenas at starting the server
+     * Loads all arenas from the JSON file.
+     * Handles conversion from JSON to ArenaEntity objects.
      *
-     * @return the list of the arenas to work with
+     * @return List of loaded ArenaEntity objects
      */
     @Override
     public List<ArenaEntity> loadArenas() {
@@ -147,6 +177,8 @@ public class ArenaGsonImpl implements ArenaDAO {
                 Location center = jsonToLocation(arenaJson.getAsJsonObject("center"));
                 Location cornerOne = jsonToLocation(arenaJson.getAsJsonObject("cornerOne"));
                 Location cornerTwo = jsonToLocation(arenaJson.getAsJsonObject("cornerTwo"));
+                Location playableCornerOne = jsonToLocation(arenaJson.getAsJsonObject("playableCornerOne"));
+                Location playableCornerTwo = jsonToLocation(arenaJson.getAsJsonObject("playableCornerTwo"));
 
                 ArenaEntity arena = new ArenaEntity();
                 arena.setName(name);
@@ -156,12 +188,24 @@ public class ArenaGsonImpl implements ArenaDAO {
                 } else {
                     world = center != null ? center.getWorld() : null;
                 }
+                // Load quadrant information if available
+                GridPos quadrant = null;
+                if (arenaJson.has("quadrant")) {
+                    JsonObject quadrantJson = arenaJson.getAsJsonObject("quadrant");
+                    if (world != null) {
+                        int x = quadrantJson.get("x").getAsInt();
+                        int z = quadrantJson.get("z").getAsInt();
+                        quadrant = new GridPos(world, x, z);
+                    }
+                }
                 arena.setWorld(world);
                 arena.setSpawnOne(spawnOne);
                 arena.setSpawnTwo(spawnTwo);
                 arena.setCenter(center);
                 arena.setCornerOne(cornerOne);
                 arena.setCornerTwo(cornerTwo);
+                arena.setPlayableCornerOne(playableCornerOne);
+                arena.setPlayableCornerTwo(playableCornerTwo);
                 if (arenaJson.has("blockLogo")) {
                     arena.setBlockLogo(jsonToItemStack(arenaJson.getAsJsonObject("blockLogo")));
                 }
@@ -174,25 +218,36 @@ public class ArenaGsonImpl implements ArenaDAO {
                         arena.setArenaSize(ArenaSize.LARGE);
                     }
                 } else arena.setArenaSize(ArenaSize.LARGE);
+                
+                // Set the quadrant if it was loaded
+                if (quadrant != null) {
+                    arena.setQuadrant(quadrant);
+                } else {
+                    // Calculate quadrant based on center if not explicitly set
+                    try {
+                        arena.updateQuadrant();
+                    } catch (IllegalStateException e) {
+                        plugin.getLogger().warning("Could not calculate quadrant for arena " + name + ": " + e.getMessage());
+                    }
+                }
                 arena.setArenaState(new InactiveArenaState());
                 arenas.add(arena);
             }
         } catch (IOException e) {
-            plugin.getLogger().severe("Error loading arenas from file: " + e.getMessage());
-            plugin.getLogger().severe("Stack trace: ");
-            for (StackTraceElement element : e.getStackTrace()) {
-                plugin.getLogger().severe(element.toString());
-            }
+            plugin.utils.severe("Error reading arenas file: " + e.getMessage(),
+                    "Stack trace: ");
+            plugin.utils.severe(e.getStackTrace());
         }
 
         return arenas;
     }
 
     /**
-     * Translates the json object to Location
+     * Converts a JSON object to a Location.
      *
-     * @param locationJson json object
-     * @return the location
+     * @param locationJson JsonObject containing location data
+     * @return Location object created from the JSON data
+     * @throws NullPointerException if required fields are missing
      */
     @Override
     public Location jsonToLocation(JsonObject locationJson) {
@@ -207,10 +262,11 @@ public class ArenaGsonImpl implements ArenaDAO {
     }
 
     /**
-     * Translates the json object to ItemStack
+     * Converts a JSON object to an ItemStack.
      *
-     * @param itemJson the JsonObject
-     * @return the ItemStack
+     * @param itemJson JsonObject containing item data
+     * @return ItemStack created from the JSON data
+     * @throws IllegalArgumentException if the material type is invalid
      */
     private ItemStack jsonToItemStack(JsonObject itemJson) {
         Material type = Material.valueOf(itemJson.get("type").getAsString());
@@ -219,9 +275,9 @@ public class ArenaGsonImpl implements ArenaDAO {
     }
 
     /**
-     * Deletes the arenas when /arenai delete -name
+     * Deletes an arena from the JSON storage.
      *
-     * @param arena the arena to be deleted
+     * @param arena The ArenaEntity to delete
      */
     public void deleteArena(ArenaEntity arena) {
         Gson gson = new Gson();
