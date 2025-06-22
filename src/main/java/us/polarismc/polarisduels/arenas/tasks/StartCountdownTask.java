@@ -15,11 +15,34 @@ import us.polarismc.polarisduels.arenas.states.WaitingArenaState;
 
 import java.util.HashMap;
 
+/**
+ * A countdown task that runs before a duel match starts.
+ * Handles the pre-match countdown, player notifications, and kit saving.
+ * 
+ * <p>This task is responsible for:</p>
+ * <ul>
+ *   <li>Displaying countdown titles to players</li>
+ *   <li>Playing countdown sounds</li>
+ *   <li>Saving player kits when the countdown completes</li>
+ *   <li>Transitioning the arena to the active state when ready</li>
+ * </ul>
+ * 
+ * <p>The countdown can be cancelled if the arena state changes to {@link WaitingArenaState}
+ * before completion.</p>
+ */
 @AllArgsConstructor
 public class StartCountdownTask extends BukkitRunnable {
     private final Main plugin;
+    
+    /** The arena this countdown is for */
     private final ArenaEntity arena;
+    
+    /** Remaining seconds until the match starts */
     private int secondsUntilStart;
+    /**
+     * Executes the countdown logic on each tick.
+     * Handles countdown completion, state transitions, and player notifications.
+     */
     @Override
     public void run() {
         if (secondsUntilStart <= 0) {
@@ -46,6 +69,11 @@ public class StartCountdownTask extends BukkitRunnable {
         secondsUntilStart--;
     }
 
+    /**
+     * Saves the current inventory of all players as their kit for this arena.
+     * Handles edge cases like items on cursor and full inventories.
+     * Displays appropriate error messages if kit saving fails.
+     */
     private void saveKits() {
         for (Player p : arena.getPlayerList()) {
             if (p.getItemOnCursor().getType() != Material.AIR) {
