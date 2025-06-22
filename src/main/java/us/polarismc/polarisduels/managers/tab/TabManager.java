@@ -18,35 +18,43 @@ public class TabManager implements Listener {
     }
 
     /**
-     * Actualiza el TAB del jugador receptor para que solo vea a los jugadores de la lista (por ejemplo, los que están en la misma arena).
-     * @param player El jugador al que se le actualiza la lista
-     * @param list Los jugadores que deben mostrarse
+     * Updates the TAB list for the specified player to only show players from the provided list.
+     * This is typically used to show only players in the same arena.
+     *
+     * @param player The player whose TAB list will be updated
+     * @param list The list of players that should be visible to the player
      */
     public void setTabList(Player player, List<Player> list) {
         Bukkit.getOnlinePlayers().stream().filter(p -> !list.contains(p)).forEach(player::unlistPlayer);
     }
 
     /**
-     * Actualiza el TAB del jugador receptor para que vea a jugadores que se han añadido a la lista.
-     * @param player El jugador al que se le actualiza la lista
-     * @param list Los jugadores que deben mostrarse
+     * Refreshes the TAB list for the specified player to include newly added players from the list.
+     * This is used to dynamically update the TAB list when new players should be visible.
+     *
+     * @param player The player whose TAB list will be updated
+     * @param list The list of players that should be visible to the player
      */
     public void refreshTabList(Player player, List<Player> list) {
         list.stream().filter(p -> !player.isListed(p)).forEach(player::listPlayer);
     }
 
     /**
-     * Reinicia el TAB del jugador receptor para que vea a todos los players.
-     * @param player El jugador al que se le reinicia la lista
+     * Resets the TAB list for the specified player to show all online players.
+     * This is typically used when a player leaves an arena or similar restricted area.
+     *
+     * @param player The player whose TAB list will be reset
      */
     public void resetTabList(Player player) {
         Bukkit.getOnlinePlayers().forEach(player::listPlayer);
     }
 
     /**
-     * Comprueba si debe filtrarle el TAB al jugador
-     * @param duelsPlayer El jugador al que filtrarle el TAB
-     * @return Si se debería filtrar o no
+     * Checks if the TAB list should be filtered for the specified player.
+     * This is used to determine if the player is in a state where their TAB list should be restricted.
+     *
+     * @param duelsPlayer The player to check
+     * @return true if the TAB list should be filtered, false otherwise
      */
     private boolean shouldFilterTab(DuelsPlayer duelsPlayer) {
         return duelsPlayer.isDuel()
@@ -54,10 +62,25 @@ public class TabManager implements Listener {
                 || duelsPlayer.isStartingDuel();
     }
 
+    /**
+     * Checks if the TAB list should be filtered for the specified player.
+     * This is used to determine if the player is in a state where their TAB list should be restricted.
+     *
+     * @param player The Bukkit player to check
+     * @return true if the TAB list should be filtered, false otherwise
+     */
     private boolean shouldFilterTab(Player player) {
         return shouldFilterTab(plugin.getPlayerManager().getDuelsPlayer(player));
     }
 
+    /**
+     * Handles player join events to maintain proper TAB list filtering.
+     * When a player joins the server, this method hides the new player from the TAB list
+     * of all existing players who should have filtered TAB lists (players in duels, queue, or starting duels).
+     * This ensures that players in combat situations don't see irrelevant players in their TAB list.
+     *
+     * @param event The PlayerJoinEvent containing information about the joining player
+     */
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Bukkit.getOnlinePlayers().stream().filter(this::shouldFilterTab).forEach(p -> p.unlistPlayer(event.getPlayer()));
