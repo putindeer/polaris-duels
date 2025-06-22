@@ -1,7 +1,7 @@
 package us.polarismc.polarisduels.arenas.states;
 
+import io.papermc.paper.registry.keys.SoundEventKeys;
 import it.unimi.dsi.fastutil.Pair;
-import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -20,7 +20,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.*;
@@ -33,18 +32,47 @@ import us.polarismc.polarisduels.player.DuelsPlayer;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Manages the active state of an arena during a duel match.
+ * Handles match flow, player interactions, and game mechanics.
+ * 
+ * <p>Key responsibilities:</p>
+ * <ul>
+ *   <li>Match progression and round management</li>
+ *   <li>Player combat and damage handling</li>
+ *   <li>Arena state tracking and reset logic</li>
+ *   <li>Team scoring and victory conditions</li>
+ *   <li>Special kit attributes and game rules</li>
+ * </ul>
+ * 
+ * <p>Implements {@link Listener} to handle Bukkit events during matches.</p>
+ */
+
 public class ActiveArenaState implements ArenaState, Listener {
-    //region [Metodos al activar y desactivar la arena]
     private final Main plugin = Main.getInstance();
     private ArenaEntity arena;
+
+    //region ArenaState Implementation
+    /**
+     * Activates the arena state and starts the duel.
+     * 
+     * @param arena the arena being activated
+     * @throws IllegalArgumentException if arena is null
+     */
     @Override
     public void onEnable(ArenaEntity arena) {
+        if (arena == null) {
+            throw new IllegalArgumentException("Arena cannot be null");
+        }
         Bukkit.getPluginManager().registerEvents(this, plugin);
         this.arena = arena;
         startDuel();
-        Main.pl.getLogger().info("ActiveArenaState enabled");
+        Main.pl.getLogger().info("ActiveArenaState enabled for arena " + arena.getName());
     }
 
+    /**
+     * Cleans up resources when the arena state is disabled.
+     */
     @Override
     public void onDisable() {
         HandlerList.unregisterAll(this);
@@ -52,8 +80,14 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
     //endregion
 
-    //region [Sistema para iniciar el duel]
+    //region Match Flow
+    private int healthTaskId = -1;
     private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+    private final HashMap<UUID, ItemStack[]> savedInventories = new HashMap<>();
+    /**
+     * Initializes and starts a new duel match.
+     * Sets up teams, teleports players, and starts the match countdown.
+     */
     private void startDuel() {
         List<Player> playerList = arena.getPlayerList();
 
@@ -83,8 +117,7 @@ public class ActiveArenaState implements ArenaState, Listener {
             player.setInvulnerable(false);
             player.setSaturation(5.0f);
             savedInventories.put(player.getUniqueId(), plugin.getKitManager().loadKit(player.getUniqueId(), arena.getKit()));
-            plugin.utils.message(player, Sound.sound(Key.key("block.ancient_debris.break"), Sound.Source.MASTER, 10f, 1f), "&cThe Match has started!");
-
+            plugin.utils.message(player, Sound.sound(SoundEventKeys.BLOCK_ANCIENT_DEBRIS_BREAK, Sound.Source.MASTER, 10f, 1f), "&cThe Match has started!");
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
             duelsPlayer.setStartingDuel(false);
             duelsPlayer.setDuel(true);
@@ -131,8 +164,10 @@ public class ActiveArenaState implements ArenaState, Listener {
         }
     }
 
-    private int healthTaskId = -1;
-
+    /**
+     * Adds a health indicator below player names.
+     * Shows the player's current health as a percentage.
+     */
     private void addHealthIndicator() {
         if (scoreboard.getObjective("HealthNamePL") == null) {
             scoreboard.registerNewObjective("HealthNamePL", Criteria.DUMMY, plugin.utils.chat("&c❤")).setDisplaySlot(DisplaySlot.BELOW_NAME);
@@ -148,6 +183,9 @@ public class ActiveArenaState implements ArenaState, Listener {
         },0,5);
     }
 
+    /**
+     * Stops and cleans up the health indicator task.
+     */
     private void stopHealthIndicator() {
         if (healthTaskId != -1) {
             plugin.getServer().getScheduler().cancelTask(healthTaskId);
@@ -156,8 +194,12 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
     //endregion
 
-    //region [Sistema para detectar cuando un jugador muere]
-    private final HashMap<DuelTeam, Integer> winsTeam = new HashMap<>();
+    //region [Player Death System]
+    /**
+     * Handles damage events to detect player deaths.
+     * 
+     * @param event The damage event
+     */
     @EventHandler
     private void onDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
@@ -172,6 +214,11 @@ public class ActiveArenaState implements ArenaState, Listener {
         checkForWinner(player);
     }
 
+    /**
+     * Checks if a team has won the round after a player dies.
+     * 
+     * @param player The player who died
+     */
     private void checkForWinner(Player player) {
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
         DuelTeam team = duelsPlayer.getTeam();
@@ -202,6 +249,11 @@ public class ActiveArenaState implements ArenaState, Listener {
         }
     }
 
+    /**
+     * Checks if there are multiple teams with online players remaining.
+     * 
+     * @return true if multiple teams have online players, false otherwise
+     */
     private boolean multipleConnectedTeams() {
         Set<DuelTeam> onlineTeams = arena.getPlayerList().stream()
                 .map(p -> plugin.getPlayerManager().getDuelsPlayer(p).getTeam())
@@ -211,6 +263,11 @@ public class ActiveArenaState implements ArenaState, Listener {
         return onlineTeams.size() > 1;
     }
 
+    /**
+     * Drops a player's inventory items at their location.
+     * 
+     * @param player The player whose items to drop
+     */
     private void dropItems(Player player) {
         Location location = player.getLocation();
 
@@ -224,17 +281,23 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Comprueba si el jugador está sosteniendo un totem
-     * @param player El jugador a comprobar
-     * @return Si el jugador sostiene un totem, devuelve 'true', si no, devuelve 'false'
+     * Checks if the player is holding a totem of undying in either hand.
+     * 
+     * @param player The player to check
+     * @return true if the player is holding a totem, false otherwise
      */
     private boolean hasTotem(Player player) {
         return player.getInventory().getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING || player.getInventory().getItemInMainHand().getType() == Material.TOTEM_OF_UNDYING;
     }
     //endregion
 
-    //region [Sistema de pasar a la siguiente ronda]
-    private final HashMap<UUID, ItemStack[]> savedInventories = new HashMap<>();
+    //region Round Management
+    /**
+     * Handles the transition to the next round after a team wins.
+     * Announces the winner, updates scores, and prepares for the next round.
+     * 
+     * @param team The team that won the current round
+     */
     private void nextRound(DuelTeam team) {
         if (arena.getPlayersNeeded() == 2) {
             Player winner = Bukkit.getPlayer(team.getMembers().getFirst().getUuid());
@@ -263,6 +326,11 @@ public class ActiveArenaState implements ArenaState, Listener {
         resetRound();
     }
 
+    /**
+     * Resets the arena state for a new round.
+     * Restores the arena blocks and entities, then respawns all players.
+     * Players are teleported to their respective spawn points with full health and inventory.
+     */
     private void resetRound() {
         plugin.utils.delay(20 * 5, () -> {
             if (!arena.getKit().hasAttribute(ArenaAttribute.NO_ARENA_REGENERATION)) {
@@ -303,8 +371,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Restaura al jugador completamente, su inventario, su vida, le quita los efectos, etc.
-     * @param p El jugador al que se le restaurará
+     * Fully restores a player's state between rounds.
+     * Resets inventory, health, food level, potion effects, and other combat-related states.
+     * 
+     * @param p The player to restore
      */
     private void restorePlayer(Player p) {
         ItemStack[] items = savedInventories.get(p.getUniqueId());
@@ -324,7 +394,13 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
     //endregion
 
-    //region [Sistema de ganar la partida]
+    //region Win System
+    /**
+     * Handles the win condition when a team wins the match.
+     * Announces the winner, shows victory/defeat messages, and resets the arena.
+     * 
+     * @param team The team that won the match
+     */
     private void Win(DuelTeam team) {
         Pair<Integer, Integer> scores = getScores();
 
@@ -351,6 +427,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
 
+    /**
+     * Resets the arena to its initial state after a match.
+     * Restores players, clears teams, and prepares the arena for the next match.
+     */
     private void resetArena() {
         for (Player p : arena.getPlayerList()) {
             plugin.utils.setMaxHealth(p);
@@ -375,9 +455,16 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
     //endregion
 
-    //region [Metodos de la arena]
+    //region Arena Management
+    private final HashMap<DuelTeam, Integer> winsTeam = new HashMap<>();
+    /**
+     * Handles player disconnection during a match.
+     * Removes the player from the arena and checks for a winner.
+     * 
+     * @param event The player quit event
+     */
     @EventHandler
-    private void onQuit(PlayerQuitEvent event){
+    private void onQuit(PlayerQuitEvent event) {
         Player p = event.getPlayer();
         if (!arena.hasPlayer(p)) return;
         if (p.isInvulnerable()) p.setInvulnerable(false);
@@ -388,6 +475,11 @@ public class ActiveArenaState implements ArenaState, Listener {
         arena.removePlayer(p, plugin);
     }
 
+    /**
+     * Gets the current scores for both teams.
+     * 
+     * @return A Pair containing the red team's score (left) and blue team's score (right)
+     */
     private Pair<Integer, Integer> getScores() {
         int redScore = winsTeam.entrySet().stream()
                 .filter(e -> e.getKey().getColor() == NamedTextColor.RED)
@@ -401,15 +493,17 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Cuando un jugador sale de la arena, lo devuelve a la arena, para evitar problemas.
-     * @param event El evento a registrar
+     * Prevents players from leaving the arena boundaries during a match.
+     * Teleports them back if they try to escape the arena.
+     * 
+     * @param event The player move event
      */
     @EventHandler
     private void onPlayerMove(PlayerMoveEvent event) {
         if (!event.hasExplicitlyChangedBlock()) return;
         Player p = event.getPlayer();
         if (!arena.hasPlayer(p)) return;
-        if (plugin.utils.isInside(event.getTo(), arena.getCornerOne(), arena.getCornerTwo())) return;
+        if (plugin.utils.isInside(event.getTo(), arena.getPlayableCornerOne(), arena.getPlayableCornerTwo())) return;
 
         event.setCancelled(true);
         p.teleport(event.getFrom());
@@ -417,9 +511,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Obtiene las wins del team al darle un color.
-     * @param color Color del equipo
-     * @return El número de wins
+     * Gets the number of wins for a team by their color.
+     * 
+     * @param color The team color to check
+     * @return The number of wins for the specified team
      */
     public int getWinsByColor(NamedTextColor color) {
         for (Map.Entry<DuelTeam, Integer> entry : winsTeam.entrySet()) {
@@ -431,17 +526,19 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
     //endregion
 
-    //region [Buff de los fluidos]
+    //region Fluid Mechanics
     /**
-     * Lista que guarda a los jugadores que tengan un cubo en la mano.
+     * Tracks players holding buckets for fluid interaction buffs.
+     * Used to apply extended interaction range for fluid mechanics.
      */
     private final Set<Player> bucketHoldingPlayers = new HashSet<>();
 
     /**
-     * Cuando el jugador tiene un cubo en la mano, aumenta su rango a 5.0 (pre-1.20.5)
-     * para evitar problemas de ghosting con versiones antiguas.
-     * De la misma manera, disminuye el rango si ya no lo tiene en la mano.
-     * @param event El evento a registrar
+     * Handles bucket holding state changes for players.
+     * Adjusts interaction range when holding a bucket to prevent ghosting issues in versions before 1.20.5.
+     * Restores normal range when not holding a bucket.
+     * 
+     * @param event The item held event
      */
     @EventHandler
     public void onBucketHeld(PlayerItemHeldEvent event) {
@@ -458,10 +555,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Cuando el jugador da click a un cubo en el inventario y lo deja en la hotbar,
-     * aumenta su rango a 5.0 (pre-1.20.5) para evitar problemas de ghosting con versiones antiguas.
-     * De la misma manera, disminuye el rango si lo quita de la hotbar.
-     * @param event El evento a registrar
+     * Handles bucket movement in the inventory.
+     * Adjusts interaction range when a bucket is moved to/from the hotbar to prevent ghosting issues.
+     * 
+     * @param event The inventory click event
      */
     @EventHandler
     public void onBucketClick(InventoryClickEvent event) {
@@ -483,12 +580,13 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Comprueba si el material es un cubo o no.
-     * @param i El material a comprobar
-     * @return Si el material es un cubo, devuelve 'true', si no lo es, devuelve 'false'.
+     * Checks if a material is a bucket type used for fluid mechanics.
+     * 
+     * @param material The material to check
+     * @return true if the material is a fluid bucket, false otherwise
      */
-    private boolean isBucket(Material i) {
-        return switch (i) {
+    private boolean isBucket(Material material) {
+        return switch (material) {
             case WATER_BUCKET, COD_BUCKET, SALMON_BUCKET, TROPICAL_FISH_BUCKET, PUFFERFISH_BUCKET, AXOLOTL_BUCKET,
                  TADPOLE_BUCKET, LAVA_BUCKET -> true;
             default -> false;
@@ -496,45 +594,54 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Aumenta el rango del jugador para cuando tenga un cubo en la mano.
-     * @param p El jugador al cual se le aumenta el rango
+     * Applies an interaction range boost to a player holding a bucket.
+     * This helps prevent ghosting issues with fluid mechanics.
+     * 
+     * @param player The player to apply the boost to
      */
-    private void applyFluidBoost(Player p) {
-        if (!bucketHoldingPlayers.contains(p)) {
-            AttributeInstance attribute = p.getAttribute(Attribute.BLOCK_INTERACTION_RANGE);
+    private void applyFluidBoost(Player player) {
+        if (!bucketHoldingPlayers.contains(player)) {
+            AttributeInstance attribute = player.getAttribute(Attribute.BLOCK_INTERACTION_RANGE);
             assert attribute != null;
             double newValue = attribute.getBaseValue() + 0.5;
             attribute.setBaseValue(newValue);
-            bucketHoldingPlayers.add(p);
+            bucketHoldingPlayers.add(player);
         }
     }
 
     /**
-     * Aumenta el rango del jugador para cuando no tiene un cubo en la mano.
-     * @param p El jugador al cual se le disminuye el rango
+     * Removes the interaction range boost from a player no longer holding a bucket.
+     * 
+     * @param player The player to remove the boost from
      */
-    private void removeFluidBoost(Player p) {
-        if (bucketHoldingPlayers.contains(p)) {
-            AttributeInstance attribute = p.getAttribute(Attribute.BLOCK_INTERACTION_RANGE);
+    private void removeFluidBoost(Player player) {
+        if (bucketHoldingPlayers.contains(player)) {
+            AttributeInstance attribute = player.getAttribute(Attribute.BLOCK_INTERACTION_RANGE);
             assert attribute != null;
             double newValue = attribute.getBaseValue() - 0.5;
             attribute.setBaseValue(newValue);
-            bucketHoldingPlayers.remove(p);
+            bucketHoldingPlayers.remove(player);
         }
     }
     //endregion
 
-    //region [Sistema de reparación de la arena]
+    //region Arena Tracking
     /**
-     * Lista que guarda todos los bloques que se modifican desde el inicio del duel hasta el final de la ronda.
-     * (O en caso de que la regeneración de la arena esté desactivada, hasta el final del duel)
+     * Tracks all blocks that have been modified during the match.
+     * Maps block locations to their original material for restoration.
      */
     private final Map<Location, Material> modifiedBlocks = new HashMap<>();
-    private final Set<Location> placedBlocks = new HashSet<>();
 
     /**
-     * Guarda cuando se rompe un bloque en la arena.
-     * @param event El evento a registrar
+     * Tracks all blocks that have been placed by players during the match.
+     * Used to determine which blocks can be broken when NO_ARENA_DESTRUCTION is enabled.
+     */
+    private final Set<Location> placedBlocks = new HashSet<>();
+    /**
+     * Handles block break events in the arena.
+     * Tracks broken blocks to restore them later.
+     * 
+     * @param event The block break event
      */
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
@@ -545,9 +652,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Guarda cuando se pone un bloque en la arena.
-     * Si no se puede romper la arena en el kit, guarda el bloque que puso el jugador.
-     * @param event El evento a registrar
+     * Handles block place events in the arena.
+     * Tracks placed blocks for arena restoration and enforces arena destruction rules.
+     * 
+     * @param event The block place event
      */
     @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
@@ -561,8 +669,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Guarda cuando se pone un fluido en la arena.
-     * @param event El evento a registrar
+     * Handles bucket empty events in the arena.
+     * Tracks fluid placement for arena restoration.
+     * 
+     * @param event The bucket empty event
      */
     @EventHandler(ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
@@ -578,8 +688,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Guarda cuando se expande un fluido en la arena.
-     * @param event El evento a registrar
+     * Handles fluid flow events in the arena.
+     * Tracks fluid spread for arena restoration.
+     * 
+     * @param event The block from-to event
      */
     @EventHandler(ignoreCancelled = true)
     public void onFluidFlow(BlockFromToEvent event) {
@@ -592,9 +704,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Guarda cuando se crea cobblestone con agua y lava en la arena.
-     * Si no se puede romper la arena en el kit, guarda los bloques que generó el lavacast.
-     * @param event El evento a registrar
+     * Handles block formation events from lava-water interactions.
+     * Tracks generated blocks like cobblestone for arena restoration.
+     * 
+     * @param event The block form event
      */
     @EventHandler(ignoreCancelled = true)
     public void onLavaCast(BlockFormEvent event) {
@@ -609,8 +722,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Guarda cuando un bloque se quema en la arena debido al fuego.
-     * @param event El evento a registrar
+     * Handles block burn events in the arena.
+     * Tracks blocks destroyed by fire for arena restoration.
+     * 
+     * @param event The block burn event
      */
     @EventHandler(ignoreCancelled = true)
     public void onBlockBurn(BlockBurnEvent event) {
@@ -623,8 +738,8 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Guarda cuando un bloque de grass se transforma en uno de tierra en la arena.
-     * @param event El evento a registrar
+     * Tracks grass blocks turning into dirt in the arena.
+     * @param event The block fade event
      */
     @EventHandler(ignoreCancelled = true)
     public void onGrassFade(BlockFadeEvent event) {
@@ -637,8 +752,10 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Guarda cuando creas una farmland o un path con una azada o una pala en la arena.
-     * @param event El evento a registrar
+     * Handles block transformation events from tool interactions.
+     * Tracks changes like grass to path or farmland for arena restoration.
+     * 
+     * @param event The player interact event
      */
     @EventHandler(ignoreCancelled = true)
     public void onBlockTransform(PlayerInteractEvent event) {
@@ -658,6 +775,12 @@ public class ActiveArenaState implements ArenaState, Listener {
         }
     }
 
+    /**
+     * Handles entity explosion events in the arena.
+     * Tracks blocks destroyed by explosions for arena restoration.
+     * 
+     * @param event The entity explode event
+     */
     @EventHandler(ignoreCancelled = true)
     public void onExplode(EntityExplodeEvent event) {
         if (!plugin.utils.isInWorld(event.getLocation(), arena.getWorld())) return;
@@ -665,8 +788,8 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Restaura todos los cambios hechos en la arena después de la ronda.
-     * Si la regeneración de arena está desactivada, los restaura después del duel.
+     * Restores all block changes made during the round.
+     * If arena regeneration is disabled, restores after the entire duel.
      */
     public void resetArenaBlocks() {
         for (Map.Entry<Location, Material> entry : modifiedBlocks.entrySet()) {
@@ -678,8 +801,8 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Borra todas las entidades en la arena después de que termine la ronda.
-     * Si la regeneración de arena está desactivada, las borra después del duel.
+     * Removes all entities from the arena after the round.
+     * If arena regeneration is disabled, removes them after the entire duel.
      */
     public void resetArenaEntities() {
         arena.getWorld().getEntities().stream()
@@ -688,11 +811,13 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
     //endregion
 
-    //region [Sistema de atributos de la arena]
+    //region Arena Attributes
     /**
-     * Si no se pueden romper bloques en el kit, cancela el evento.
-     * Si no se puede romper la arena en el kit, y el bloque no fue puesto por un jugador, cancela el evento.
-     * @param event El evento a registrar
+     * Enforces block breaking restrictions based on the current kit's attributes.
+     * Prevents breaking blocks if disabled in the kit or if the block is part of the arena
+     * and arena destruction is disabled. Shows appropriate feedback to the player.
+     * 
+     * @param event The block break event to handle
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBreak(BlockBreakEvent event) {
@@ -710,8 +835,11 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Si no se pueden poner bloques en el kit, cancela el evento.
-     * @param event El evento a registrar
+     * Enforces block placement restrictions based on the current kit's attributes.
+     * Prevents placing blocks if disabled in the kit. Shows feedback to the player
+     * when placement is denied.
+     * 
+     * @param event The block place event to handle
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlace(BlockPlaceEvent event) {
@@ -726,65 +854,34 @@ public class ActiveArenaState implements ArenaState, Listener {
     }
 
     /**
-     * Si no se puede regenerar vida en el kit, cancela la regeneración.
-     * @param event El evento a registrar
+     * Handles health regeneration events.
+     * Disables natural health regeneration if disabled in the kit.
+     * 
+     * @param event The entity regain health event
      */
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOW)
     public void onRegen(EntityRegainHealthEvent event) {
         if (!(event.getEntity() instanceof Player p)) return;
         if (!arena.hasPlayer(p)) return;
 
-        if (arena.getKit().hasAttribute(ArenaAttribute.NO_NATURAL_REGEN) && event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED) {
+        if (arena.getKit().hasAttribute(ArenaAttribute.NO_NATURAL_REGEN) && 
+            event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED) {
             event.setCancelled(true);
         }
     }
-
+    
     /**
-     * Si no se puede craftear en el kit, cancela el resultado.
-     * @param event El evento a registrar
-     */
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onCraft(PrepareItemCraftEvent event) {
-        Player p = (Player) event.getView().getPlayer();
-        if (!arena.hasPlayer(p)) return;
-
-        ItemStack result = event.getInventory().getResult();
-        if (result == null || result.getType() == Material.AIR) return;
-
-        if (arena.getKit().hasAttribute(ArenaAttribute.NO_CRAFTING)) {
-            event.getInventory().setResult(null);
-            p.sendActionBar(plugin.utils.chat("&cCrafting is disabled in this kit!"));
-        }
-    }
-
-    /**
-     * Si no se puede tener hambre en el kit, cancela la perdida de hambre.
-     * Además, si no se puede perder toda la barra de comida en el kit y la barra de comida está en el limite permitido, cancela la perdida de hambre.
-     * @param event El evento a registrar
-     */
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onHungerChange(FoodLevelChangeEvent event) {
-        if (!(event.getEntity() instanceof Player p)) return;
-        if (!arena.hasPlayer(p)) return;
-
-        if (arena.getKit().hasAttribute(ArenaAttribute.NO_HUNGER)) {
-            event.setCancelled(true);
-        }
-        if (arena.getKit().hasAttribute(ArenaAttribute.NO_COMPLETE_HUNGER_LOSS) && event.getFoodLevel() < 10) {
-            event.setCancelled(true);
-        }
-    }
-
-    /**
-     * Si el daño melee está aumentado en el kit, lo aumenta a su respectivo porcentaje.
-     * @param event El evento a registrar
+     * Applies damage modifiers to melee attacks based on kit attributes.
+     * Currently supports increasing melee damage by 33% when the
+     * ONE_THIRD_MORE_MELEE_DAMAGE attribute is present in the kit.
+     * 
+     * @param event The entity damage by entity event to process
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityDamage(EntityDamageByEntityEvent event) {
-        if (!(event.getEntity() instanceof Player v)) return;
-        if (!(event.getDamager() instanceof Player a)) return;
-        if (!arena.hasPlayer(v)) return;
-        if (!arena.hasPlayer(a)) return;
+        if (!(event.getEntity() instanceof Player victim)) return;
+        if (!(event.getDamager() instanceof Player attacker)) return;
+        if (!arena.hasPlayer(victim) || !arena.hasPlayer(attacker)) return;
 
         if (arena.getKit().hasAttribute(ArenaAttribute.ONE_THIRD_MORE_MELEE_DAMAGE)) {
             double newDamage = event.getDamage() * 4 / 3;
