@@ -35,6 +35,7 @@ public class ArenaManager {
     private final Main plugin;
     
     /** List of all registered arenas in the system */
+    @Getter
     public final List<ArenaEntity> arenas;
 
     /** Data access object for arena persistence */
@@ -43,15 +44,6 @@ public class ArenaManager {
     /** Manager for handling player state rollbacks after matches */
     @Getter
     private final PlayerRollBackManager rollBackManager;
-    
-    /**
-     * Gets the list of all arenas.
-     * 
-     * @return An unmodifiable list of all arenas
-     */
-    public List<ArenaEntity> getArenas() {
-        return Collections.unmodifiableList(arenas);
-    }
 
     /**
      * Constructs a new ArenaManager instance.

@@ -1,5 +1,6 @@
 package us.polarismc.polarisduels.player;
 
+import lombok.Getter;
 import org.bukkit.entity.Player;
 import us.polarismc.polarisduels.Main;
 
@@ -14,7 +15,8 @@ import java.util.UUID;
 @SuppressWarnings("unused")
 public class PlayerManager {
     /** List of all active DuelsPlayer instances */
-    private final List<DuelsPlayer> players;
+    @Getter
+    public final List<DuelsPlayer> players;
 
     /**
      * Initializes a new PlayerManager with the specified plugin instance.
@@ -52,7 +54,7 @@ public class PlayerManager {
      * @return The DuelsPlayer instance, or null if not found
      */
     public DuelsPlayer getDuelsPlayer(String name) {
-        for (DuelsPlayer p : getPlayerList()) {
+        for (DuelsPlayer p : players) {
             if (p.getName().equalsIgnoreCase(name)) {
                 return p;
             }
@@ -67,7 +69,7 @@ public class PlayerManager {
      * @return The DuelsPlayer instance, or null if not found
      */
     public DuelsPlayer getDuelsPlayer(UUID uid) {
-        for (DuelsPlayer p : getPlayerList()) {
+        for (DuelsPlayer p : players) {
             if (p.getUuid().equals(uid)) {
                 return p;
             }
@@ -105,15 +107,6 @@ public class PlayerManager {
      */
     public void newDuelsPlayer(UUID uid, String name) {
         DuelsPlayer newPlayer = new DuelsPlayer(uid,name);
-        getPlayerList().add(newPlayer);
-    }
-
-    /**
-     * Gets a list of all active DuelsPlayer instances.
-     *
-     * @return An unmodifiable list of all DuelsPlayer instances
-     */
-    public List<DuelsPlayer> getPlayerList() {
-        return players;
+        players.add(newPlayer);
     }
 }
