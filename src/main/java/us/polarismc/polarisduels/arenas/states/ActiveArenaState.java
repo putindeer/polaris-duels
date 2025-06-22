@@ -647,7 +647,7 @@ public class ActiveArenaState implements ArenaState, Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         Location loc = block.getLocation();
-        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
+        if (!plugin.utils.isInside(loc, arena.getCornerOne(), arena.getCornerTwo())) return;
         modifiedBlocks.putIfAbsent(loc, block.getType());
     }
 
@@ -661,7 +661,7 @@ public class ActiveArenaState implements ArenaState, Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
         Location loc = block.getLocation();
-        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
+        if (!plugin.utils.isInside(loc, arena.getCornerOne(), arena.getCornerTwo())) return;
         modifiedBlocks.putIfAbsent(loc, Material.AIR);
         if (arena.getKit().hasAttribute(ArenaAttribute.NO_ARENA_DESTRUCTION)) {
             placedBlocks.add(event.getBlock().getLocation());
@@ -678,7 +678,7 @@ public class ActiveArenaState implements ArenaState, Listener {
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
         Block block = event.getBlock();
         Location loc = block.getLocation();
-        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
+        if (!plugin.utils.isInside(loc, arena.getCornerOne(), arena.getCornerTwo())) return;
 
         if (block.getBlockData() instanceof Waterlogged waterlogged) {
             if (!waterlogged.isWaterlogged()) {
@@ -698,7 +698,7 @@ public class ActiveArenaState implements ArenaState, Listener {
         Block block = event.getBlock();
         if (block.isLiquid()) {
             Location loc = event.getToBlock().getLocation();
-            if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
+            if (!plugin.utils.isInside(loc, arena.getCornerOne(), arena.getCornerTwo())) return;
             modifiedBlocks.putIfAbsent(loc, Material.AIR);
         }
     }
@@ -713,7 +713,7 @@ public class ActiveArenaState implements ArenaState, Listener {
     public void onLavaCast(BlockFormEvent event) {
         Block block = event.getBlock();
         Location loc = block.getLocation();
-        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
+        if (!plugin.utils.isInside(loc, arena.getCornerOne(), arena.getCornerTwo())) return;
 
         modifiedBlocks.putIfAbsent(loc, Material.AIR);
         if (arena.getKit().hasAttribute(ArenaAttribute.NO_ARENA_DESTRUCTION)) {
@@ -732,7 +732,7 @@ public class ActiveArenaState implements ArenaState, Listener {
         Block block = event.getBlock();
         Location loc = block.getLocation();
 
-        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
+        if (!plugin.utils.isInside(loc, arena.getCornerOne(), arena.getCornerTwo())) return;
 
         modifiedBlocks.putIfAbsent(loc, block.getType());
     }
@@ -746,7 +746,7 @@ public class ActiveArenaState implements ArenaState, Listener {
         Block block = event.getBlock();
         Location loc = block.getLocation();
         if (block.getType() == Material.GRASS_BLOCK && event.getNewState().getType() == Material.DIRT) {
-            if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
+            if (!plugin.utils.isInside(loc, arena.getCornerOne(), arena.getCornerTwo())) return;
             modifiedBlocks.putIfAbsent(loc, block.getType());
         }
     }
@@ -767,7 +767,7 @@ public class ActiveArenaState implements ArenaState, Listener {
         if (block == null) return;
 
         Location loc = block.getLocation();
-        if (!plugin.utils.isInWorld(loc, arena.getWorld())) return;
+        if (!plugin.utils.isInside(loc, arena.getCornerOne(), arena.getCornerTwo())) return;
         Material blockType = block.getType();
 
         if ((item.getType().toString().endsWith("_HOE") || item.getType().toString().endsWith("_SHOVEL")) && (blockType == Material.GRASS_BLOCK || blockType == Material.DIRT)) {
@@ -783,7 +783,7 @@ public class ActiveArenaState implements ArenaState, Listener {
      */
     @EventHandler(ignoreCancelled = true)
     public void onExplode(EntityExplodeEvent event) {
-        if (!plugin.utils.isInWorld(event.getLocation(), arena.getWorld())) return;
+        if (!plugin.utils.isInside(event.getLocation(), arena.getCornerOne(), arena.getCornerTwo())) return;
         event.blockList().forEach(b -> modifiedBlocks.putIfAbsent(b.getLocation(), b.getType()));
     }
 
@@ -807,6 +807,7 @@ public class ActiveArenaState implements ArenaState, Listener {
     public void resetArenaEntities() {
         arena.getWorld().getEntities().stream()
                 .filter(entity -> !(entity instanceof Player))
+                .filter(entity -> plugin.utils.isInside(entity.getLocation(), arena.getCornerOne(), arena.getCornerTwo()))
                 .forEach(Entity::remove);
     }
     //endregion
