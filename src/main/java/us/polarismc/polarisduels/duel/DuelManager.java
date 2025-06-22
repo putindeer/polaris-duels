@@ -9,15 +9,35 @@ import us.polarismc.polarisduels.queue.KitType;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Manages all duel-related functionality including requests, validations, and duel creation.
+ * This class handles the core logic for player duels, including request management,
+ * validation checks, and arena assignment for duels.
+ */
 public class DuelManager {
     private final Main plugin;
 
+    /**
+     * Initializes a new DuelManager instance.
+     *
+     * @param plugin The main plugin instance
+     */
     public DuelManager(Main plugin) {
         this.plugin = plugin;
     }
 
+    /** Maps player UUIDs to their list of incoming duel requests */
     private final Map<UUID, List<DuelRequest>> requests = new HashMap<>();
 
+    /**
+     * Sends a duel request from one player to another.
+     * Validates the request and notifies both players.
+     *
+     * @param requested The player receiving the duel request
+     * @param requestor The player sending the duel request
+     * @param kit The kit type for the duel
+     * @param rounds The number of rounds for the duel
+     */
     public void sendRequest(Player requested, Player requestor, KitType kit, int rounds) {
         if (!canRequestorSendDuel(requested, requestor)) return;
 
@@ -36,6 +56,13 @@ public class DuelManager {
                 "<gray>or <click:run_command:/duel deny " + requestor.getName() + "><red>/duel deny " + requestor.getName() + "</click> <gray>to reply."));
     }
 
+    /**
+     * Processes a duel acceptance from the requested player.
+     * Validates the request and starts the duel if all conditions are met.
+     *
+     * @param requested The player who is accepting the duel
+     * @param requestor The player who sent the duel request
+     */
     public void acceptDuel(Player requested, Player requestor) {
         List<DuelRequest> playerRequests = requests.get(requested.getUniqueId());
         if (playerRequests == null || playerRequests.isEmpty()) {
@@ -58,6 +85,13 @@ public class DuelManager {
         createDuel(request);
     }
 
+    /**
+     * Processes a duel denial from the requested player.
+     * Removes the request and notifies both players.
+     *
+     * @param requested The player who is denying the duel
+     * @param requestor The player who sent the duel request
+     */
     public void denyDuel(Player requested, Player requestor) {
         List<DuelRequest> playerRequests = requests.get(requested.getUniqueId());
         if (playerRequests == null || playerRequests.isEmpty()) {
@@ -78,6 +112,11 @@ public class DuelManager {
         plugin.utils.message(requestor, "&c" + requested.getName() + " denied your duel request.");
     }
 
+    /**
+     * Lists all pending duel requests for a player.
+     *
+     * @param player The player whose requests to list
+     */
     public void listRequests(Player player) {
         List<DuelRequest> playerRequests = requests.get(player.getUniqueId());
 
@@ -98,6 +137,12 @@ public class DuelManager {
         }
     }
 
+    /**
+     * Gets a list of usernames who have sent duel requests to the specified player.
+     *
+     * @param p The player to check for incoming requests
+     * @return A list of usernames who have sent duel requests
+     */
     public List<String> getPlayerRequests(Player p) {
         List<DuelRequest> requestList = requests.get(p.getUniqueId());
         if (requestList == null) return new ArrayList<>();
@@ -108,6 +153,11 @@ public class DuelManager {
     }
 
 
+    /**
+     * Creates a new duel by finding an available arena and adding both players.
+     *
+     * @param request The duel request containing all necessary duel parameters
+     */
     private void createDuel(DuelRequest request) {
         Optional<ArenaEntity> arena = plugin.getArenaManager().findOpenArena(request.kit(), 2, request.rounds());
         if (arena.isPresent()) {
@@ -119,6 +169,13 @@ public class DuelManager {
         }
     }
 
+    /**
+     * Validates if a player can send a duel request to another player.
+     *
+     * @param requested The player who would receive the request
+     * @param requestor The player who would send the request
+     * @return true if the requestor can send a duel request, false otherwise
+     */
     private boolean canRequestorSendDuel(Player requested, Player requestor) {
         DuelsPlayer dpRequestor = plugin.getPlayerManager().getDuelsPlayer(requestor);
         if (dpRequestor.isQueue()) {
@@ -141,6 +198,13 @@ public class DuelManager {
         return true;
     }
 
+    /**
+     * Validates if a player can accept a duel request from another player.
+     *
+     * @param requested The player who would accept the request
+     * @param requestor The player who sent the request
+     * @return true if the requested can accept the duel, false otherwise
+     */
     private boolean canRequestedAcceptDuel(Player requested, Player requestor) {
         DuelsPlayer dpRequested = plugin.getPlayerManager().getDuelsPlayer(requested);
         if (dpRequested.isQueue()) {
@@ -163,6 +227,13 @@ public class DuelManager {
         return true;
     }
 
+    /**
+     * Retrieves a specific duel request between two players.
+     *
+     * @param requested The player who received the request
+     * @param requestor The player who sent the request
+     * @return The DuelRequest if found, null otherwise
+     */
     public DuelRequest getRequest(Player requested, Player requestor) {
         List<DuelRequest> playerRequests = requests.get(requested.getUniqueId());
         if (playerRequests != null) {
