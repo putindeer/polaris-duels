@@ -11,13 +11,38 @@ import us.polarismc.polarisduels.Main;
 
 import java.util.Objects;
 
+/**
+ * A command that allows staff members to send formatted broadcast messages to all online players.
+ * Includes a sound effect to draw attention to the broadcast.
+ * 
+ * Permission: duels.admin
+ * Usage: /broadcast <message>
+ */
 public class Broadcast implements CommandExecutor {
+    /**
+     * Reference to the main plugin instance
+     */
     private final Main plugin;
+
+    /**
+     * Initializes the Broadcast command and registers it with the server.
+     * 
+     * @param plugin The main plugin instance
+     */
     public Broadcast(Main plugin) {
         this.plugin = plugin;
         Objects.requireNonNull(plugin.getCommand("broadcast")).setExecutor(this);
     }
 
+    /**
+     * Executes the broadcast command with the provided arguments.
+     *
+     * @param sender The command sender
+     * @param command The command being executed
+     * @param label The alias of the command used
+     * @param args The command arguments (message parts)
+     * @return true if the command was handled, false otherwise
+     */
     @Override
     public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (!sender.hasPermission("duels.admin")){
