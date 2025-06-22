@@ -266,6 +266,23 @@ public class HubEvents implements Listener {
     }
 
     /**
+     * Handles item dropping events.
+     * Prevents items from being drop when not in a duel.
+     *
+     * @param e The PlayerDropItemEvent
+     */
+    @EventHandler
+    public void onItemDrop(PlayerDropItemEvent e) {
+        if (e.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
+            return;
+        }
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(e.getPlayer());
+        if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
+            e.setCancelled(true);
+        }
+    }
+
+    /**
      * Handles inventory click events.
      * Prevents interacting with non-player inventories when not in a duel.
      *
@@ -277,6 +294,11 @@ public class HubEvents implements Listener {
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(p);
         if (duelsPlayer.isDuel() && !duelsPlayer.isOnHold()) return;
         if (event.getClickedInventory() == null) return;
+
+        if (!duelsPlayer.isStartingDuel()) {
+            event.setCancelled(true);
+            return;
+        }
 
         if (event.getClickedInventory().getType() != InventoryType.PLAYER) {
             event.setCancelled(true);

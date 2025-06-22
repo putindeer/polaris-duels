@@ -67,8 +67,8 @@ public class Msg implements CommandExecutor {
             }
             String msg = message.toString().trim();
 
-            plugin.utils.message(sender, "&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg);
-            plugin.utils.message(target, Sound.sound(SoundEventKeys.BLOCK_NOTE_BLOCK_BELL, Sound.Source.MASTER, 10, 1),
+            plugin.utils.message(sender, false, "&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg);
+            plugin.utils.message(target, false, Sound.sound(SoundEventKeys.BLOCK_NOTE_BLOCK_BELL, Sound.Source.MASTER, 10, 1),
                     "&8(&3" + sender.getName() + " &7» &bYou&8)&7: " + msg);
 
             // Update reply map for both parties
@@ -91,8 +91,8 @@ public class Msg implements CommandExecutor {
             }
             String msg = message.toString().trim();
 
-            plugin.utils.message(sender, "&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg);
-            plugin.utils.message(target, Sound.sound(SoundEventKeys.BLOCK_NOTE_BLOCK_BELL, Sound.Source.MASTER, 10, 1),
+            plugin.utils.message(sender, false, "&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg);
+            plugin.utils.message(target, false, Sound.sound(SoundEventKeys.BLOCK_NOTE_BLOCK_BELL, Sound.Source.MASTER, 10, 1),
                     "&8(&3" + sender.getName() + " &7» &bYou&8)&7: " + msg);
         }
         return false;
