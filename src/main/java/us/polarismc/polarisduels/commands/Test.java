@@ -11,13 +11,36 @@ import us.polarismc.polarisduels.queue.KitType;
 
 import java.util.Objects;
 
+/**
+ * A testing command used for development and debugging purposes.
+ * This command cycles through all available kits and applies them to the player's inventory.
+ * 
+ * Permission: duels.admin
+ * Usage: /test
+ */
 public class Test implements CommandExecutor {
+    /** Reference to the main plugin instance */
     private final Main plugin;
+    
+    /**
+     * Initializes the Test command and registers it with the server.
+     * 
+     * @param plugin The main plugin instance
+     */
     public Test(Main plugin) {
         this.plugin = plugin;
         Objects.requireNonNull(plugin.getCommand("test")).setExecutor(this);
     }
 
+    /**
+     * Executes the test command, cycling through all available kits.
+     *
+     * @param sender The command sender (must be a player)
+     * @param command The command being executed
+     * @param label The alias of the command used
+     * @param args The command arguments (not used)
+     * @return true if the command was handled successfully
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (sender instanceof Player p) {
