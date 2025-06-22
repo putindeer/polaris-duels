@@ -13,14 +13,38 @@ import us.polarismc.polarisduels.player.DuelsPlayer;
 
 import java.util.Objects;
 
+/**
+ * A debugging command that provides detailed information about the plugin's state.
+ * This command is used for troubleshooting and monitoring the plugin's internal state.
+ * 
+ * Permission: duels.admin
+ * Usage: /debug
+ */
 public class Debug implements CommandExecutor {
+    /**
+     * Reference to the main plugin instance
+     */
     private final Main plugin;
 
+    /**
+     * Initializes the Debug command and registers it with the server.
+     * 
+     * @param plugin The main plugin instance
+     */
     public Debug(Main plugin) {
         this.plugin = plugin;
         Objects.requireNonNull(plugin.getCommand("debug")).setExecutor(this);
     }
 
+    /**
+     * Executes the debug command, collecting and displaying system information.
+     *
+     * @param sender The command sender
+     * @param command The command being executed
+     * @param label The alias of the command used
+     * @param args The command arguments (not used)
+     * @return true if the command was handled successfully
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         plugin.getLogger().info("===== PolarisDuels Debug Information =====");
@@ -81,8 +105,6 @@ public class Debug implements CommandExecutor {
             }
         }
 
-
-
         // RollBackManager status
         plugin.getLogger().info("Rollback Manager Active: " + (plugin.getArenaManager().getRollBackManager() != null));
 
@@ -90,6 +112,12 @@ public class Debug implements CommandExecutor {
         return true;
     }
 
+    /**
+     * Gets a readable name for the given arena state.
+     *
+     * @param state The arena state to get the name of
+     * @return A string representation of the arena state
+     */
     private String getArenaStateName(ArenaState state) {
         if (state == null) {
             return "None";
