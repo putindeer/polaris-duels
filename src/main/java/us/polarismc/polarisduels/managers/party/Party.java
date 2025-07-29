@@ -3,7 +3,6 @@ package us.polarismc.polarisduels.managers.party;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.managers.player.DuelsPlayer;

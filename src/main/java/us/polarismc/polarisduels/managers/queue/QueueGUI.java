@@ -63,7 +63,8 @@ public class QueueGUI extends FastInv {
         // CUSTOM
         setItem(16, plugin.utils.ib(Material.MACE).name("&#04cd14&lMace")
                         .lore("<gray>PvP based on the mace as main weapon.",
-                                "<gray>Combines aerial movement and burst damage with wind charges and elytra.").hideGUI().build(),
+                                "<gray>Combines aerial movement and burst damage with wind charges and elytra.",
+                                "<red>Experimental kit from Enrico & Lurrn's TL.").hideGUI().build(),
                 e -> setQueue(KitType.MACE));
 
         addClickHandler(e -> e.setCancelled(true));

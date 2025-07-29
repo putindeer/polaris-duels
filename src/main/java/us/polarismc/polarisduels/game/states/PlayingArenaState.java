@@ -477,7 +477,7 @@ public class PlayingArenaState implements ArenaState, Listener {
             if (team.hasPlayer(player)) {
                 plugin.utils.title(player, "<gradient:#EAFF23:#BBFF37>You won!</gradient>", "<gray>Score: " + scores);
             } else {
-                plugin.utils.title(player, "<gradient:#B31D3C:#2E1BEE>You lost.</gradient>", "<gray>Score: " + scores);
+                plugin.utils.title(player, "<gradient:#B31D3C:#8F1272>You lost.</gradient>", "<gray>Score: " + scores);
             }
         });
         plugin.utils.delay(20 * 5, this::resetArena);

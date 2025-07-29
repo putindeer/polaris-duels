@@ -16,7 +16,6 @@ import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.arenas.entity.ArenaState;
 import us.polarismc.polarisduels.game.GameSession;
 import us.polarismc.polarisduels.game.GameType;
-import us.polarismc.polarisduels.game.events.GameAddPlayerEvent;
 import us.polarismc.polarisduels.game.events.GameRemovePlayerEvent;
 import us.polarismc.polarisduels.managers.hub.HubEvents;
 import us.polarismc.polarisduels.managers.player.DuelsPlayer;

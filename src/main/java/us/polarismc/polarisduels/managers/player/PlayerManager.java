@@ -12,7 +12,6 @@ import java.util.*;
  */
 @SuppressWarnings("unused")
 public class PlayerManager {
-    private final Main plugin;
     /** List of all active DuelsPlayer instances */
     @Getter
     public final Set<DuelsPlayer> playerList = new HashSet<>();
@@ -23,7 +22,6 @@ public class PlayerManager {
      * @param plugin The main plugin instance
      */
     public PlayerManager(Main plugin) {
-        this.plugin = plugin;
     }
 
     /**

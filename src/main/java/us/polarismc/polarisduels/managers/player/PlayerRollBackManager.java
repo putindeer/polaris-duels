@@ -6,10 +6,6 @@ import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.managers.hub.HubEvents;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 public class PlayerRollBackManager {
     private final Main plugin;
 

@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
  */
 @Getter
 @Builder
+@SuppressWarnings("unused")
 public class GameSession {
     /** Unique identifier for this session (useful for debugging / DB storage) */
     @Builder.Default

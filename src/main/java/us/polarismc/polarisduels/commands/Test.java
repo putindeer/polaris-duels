@@ -14,7 +14,7 @@ import java.util.Objects;
 /**
  * A testing command used for development and debugging purposes.
  * This command cycles through all available kits and applies them to the player's inventory.
- * 
+ * <p>
  * Permission: duels.admin
  * Usage: /test
  */

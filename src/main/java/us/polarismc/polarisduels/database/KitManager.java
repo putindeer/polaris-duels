@@ -57,7 +57,7 @@ public class KitManager {
                 s.executeUpdate();
             }
         } catch (SQLException e) {
-            plugin.utils.severe("Error when saving inventory with the UUID " + uuid.toString() + " and KitType " + kitType.name() + ": " + e.getMessage());
+            plugin.utils.severe("Error when saving inventory with the UUID " + uuid + " and KitType " + kitType.name() + ": " + e.getMessage());
             for (StackTraceElement s : e.getStackTrace()) {
                 plugin.utils.warning(s.toString());
             }
