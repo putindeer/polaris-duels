@@ -119,7 +119,7 @@ public class GameModeC implements TabExecutor {
             }
         } catch (Exception e) {
             plugin.utils.message(sender, "&cAn error occurred while processing the command.");
-            plugin.getLogger().warning("Error in GameModeC command: " + e.getMessage());
+            plugin.utils.warning("Error in GameModeC command: " + e.getMessage());
         }
         
         return true;

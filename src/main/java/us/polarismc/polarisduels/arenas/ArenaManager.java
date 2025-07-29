@@ -1,37 +1,42 @@
 package us.polarismc.polarisduels.arenas;
 
-/**
- * The ArenaManager class is responsible for managing all arena-related operations in the PolarisDuels plugin.
- * It handles arena creation, state management, player matching, and quadrant-based arena placement.
- * 
- * <p>This class follows the singleton pattern and maintains the state of all arenas in the system.
- * It provides thread-safe methods for finding available arenas, managing arena states, and handling
- * arena-related operations.</p>
- */
-
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
 import org.bukkit.entity.Player;
-import us.polarismc.api.util.generator.VoidGenerator;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import us.polarismc.polarisduels.Main;
-import us.polarismc.polarisduels.arenas.dao.ArenaDAO;
-import us.polarismc.polarisduels.arenas.dao.ArenaGsonImpl;
+import us.polarismc.polarisduels.arenas.setup.ArenaDAO;
+import us.polarismc.polarisduels.arenas.setup.ArenaGsonImpl;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
-import us.polarismc.polarisduels.arenas.states.InactiveArenaState;
-import us.polarismc.polarisduels.arenas.commands.GridPos;
-import us.polarismc.polarisduels.arenas.states.WaitingArenaState;
-import us.polarismc.polarisduels.queue.KitType;
-import us.polarismc.polarisduels.player.PlayerRollBackManager;
+import us.polarismc.polarisduels.game.states.InactiveArenaState;
+import us.polarismc.polarisduels.arenas.setup.GridPos;
+import us.polarismc.polarisduels.game.states.QueueArenaState;
+import us.polarismc.polarisduels.game.GameSession;
+import us.polarismc.polarisduels.arenas.entity.ArenaSize;
+import us.polarismc.polarisduels.game.states.StartingArenaState;
+import us.polarismc.polarisduels.game.KitType;
+import us.polarismc.polarisduels.managers.player.PlayerRollBackManager;
+import us.polarismc.polarisduels.managers.queue.QueueType;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * The ArenaManager class is responsible for managing all arena-related operations in the PolarisDuels plugin.
+ * It handles arena creation, state management, player matching, and quadrant-based arena placement.
+ *
+ * <p>This class follows the singleton pattern and maintains the state of all arenas in the system.
+ * It provides thread-safe methods for finding available arenas, managing arena states, and handling
+ * arena-related operations.</p>
+ */
 @Getter
-public class ArenaManager {
+public class ArenaManager implements Listener {
     private final Main plugin;
     
     /** List of all registered arenas in the system */
@@ -58,9 +63,22 @@ public class ArenaManager {
         arenas = arenaFile.loadArenas();
         this.rollBackManager = new PlayerRollBackManager(plugin);
         checkQuadrantConflicts();
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-/**
+    /**
+     * Handles player quit events within the arena.
+     * Removes the player from the arena.
+     *
+     * @param event The PlayerQuitEvent that was triggered
+     */
+    @EventHandler
+    private void onQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        getPlayerArena(player).ifPresent(arena -> arena.removePlayer(player, plugin));
+    }
+
+    /**
      * Sets an arena to the inactive state, clearing all players and match data.
      * 
      * @param arena The arena to deactivate
@@ -70,127 +88,72 @@ public class ArenaManager {
         if (arena == null) {
             throw new IllegalArgumentException("Arena cannot be null");
         }
-        arena.getPlayers().clear();
-        arena.setKit(null);
-        arena.setRounds(0);
-        arena.setPlayersNeeded(0);
+        arena.getOnlinePlayers().forEach(rollBackManager::restore);
+        arena.setGameSession(null);
         arena.setArenaState(new InactiveArenaState());
     }
 
-/**
-     * Finds an open (inactive) arena and prepares it for a new match.
-     * 
-     * @param kit The kit type for the match
-     * @param playersNeeded Number of players needed for the match
-     * @param rounds Number of rounds for the match
-     * @return An Optional containing the prepared arena if found, empty otherwise
-     * @throws IllegalArgumentException if kit is null or playersNeeded/rounds are non-positive
+    /**
+     * Assigns an arena to the provided GameSession. Will attempt, in order:
+     * 1) A Waiting arena already set up for the same kit/playersNeeded that is currently not full.
+     * 2) An inactive arena (size filter if requestedSize present), which will be switched to WaitingArenaState.
+     *
+     * @param session GameSession describing the upcoming match
+     * @return arena chosen or empty if none available
      */
-    public Optional<ArenaEntity> findOpenArena(KitType kit, int playersNeeded, int rounds) {
-        if (kit == null) {
-            throw new IllegalArgumentException("Kit cannot be null");
+    public Optional<ArenaEntity> assignArena(GameSession session) {
+        if (session.getQueueType() != null) {
+            return findQueuedArena(session);
+        } else {
+            return findInactiveArena(session);
         }
-        if (playersNeeded <= 0) {
-            throw new IllegalArgumentException("Players needed must be positive");
-        }
-        if (rounds <= 0) {
-            throw new IllegalArgumentException("Rounds must be positive");
-        }
-        List<ArenaEntity> arenaList = new ArrayList<>(getArenas());
-        Collections.shuffle(arenaList);
-        Optional<ArenaEntity> arena = arenaList.stream().filter(a -> a.getArenaState() instanceof InactiveArenaState).findAny();
-        arena.ifPresent(arenaEntity -> arenaEntity.setArenaState(new WaitingArenaState(arenaEntity, kit, playersNeeded, rounds)));
-        return arena;
     }
 
-/**
-     * Finds a compatible arena for the specified match parameters.
-     * First tries to find a waiting arena with matching parameters, then falls back to an open arena.
-     * 
-     * @param kit The kit type for the match
-     * @param playersNeeded Number of players needed for the match
-     * @param rounds Number of rounds for the match
-     * @return An Optional containing a compatible arena if found, empty otherwise
-     * @throws IllegalArgumentException if kit is null or playersNeeded/rounds are non-positive
-     */
-    public Optional<ArenaEntity> findCompatibleArena(KitType kit, int playersNeeded, int rounds) {
-        if (kit == null) {
-            throw new IllegalArgumentException("Kit cannot be null");
-        }
-        if (playersNeeded <= 0) {
-            throw new IllegalArgumentException("Players needed must be positive");
-        }
-        if (rounds <= 0) {
-            throw new IllegalArgumentException("Rounds must be positive");
-        }
-        Optional<ArenaEntity> compatibleArena = getArenas().stream()
-                .filter(arena -> {
-                    if (arena.getArenaState() instanceof WaitingArenaState state) {
-                        return state.getPlayersNeeded() == playersNeeded
-                                && state.getRounds() == rounds
-                                && state.getKit() == kit;
-                    }
-                    return false;
-                })
+    private Optional<ArenaEntity> findQueuedArena(GameSession session) {
+        KitType kit = session.getKit();
+        QueueType queueType = session.getQueueType();
+        Optional<ArenaEntity> queuedArena = arenas.stream()
+                .filter(a -> a.getArenaState() instanceof QueueArenaState)
+                .filter(a -> a.getGameSession().getKit() == kit)
+                .filter(a -> a.getGameSession().getQueueType() == queueType)
+                .filter(a -> a.getGameSession().getPlayerList().size() + session.getPlayers().size() <= queueType.getPlayersNeeded())
                 .findAny();
-
-        return compatibleArena.isPresent() ? compatibleArena : findOpenArena(kit, playersNeeded, rounds);
+        if (queuedArena.isPresent()) {
+            return queuedArena;
+        } else {
+            return findInactiveArena(session);
+        }
     }
 
-/**
+    private Optional<ArenaEntity> findInactiveArena(GameSession session) {
+        List<ArenaEntity> shuffled = new ArrayList<>(arenas);
+        Collections.shuffle(shuffled);
+        ArenaSize requested = session.getRequestedSize();
+        Optional<ArenaEntity> inactive = shuffled.stream()
+                .filter(arena -> arena.getArenaState() instanceof InactiveArenaState)
+                .filter(arena -> requested == null || arena.getArenaSize() == requested)
+                .findFirst();
+        inactive.ifPresent(arena -> {
+            if (session.getQueueType() != null) {
+                arena.setArenaState(new QueueArenaState(arena, session));
+            } else {
+                arena.setGameSession(session);
+                session.setArena(arena);
+                session.getPlayerList().forEach(arena::addPlayer);
+                arena.setArenaState(new StartingArenaState(arena, session));
+            }
+        });
+        return inactive;
+    }
+
+    /**
      * Finds the arena that contains the specified player.
      * 
      * @param player The player to search for
      * @return An Optional containing the player's arena if found, empty otherwise
-     * @throws IllegalArgumentException if player is null
      */
-    public Optional<ArenaEntity> findPlayerArena(Player player) {
-        if (player == null) {
-            throw new IllegalArgumentException("Player cannot be null");
-        }
-        return getArenas().stream().filter(arena -> arena.getPlayers().contains(player.getUniqueId())).findAny();
-    }
-
-/**
-     * DEBUG METHOD: Finds any inactive arena.
-     * This is primarily used for testing and debugging purposes.
-     * 
-     * @return An Optional containing an inactive arena if found, empty otherwise
-     */
-    public Optional<ArenaEntity> findInactiveArena() {
-        return getArenas().stream().filter(a -> a.getArenaState() instanceof InactiveArenaState).findAny();
-    }
-
-/**
-     * Finds a compatible arena without falling back to opening a new one.
-     * Unlike findCompatibleArena, this will not create a new waiting arena if none is found.
-     * 
-     * @param kit The kit type for the match
-     * @param playersNeeded Number of players needed for the match
-     * @param rounds Number of rounds for the match
-     * @return An Optional containing a compatible arena if found, empty otherwise
-     * @throws IllegalArgumentException if kit is null or playersNeeded/rounds are non-positive
-     */
-    public Optional<ArenaEntity> findCompatibleArenaNoMethod(KitType kit, int playersNeeded, int rounds) {
-        if (kit == null) {
-            throw new IllegalArgumentException("Kit cannot be null");
-        }
-        if (playersNeeded <= 0) {
-            throw new IllegalArgumentException("Players needed must be positive");
-        }
-        if (rounds <= 0) {
-            throw new IllegalArgumentException("Rounds must be positive");
-        }
-        return getArenas().stream()
-                .filter(arena -> {
-                    if (arena.getArenaState() instanceof WaitingArenaState state) {
-                        return state.getPlayersNeeded() == playersNeeded
-                                && state.getRounds() == rounds
-                                && state.getKit() == kit;
-                    }
-                    return false;
-                })
-                .findAny();
+    public Optional<ArenaEntity> getPlayerArena(Player player) {
+        return getArenas().stream().filter(arena -> arena.getGameSession() != null).filter(arena -> arena.getGameSession().isParticipant(player)).findAny();
     }
     
     /**
@@ -198,7 +161,7 @@ public class ArenaManager {
      * @param world The world to find a quadrant in
      * @return Optional containing the next available GridPos, or empty if no quadrants are available
      */
-    public Optional<GridPos> findNextAvailableQuadrant(World world) {
+    public Optional<GridPos> getNextAvailableQuadrant(World world) {
         if (world == null) {
             throw new IllegalArgumentException("World cannot be null");
         }

@@ -3,21 +3,17 @@ package us.polarismc.polarisduels.arenas.entity;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import us.polarismc.polarisduels.arenas.commands.GridPos;
+import us.polarismc.polarisduels.arenas.setup.GridPos;
 import lombok.NoArgsConstructor;
-import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
-import us.polarismc.polarisduels.arenas.states.ArenaState;
-import us.polarismc.polarisduels.arenas.states.StartingArenaState;
-import us.polarismc.polarisduels.arenas.states.WaitingArenaState;
-import us.polarismc.polarisduels.queue.KitType;
-import us.polarismc.polarisduels.events.HubEvents;
-import us.polarismc.polarisduels.player.DuelsPlayer;
+import us.polarismc.polarisduels.game.events.GameAddPlayerEvent;
+import us.polarismc.polarisduels.game.GameSession;
+import us.polarismc.polarisduels.game.events.GameRemovePlayerEvent;
+import us.polarismc.polarisduels.managers.player.DuelsPlayer;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -71,27 +67,12 @@ public class ArenaEntity {
     
     /** Size classification of the arena */
     private ArenaSize arenaSize;
-    
-    /** Current state of the arena (waiting, active, etc.) */
-    private ArenaState arenaState;
-    
-    /** List of player UUIDs currently in this arena */
-    private final List<UUID> players = new ArrayList<>();
-    
-    /** Type of kit used in this arena */
-    private KitType kit;
-    
-    /** Number of players needed to start a match */
-    private int playersNeeded;
-    
-    /** Number of rounds in the match */
-    private int rounds;
-    /** 
+
+    /**
      * The quadrant position of this arena in the world grid.
      * Used for organizing arenas in the world and preventing overlaps.
      */
-    @Setter
-    @Getter
+    @Getter @Setter
     private GridPos quadrant; // Quadrant position (e.g., 0,0 or 1,0)
 
     /**
@@ -141,6 +122,14 @@ public class ArenaEntity {
         return this.quadrant.equals(other.quadrant);
     }
 
+    /** Current state of the arena (waiting, active, etc.) */
+    @Getter
+    private ArenaState arenaState;
+
+    /** Current GameSession running in this arena */
+    @Getter @Setter
+    private GameSession gameSession;
+
     /**
      * Changes the current state of the arena and triggers appropriate state lifecycle methods.
      * 
@@ -152,66 +141,23 @@ public class ArenaEntity {
             throw new IllegalArgumentException("ArenaState cannot be null");
         }
         if (this.arenaState != null) {
-            this.arenaState.onDisable();
+            this.arenaState.onDisable(state);
         }
         this.arenaState = state;
-        this.arenaState.onEnable(this);
+        this.arenaState.onEnable();
     }
-
-    /**
-     * Gets a list of online players currently in this arena.
-     * 
-     * @return A list of online Player objects in this arena
-     */
-    public List<Player> getPlayerList() {
-        return players.stream()
-                .map(Bukkit::getPlayer)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
-    //TODO - SISTEMA DE TEAMS
 
     /**
      * Adds a player to this arena and handles the necessary setup.
      * This includes teleportation, inventory setup, and match start conditions.
      * 
      * @param player The player to add to the arena
-     * @param plugin The main plugin instance
-     * @throws IllegalArgumentException if player or plugin is null
      */
-    public void addPlayer(Player player, Main plugin) {
-        if (player == null) {
-            throw new IllegalArgumentException("Player cannot be null");
-        }
-        if (plugin == null) {
-            throw new IllegalArgumentException("Plugin cannot be null");
-        }
-        players.add(player.getUniqueId());
-        plugin.getTabManager().setTabList(player, getPlayerList());
-        getPlayerList().forEach(p -> plugin.getTabManager().refreshTabList(p, getPlayerList()));
-        plugin.getPlayerManager().getDuelsPlayer(player).setQueue(true);
-        plugin.utils.message(getPlayerList(), player.getName() + " joined &a(" + players.size() + "/" + playersNeeded + ")");
+    public void addPlayer(Player player) {
+        gameSession.getPlayers().add(player.getUniqueId());
         player.setGameMode(GameMode.SURVIVAL);
-
-
-        plugin.getArenaManager().getRollBackManager().save(player);
-
-        player.getInventory().setItem(8,
-                plugin.utils.ib(Material.BARRIER)
-                        .name(HubEvents.LEAVE_QUEUE)
-                        .build()
-        );
-        int halfSize = playersNeeded / 2;
-        if (players.size() <= halfSize) {
-            player.teleport(spawnOne);
-        } else {
-            player.teleport(spawnTwo);
-        }
-
-        if (players.size() == playersNeeded) {
-            setArenaState(new StartingArenaState());
-        }
+        player.getInventory().clear();
+        Bukkit.getPluginManager().callEvent(new GameAddPlayerEvent(gameSession, player));
     }
 
     /**
@@ -223,55 +169,29 @@ public class ArenaEntity {
      * @throws IllegalArgumentException if player or plugin is null
      */
     public void removePlayer(Player player, Main plugin) {
-        if (player == null) {
-            throw new IllegalArgumentException("Player cannot be null");
-        }
-        if (plugin == null) {
-            throw new IllegalArgumentException("Plugin cannot be null");
-        }
-        players.remove(player.getUniqueId());
-        plugin.getTabManager().resetTabList(player);
-        getPlayerList().forEach(p -> plugin.getTabManager().setTabList(p, getPlayerList()));
-        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getDuelsPlayer(player);
+        gameSession.getPlayers().remove(player.getUniqueId());
+        Bukkit.getPluginManager().callEvent(new GameRemovePlayerEvent(gameSession, player));
+
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
         if (duelsPlayer.getTeam() != null) {
             duelsPlayer.getTeam().removePlayer(duelsPlayer);
-        }
-        if (duelsPlayer.isQueue()) {
-            duelsPlayer.setQueue(false);
-        }
-        if (duelsPlayer.isDuel()){
-            duelsPlayer.setDuel(false);
-        }
-        if (duelsPlayer.isStartingDuel()) {
-            duelsPlayer.setStartingDuel(false);
-        }
-        if (duelsPlayer.isOnHold()) {
-            duelsPlayer.setOnHold(false);
         }
 
         if (player.isOnline()) {
             plugin.getArenaManager().getRollBackManager().restore(player);
         }
+    }
 
-        if (arenaState instanceof StartingArenaState) {
-            setArenaState(new WaitingArenaState(this, kit, playersNeeded, rounds));
-            for (Player p : getPlayerList()) {
-                plugin.utils.message(getPlayerList(), player.getName() + " quit &c(" + players.size() + "/" + playersNeeded + ")");
-                p.showTitle(Title.title(plugin.utils.chat("&cMatch Cancelled"), plugin.utils.chat("Someone left the queue.")));
-                p.getInventory().clear();
-                p.getInventory().addItem(
-                        plugin.utils.ib(Material.BARRIER)
-                                .name(HubEvents.LEAVE_QUEUE)
-                                .build()
-                );
-            }
-        }
-        if (arenaState instanceof WaitingArenaState) {
-            plugin.utils.message(getPlayerList(), player.getName() + " quit &c(" + players.size() + "/" + playersNeeded + ")");
-            if (players.isEmpty()) {
-                plugin.getArenaManager().setInactiveState(this);
-            }
-        }
+    /**
+     * Gets a list of online players currently in this arena.
+     *
+     * @return A list of online Player objects in this arena
+     */
+    public List<Player> getOnlinePlayers() {
+        return gameSession.getPlayers().stream()
+                .map(Bukkit::getPlayer)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -279,12 +199,8 @@ public class ArenaEntity {
      * 
      * @param player The player to check
      * @return true if the player is in this arena, false otherwise
-     * @throws IllegalArgumentException if player is null
      */
     public boolean hasPlayer(Player player) {
-        if (player == null) {
-            throw new IllegalArgumentException("Player cannot be null");
-        }
         return hasPlayer(player.getUniqueId());
     }
 
@@ -293,12 +209,8 @@ public class ArenaEntity {
      * 
      * @param uuid The UUID of the player to check
      * @return true if a player with this UUID is in the arena, false otherwise
-     * @throws IllegalArgumentException if uuid is null
      */
     public boolean hasPlayer(UUID uuid) {
-        if (uuid == null) {
-            throw new IllegalArgumentException("UUID cannot be null");
-        }
-        return players.contains(uuid);
+        return gameSession.getPlayers().contains(uuid);
     }
 }

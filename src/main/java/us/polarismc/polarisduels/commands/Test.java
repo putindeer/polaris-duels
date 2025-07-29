@@ -7,7 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.polarismc.polarisduels.Main;
-import us.polarismc.polarisduels.queue.KitType;
+import us.polarismc.polarisduels.game.KitType;
 
 import java.util.Objects;
 

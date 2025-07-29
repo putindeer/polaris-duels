@@ -3,9 +3,11 @@ package us.polarismc.polarisduels.database;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
-import us.polarismc.polarisduels.queue.KitType;
+import us.polarismc.polarisduels.game.KitType;
 import java.sql.ResultSet;
 import java.util.UUID;
 
@@ -35,11 +37,12 @@ public class KitManager {
      * Saves a player's kit to the database.
      * If a kit already exists for this player and kit type, it will be replaced.
      *
-     * @param uuid The UUID of the player
+     * @param player The player
      * @param kitType The type of kit to save
      * @param inv The inventory contents to save as a kit
      */
-    public void saveKit(UUID uuid, KitType kitType, ItemStack[] inv) {
+    public void saveKit(Player player, KitType kitType, ItemStack[] inv) {
+        UUID uuid = player.getUniqueId();
         byte[] serializedInv = ItemStack.serializeItemsAsBytes(inv);
 
         try (Connection c = database.getConnection()) {
@@ -54,9 +57,9 @@ public class KitManager {
                 s.executeUpdate();
             }
         } catch (SQLException e) {
-            plugin.getLogger().severe("Error when saving inventory with the UUID " + uuid.toString() + " and KitType " + kitType.name() + ": " + e.getMessage());
+            plugin.utils.severe("Error when saving inventory with the UUID " + uuid.toString() + " and KitType " + kitType.name() + ": " + e.getMessage());
             for (StackTraceElement s : e.getStackTrace()) {
-                plugin.getLogger().warning(s.toString());
+                plugin.utils.warning(s.toString());
             }
         }
     }
@@ -83,9 +86,9 @@ public class KitManager {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().severe("Error when loading inventory with the UUID " + uuid.toString() + " and KitType " + kitType.name() + ": " + e.getMessage());
+            plugin.utils.severe("Error when loading inventory with the UUID " + uuid.toString() + " and KitType " + kitType.name() + ": " + e.getMessage());
             for (StackTraceElement s : e.getStackTrace()) {
-                plugin.getLogger().warning(s.toString());
+                plugin.utils.warning(s.toString());
             }
         }
         return kitType.getDefaultInv();

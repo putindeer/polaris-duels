@@ -6,7 +6,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import us.polarismc.polarisduels.Main;
-import us.polarismc.polarisduels.player.DuelsPlayer;
+import us.polarismc.polarisduels.game.events.GameAddPlayerEvent;
+import us.polarismc.polarisduels.game.events.GameRemovePlayerEvent;
+import us.polarismc.polarisduels.managers.player.DuelsPlayer;
 
 import java.util.List;
 
@@ -37,6 +39,10 @@ public class TabManager implements Listener {
      */
     public void refreshTabList(Player player, List<Player> list) {
         list.stream().filter(p -> !player.isListed(p)).forEach(player::listPlayer);
+    }
+
+    public void refreshTabList(List<Player> list) {
+        list.forEach(p -> refreshTabList(p, list));
     }
 
     /**
@@ -70,7 +76,7 @@ public class TabManager implements Listener {
      * @return true if the TAB list should be filtered, false otherwise
      */
     private boolean shouldFilterTab(Player player) {
-        return shouldFilterTab(plugin.getPlayerManager().getDuelsPlayer(player));
+        return shouldFilterTab(plugin.getPlayerManager().getPlayer(player));
     }
 
     /**
@@ -84,5 +90,18 @@ public class TabManager implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Bukkit.getOnlinePlayers().stream().filter(this::shouldFilterTab).forEach(p -> p.unlistPlayer(event.getPlayer()));
+    }
+
+    @EventHandler
+    public void onAddPlayer(GameAddPlayerEvent event) {
+        List<Player> list = event.getSession().getArena().getOnlinePlayers();
+        setTabList(event.getPlayer(), list);
+        refreshTabList(list);
+    }
+
+    @EventHandler
+    public void onRemovePlayer(GameRemovePlayerEvent event) {
+        resetTabList(event.getPlayer());
+        refreshTabList(event.getSession().getArena().getOnlinePlayers());
     }
 }

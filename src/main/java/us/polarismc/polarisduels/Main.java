@@ -6,14 +6,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 import us.polarismc.api.util.PluginUtils;
 import us.polarismc.polarisduels.arenas.ArenaManager;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
-import us.polarismc.polarisduels.arenas.states.ActiveArenaState;
-import us.polarismc.polarisduels.duel.DuelManager;
+import us.polarismc.polarisduels.game.states.PlayingArenaState;
+import us.polarismc.polarisduels.managers.duel.DuelManager;
 import us.polarismc.polarisduels.database.Database;
 import us.polarismc.polarisduels.database.DatabaseInitializer;
 import us.polarismc.polarisduels.database.KitManager;
+import us.polarismc.polarisduels.managers.party.PartyManager;
 import us.polarismc.polarisduels.managers.tab.TabManager;
-import us.polarismc.polarisduels.player.PlayerManager;
-import us.polarismc.polarisduels.utils.StartThings;
+import us.polarismc.polarisduels.managers.player.PlayerManager;
+import us.polarismc.polarisduels.managers.startup.StartThings;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,6 +50,10 @@ public final class Main extends JavaPlugin {
     @Getter
     public PlayerManager playerManager;
     
+    /** Manages party system and operations */
+    @Getter
+    private PartyManager partyManager;
+    
     /** Manages available kits and their configurations */
     @Getter
     public KitManager kitManager;
@@ -81,7 +86,7 @@ public final class Main extends JavaPlugin {
     public void onDisable() {
         // Save all arenas and reset active ones on shutdown
         for (ArenaEntity arena : arenaManager.getArenas()) {
-            if (arena.getArenaState() instanceof ActiveArenaState state) {
+            if (arena.getArenaState() instanceof PlayingArenaState state) {
                 state.resetArenaEntities();
                 state.resetArenaBlocks();
             }
@@ -109,6 +114,7 @@ public final class Main extends JavaPlugin {
         arenaManager = new ArenaManager(this);
         duelManager = new DuelManager(this);
         playerManager = new PlayerManager(this);
+        partyManager = new PartyManager(this);
         kitManager = new KitManager(this, database);
         tabManager = new TabManager(this);
     }
