@@ -59,12 +59,12 @@ public class GameModeC implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, 
                            @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player)) {
-            plugin.utils.message(sender, "&cOnly players can use this command.");
+            plugin.utils.message(sender, "<red>Only players can use this command.");
             return true;
         }
         
         if (!sender.hasPermission("duels.admin")) {
-            plugin.utils.message(sender, "&cYou don't have permission to execute this command.");
+            plugin.utils.message(sender, "<red>You don't have permission to execute this command.");
             return true;
         }
 
@@ -72,7 +72,7 @@ public class GameModeC implements TabExecutor {
         
         // Handle /gamemode command without arguments
         if (commandName.equals("gm") && args.length == 0) {
-            plugin.utils.message(sender, "&cUsage: /gamemode <survival/creative/adventure/spectator> [player]");
+            plugin.utils.message(sender, "<red>Usage: /gamemode <survival/creative/adventure/spectator> [player]");
             return true;
         }
 
@@ -84,7 +84,7 @@ public class GameModeC implements TabExecutor {
                     // Change another player's game mode
                     Player target = Bukkit.getPlayer(args[0]);
                     if (target == null) {
-                        plugin.utils.message(sender, "&cThe specified player is not online.");
+                        plugin.utils.message(sender, "<red>The specified player is not online.");
                         return true;
                     }
                     changeGameMode(target, player, newMode);
@@ -99,7 +99,7 @@ public class GameModeC implements TabExecutor {
             if (commandName.equals("gm")) {
                 GameMode newMode = parseGameMode(args[0]);
                 if (newMode == null) {
-                    plugin.utils.message(sender, "&cInvalid game mode. Use: survival, creative, adventure, or spectator");
+                    plugin.utils.message(sender, "<red>Invalid game mode. Use: survival, creative, adventure, or spectator");
                     return true;
                 }
 
@@ -107,7 +107,7 @@ public class GameModeC implements TabExecutor {
                     // Change another player's game mode
                     Player target = Bukkit.getPlayer(args[1]);
                     if (target == null) {
-                        plugin.utils.message(sender, "&cThe specified player is not online.");
+                        plugin.utils.message(sender, "<red>The specified player is not online.");
                         return true;
                     }
                     changeGameMode(target, player, newMode);
@@ -118,7 +118,7 @@ public class GameModeC implements TabExecutor {
                 return true;
             }
         } catch (Exception e) {
-            plugin.utils.message(sender, "&cAn error occurred while processing the command.");
+            plugin.utils.message(sender, "<red>An error occurred while processing the command.");
             plugin.utils.warning("Error in GameModeC command: " + e.getMessage());
         }
         
@@ -149,7 +149,7 @@ public class GameModeC implements TabExecutor {
         if (sender == null) {
             // Console or self-change
             plugin.utils.message(target, String.format(
-                "&7You changed your game mode from &2%s &7to &2%s&7.",
+                "<gray>You changed your game mode from <dark_green>%s <gray>to <dark_green>%s<gray>.",
                 formatGameModeName(oldGameMode), formatGameModeName(newGameMode)));
                 
             // Notify staff
@@ -157,11 +157,11 @@ public class GameModeC implements TabExecutor {
         } else {
             // Changed by another player
             plugin.utils.message(target, String.format(
-                "&f%s &7changed your game mode from &2%s &7to &2%s&7.",
+                "<white>%s <gray>changed your game mode from <dark_green>%s <gray>to <dark_green>%s<gray>.",
                 sender.getName(), formatGameModeName(oldGameMode), formatGameModeName(newGameMode)));
                 
             plugin.utils.message(sender, String.format(
-                "&7You changed &f%s&7's game mode from &2%s &7to &2%s&7.",
+                "<gray>You changed <white>%s<gray>'s game mode from <dark_green>%s <gray>to <dark_green>%s<gray>.",
                 target.getName(), formatGameModeName(oldGameMode), formatGameModeName(newGameMode)));
                 
             // Notify other staff
@@ -179,9 +179,9 @@ public class GameModeC implements TabExecutor {
      */
     private void notifyStaff(Player target, Player sender, GameMode oldMode, GameMode newMode) {
         String message = sender == null 
-            ? String.format("&f%s &7changed their game mode from &2%s &7to &2%s&7.",
+            ? String.format("<white>%s <gray>changed their game mode from <dark_green>%s <gray>to <dark_green>%s<gray>.",
                 target.getName(), formatGameModeName(oldMode), formatGameModeName(newMode))
-            : String.format("&f%s &7changed &f%s&7's game mode from &2%s &7to &2%s&7.",
+            : String.format("<white>%s <gray>changed <white>%s<gray>'s game mode from <dark_green>%s <gray>to <dark_green>%s<gray>.",
                 sender.getName(), target.getName(), formatGameModeName(oldMode), formatGameModeName(newMode));
         
         Bukkit.getOnlinePlayers().stream()

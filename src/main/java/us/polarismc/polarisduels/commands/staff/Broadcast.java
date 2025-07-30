@@ -46,11 +46,11 @@ public class Broadcast implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (!sender.hasPermission("duels.admin")){
-            plugin.utils.message(sender, "&cYou dont have permission to execute this command");
+            plugin.utils.message(sender, "<red>You dont have permission to execute this command");
             return true;
         }
         if (args.length < 1){
-            plugin.utils.message(sender, "&cUsage: /bc <text>");
+            plugin.utils.message(sender, "<red>Usage: /bc <text>");
             return true;
         } else {
             Component msg = Component.empty();

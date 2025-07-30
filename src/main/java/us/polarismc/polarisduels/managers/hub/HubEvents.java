@@ -78,7 +78,7 @@ public class HubEvents implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        event.joinMessage(plugin.utils.chat("&8(&a+&8) " + player.getName()));
+        event.joinMessage(plugin.utils.chat("<dark_gray>(<green>+</green>) " + player.getName()));
 
         // Initialize player data
         plugin.getPlayerManager().playerJoin(player);
@@ -107,14 +107,14 @@ public class HubEvents implements Listener {
      */
     private void setupScoreboard(Player player) {
         FastBoard board = new FastBoard(player);
-        board.updateTitle(plugin.utils.chat("&9&lPolaris Duels"));
+        board.updateTitle(plugin.utils.chat("<blue><bold>Polaris Duels"));
         plugin.boards.put(player.getUniqueId(), board);
         
         String tps = new DecimalFormat("##").format(plugin.getServer().getTPS()[0]);
-        String footer = String.format("&7Ping: &9%d &8| &7Tps: &9%s", player.getPing(), tps);
+        String footer = String.format("<gray>Ping: <blue>%d <dark_gray>| <gray>Tps: <blue>%s", player.getPing(), tps);
         
         player.sendPlayerListHeaderAndFooter(
-            plugin.utils.chat("&9&lPolaris Duels"),
+            plugin.utils.chat("<blue><bold>Polaris Duels"),
             plugin.utils.chat(footer)
         );
         player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
@@ -191,7 +191,7 @@ public class HubEvents implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        event.quitMessage(plugin.utils.chat("&8(&c-&8) " + player.getName()));
+        event.quitMessage(plugin.utils.chat("<dark_gray>(<red>-<dark_gray>) " + player.getName()));
         
         // Clean up scoreboard
         FastBoard board = plugin.boards.remove(player.getUniqueId());

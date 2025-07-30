@@ -50,25 +50,25 @@ public class CreateVoidWorld implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player)) {
-            plugin.utils.message(sender, "&cOnly players can use this command.");
+            plugin.utils.message(sender, "<red>Only players can use this command.");
             return true;
         }
         if (args.length != 1) {
-            plugin.utils.message(sender, "&cUsage: /createworld <name>");
+            plugin.utils.message(sender, "<red>Usage: /createworld <name>");
             return true;
         }
 
         String name = args[0];
         if (Bukkit.getWorld(name) != null) {
-            plugin.utils.message(sender, "&cThat world already exists.");
+            plugin.utils.message(sender, "<red>That world already exists.");
             return true;
         }
 
         World world = new WorldBuilder(name).generator(new VoidGenerator()).gamerule(GameRule.ANNOUNCE_ADVANCEMENTS, false).gamerule(GameRule.DO_DAYLIGHT_CYCLE, false).gamerule(GameRule.DO_MOB_SPAWNING, false).gamerule(GameRule.DO_PATROL_SPAWNING, false).gamerule(GameRule.DO_TRADER_SPAWNING, false).gamerule(GameRule.DO_WEATHER_CYCLE, false).gamerule(GameRule.SPAWN_CHUNK_RADIUS, 0).gamerule(GameRule.SPECTATORS_GENERATE_CHUNKS, false).autoSave(false).build();
         if (world != null) {
-            plugin.utils.message(sender, "&aWorld '" + name + "' created.");
+            plugin.utils.message(sender, "<green>World '" + name + "' created.");
         } else {
-            plugin.utils.message(sender, "&cError creating world.");
+            plugin.utils.message(sender, "<red>Error creating world.");
         }
         return true;
     }

@@ -82,7 +82,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         if (!cmd.getName().equals("arena")) return false;
 
         if (args.length < 1) {
-            plugin.utils.message(sender, "&cArena usage -> /arena [setup/delete/clone]");
+            plugin.utils.message(sender, "<red>Arena usage -> /arena [setup/delete/clone]");
             return true;
         }
 
@@ -90,7 +90,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
             case "setup" -> handleSetupCommand(sender);
             case "delete" -> handleDeleteCommand(sender, args);
             case "clone" -> handleCloneCommand(sender, args);
-            default -> plugin.utils.message(sender, "&cArena usage -> /arena [setup/delete/clone]");
+            default -> plugin.utils.message(sender, "<red>Arena usage -> /arena [setup/delete/clone]");
         }
         return true;
     }
@@ -103,14 +103,14 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
      */
     private void handleSetupCommand(CommandSender sender) {
         if (!(sender instanceof Player player)) {
-            plugin.utils.message(sender, "&cYou must be a player to use this command.");
+            plugin.utils.message(sender, "<red>You must be a player to use this command.");
             return;
         }
         
         // Find next available quadrant
         Optional<Location> quadrantCenter = findNextAvailableQuadrantCenter(player.getWorld());
         if (quadrantCenter.isEmpty()) {
-            plugin.utils.message(player, "&cNo available quadrants found in this world!");
+            plugin.utils.message(player, "<red>No available quadrants found in this world!");
             return;
         }
         
@@ -122,7 +122,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         Location blockLoc = teleportLoc.clone().subtract(0, 1, 0);
         blockLoc.getBlock().setType(org.bukkit.Material.GLASS);
         
-        plugin.utils.message(player, "&aYou've been teleported to an available quadrant at " + 
+        plugin.utils.message(player, "<green>You've been teleported to an available quadrant at " + 
             String.format("(%d, %d, %d)", 
                 (int) teleportLoc.getX(),
                 (int) teleportLoc.getY(),
@@ -157,7 +157,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
      */
     private void handleDeleteCommand(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            plugin.utils.message(sender, "&cArena usage -> /arena delete <arena name>");
+            plugin.utils.message(sender, "<red>Arena usage -> /arena delete <arena name>");
             return;
         }
 
@@ -168,9 +168,9 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
 
         if (arenaToDelete.isPresent()) {
             deleteArena(arenaToDelete.get());
-            plugin.utils.message(sender, "&#10e8f3Arena " + arenaName + " deleted");
+            plugin.utils.message(sender, "<#10e8f3>Arena " + arenaName + " deleted");
         } else {
-            plugin.utils.message(sender, "&cArena with the name &4" + arenaName + " &cdoes not exist");
+            plugin.utils.message(sender, "<red>Arena with the name <dark_red>" + arenaName + " <red>does not exist");
         }
     }
 
@@ -183,7 +183,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
      */
     private void handleCloneCommand(CommandSender sender, String[] args) {
         if (args.length < 3) {
-            plugin.utils.message(sender, "&cUse: /arena clone <arena> <amount>");
+            plugin.utils.message(sender, "<red>Use: /arena clone <arena> <amount>");
             return;
         }
 
@@ -193,19 +193,19 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         try {
             copies = Integer.parseInt(args[2]);
             if (copies <= 0) {
-                plugin.utils.message(sender, "&cAmount must be greater than 0.");
+                plugin.utils.message(sender, "<red>Amount must be greater than 0.");
                 return;
             }
         } catch (NumberFormatException e) {
-            plugin.utils.message(sender, "&cAmount must be a number.");
+            plugin.utils.message(sender, "<red>Amount must be a number.");
             return;
         }
 
         boolean success = cloneArena(arenaName, copies);
         if (success) {
-            plugin.utils.message(sender, "&#10e8f3Cloned arena '" + arenaName + "' cloned " + copies + " times.");
+            plugin.utils.message(sender, "<#10e8f3>Cloned arena '" + arenaName + "' cloned " + copies + " times.");
         } else {
-            plugin.utils.message(sender, "&cFailed to start cloning arenas. Check if the arena exists.");
+            plugin.utils.message(sender, "<red>Failed to start cloning arenas. Check if the arena exists.");
         }
     }
 
@@ -228,7 +228,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
      */
     private void startArenaSetup(Player player) {
         if (setupSessions.containsKey(player.getUniqueId())) {
-            player.sendMessage(plugin.utils.chat("&cYou're already in setup mode!"));
+            player.sendMessage(plugin.utils.chat("<red>You're already in setup mode!"));
             return;
         }
 
@@ -236,7 +236,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         ArenaSetupSession session = new ArenaSetupSession(player, arena);
         setupSessions.put(player.getUniqueId(), session);
 
-        plugin.utils.message(player, "&#10e8f3Step 1: Please enter the name of the arena");
+        plugin.utils.message(player, "<#10e8f3>Step 1: Please enter the name of the arena");
     }
 
     /**
@@ -292,7 +292,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
     private void handleStep1(Player player, ArenaSetupSession session, String message) {
         session.getArena().setName(message.toLowerCase());
         session.setStep(2);
-        plugin.utils.message(player, "&#10e8f3Step 2: Please enter the Display Name of the arena");
+        plugin.utils.message(player, "<#10e8f3>Step 2: Please enter the Display Name of the arena");
     }
 
     /**
@@ -307,7 +307,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         session.getArena().setDisplayName(message);
         session.getArena().setWorld(player.getWorld());
         session.setStep(3);
-        plugin.utils.message(player, "&#10e8f3Step 3: Please stand on spawn point 1 and say 'loc1' to save");
+        plugin.utils.message(player, "<#10e8f3>Step 3: Please stand on spawn point 1 and say 'loc1' to save");
     }
 
     /**
@@ -322,9 +322,9 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         if (message.equalsIgnoreCase("loc1")) {
             session.getArena().setSpawnOne(player.getLocation());
             session.setStep(4);
-            plugin.utils.message(player, "&#10e8f3Step 4: Please stand on spawn point 2 and say 'loc2' to save");
+            plugin.utils.message(player, "<#10e8f3>Step 4: Please stand on spawn point 2 and say 'loc2' to save");
         } else {
-            plugin.utils.message(player, "&cPlease say 'loc1' to save spawn point 1");
+            plugin.utils.message(player, "<red>Please say 'loc1' to save spawn point 1");
         }
     }
 
@@ -340,9 +340,9 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         if (message.equalsIgnoreCase("loc2")) {
             session.getArena().setSpawnTwo(player.getLocation());
             session.setStep(5);
-            plugin.utils.message(player, "&#10e8f3Step 5: Please stand on the first corner and say 'corner1' to save");
+            plugin.utils.message(player, "<#10e8f3>Step 5: Please stand on the first corner and say 'corner1' to save");
         } else {
-            plugin.utils.message(player, "&cPlease say 'loc2' to save spawn point 2");
+            plugin.utils.message(player, "<red>Please say 'loc2' to save spawn point 2");
         }
     }
 
@@ -358,9 +358,9 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         if (message.equalsIgnoreCase("corner1")) {
             session.getArena().setCornerOne(player.getLocation());
             session.setStep(6);
-            plugin.utils.message(player, "&#10e8f3Step 6: Please stand on the second corner and say 'corner2' to save");
+            plugin.utils.message(player, "<#10e8f3>Step 6: Please stand on the second corner and say 'corner2' to save");
         } else {
-            plugin.utils.message(player, "&cPlease say 'corner1' to save the first corner");
+            plugin.utils.message(player, "<red>Please say 'corner1' to save the first corner");
         }
     }
 
@@ -376,9 +376,9 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         if (message.equalsIgnoreCase("corner2")) {
             session.getArena().setCornerTwo(player.getLocation());
             session.setStep(7);
-            plugin.utils.message(player, "&#10e8f3Step 7: Please stand on the first playable corner and say 'playablecorner1' to save");
+            plugin.utils.message(player, "<#10e8f3>Step 7: Please stand on the first playable corner and say 'playablecorner1' to save");
         } else {
-            plugin.utils.message(player, "&cPlease say 'corner2' to save the second corner");
+            plugin.utils.message(player, "<red>Please say 'corner2' to save the second corner");
         }
     }
 
@@ -394,9 +394,9 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         if (message.equalsIgnoreCase("playablecorner1")) {
             session.getArena().setPlayableCornerOne(player.getLocation());
             session.setStep(8);
-            plugin.utils.message(player, "&#10e8f3Step 8: Please stand on the second playable corner and say 'playablecorner2' to save");
+            plugin.utils.message(player, "<#10e8f3>Step 8: Please stand on the second playable corner and say 'playablecorner2' to save");
         } else {
-            plugin.utils.message(player, "&cPlease say 'playablecorner1' to save the first playable corner");
+            plugin.utils.message(player, "<red>Please say 'playablecorner1' to save the first playable corner");
         }
     }
 
@@ -412,9 +412,9 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         if (message.equalsIgnoreCase("playablecorner2")) {
             session.getArena().setPlayableCornerTwo(player.getLocation());
             session.setStep(9);
-            plugin.utils.message(player, "&#10e8f3Step 9: Please place an item in your hand for the Arena Logo and say 'go'");
+            plugin.utils.message(player, "<#10e8f3>Step 9: Please place an item in your hand for the Arena Logo and say 'go'");
         } else {
-            plugin.utils.message(player, "&cPlease say 'playablecorner2' to save the second playable corner");
+            plugin.utils.message(player, "<red>Please say 'playablecorner2' to save the second playable corner");
         }
     }
 
@@ -430,9 +430,9 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         if (message.equalsIgnoreCase("go") && !player.getInventory().getItemInMainHand().getType().isAir()) {
             session.getArena().setBlockLogo(player.getInventory().getItemInMainHand());
             session.setStep(10);
-            plugin.utils.message(player, "&#10e8f3Step 10: Please enter the arena size (small, medium, large)");
+            plugin.utils.message(player, "<#10e8f3>Step 10: Please enter the arena size (small, medium, large)");
         } else {
-            plugin.utils.message(player, "&cPlease hold an item in your hand and say 'go'");
+            plugin.utils.message(player, "<red>Please hold an item in your hand and say 'go'");
         }
     }
 
@@ -453,14 +453,14 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         };
 
         if (size == null) {
-            plugin.utils.message(player, "&cInvalid size! Please enter 'small', 'medium', or 'large'");
+            plugin.utils.message(player, "<red>Invalid size! Please enter 'small', 'medium', or 'large'");
             return;
         }
 
         session.getArena().setArenaSize(size);
         session.setStep(11);
-        plugin.utils.message(player, "&#10e8f3Arena size set to: " + size);
-        plugin.utils.message(player, "&#10e8f3Step 11: Please select the center of the arena by right-clicking");
+        plugin.utils.message(player, "<#10e8f3>Arena size set to: " + size);
+        plugin.utils.message(player, "<#10e8f3>Step 11: Please select the center of the arena by right-clicking");
     }
 
     /**
@@ -492,7 +492,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
         session.getArena().setArenaState(new InactiveArenaState());
 
         plugin.getArenaManager().arenas.add(session.getArena());
-        plugin.utils.message(player, "&#FFC300Arena setup completed!");
+        plugin.utils.message(player, "<#FFC300>Arena setup completed!");
 
         plugin.getArenaManager().arenaFile.saveArenas(plugin.getArenaManager().arenas);
 
@@ -622,7 +622,7 @@ public class ArenaCommands implements Listener, CommandExecutor, TabCompleter {
                                 .build();
                         Operations.complete(paste);
                     }
-                    plugin.utils.log("&#FFC300Successfully pasted all the arenas to " + clonedArenas.size() + " locations");
+                    plugin.utils.log("<#FFC300>Successfully pasted all the arenas to " + clonedArenas.size() + " locations");
                 }
             });
             return !clonedArenas.isEmpty();

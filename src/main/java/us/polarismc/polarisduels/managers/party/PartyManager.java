@@ -206,7 +206,7 @@ public class PartyManager implements Listener {
 
         Optional<ArenaEntity> arena = plugin.getArenaManager().assignArena(session);
         if (arena.isEmpty()) {
-            plugin.utils.message(players, "&cThere are no arenas open. Try again in a bit.");
+            plugin.utils.message(players, "<red>There are no arenas open. Try again in a bit.");
         }
     }
 
@@ -215,7 +215,7 @@ public class PartyManager implements Listener {
                 .filter(player -> player.isDuel() || player.isQueue()).findFirst();
 
         if (inDuel.isPresent()) {
-            plugin.utils.message(party.getOnlineMembers(), "&cSomeone from your party is in a duel or queue. Please wait until they end their game before starting a party FFA.");
+            plugin.utils.message(party.getOnlineMembers(), "<red>Someone from your party is in a duel or queue. Please wait until they end their game before starting a party FFA.");
             return;
         }
 
@@ -226,7 +226,7 @@ public class PartyManager implements Listener {
         List<DuelTeam> teams = playerList.stream().map(uuid -> new DuelTeam(session.getScoreboard(), Collections.singleton(uuid))).toList();
         session.getTeams().addAll(teams);
         if (arena.isEmpty()) {
-            plugin.utils.message(party.getOnlineMembers(), "&cThere are no arenas open. Try again in a bit.");
+            plugin.utils.message(party.getOnlineMembers(), "<red>There are no arenas open. Try again in a bit.");
         }
     }
 

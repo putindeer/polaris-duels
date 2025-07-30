@@ -64,8 +64,8 @@ public class StartThings {
 
         // TAB
         plugin.getServer().getScheduler().runTaskTimer(plugin, () -> Bukkit.getOnlinePlayers().forEach(p -> p.sendPlayerListHeaderAndFooter(
-                plugin.utils.chat("&9&lPolaris Duels"),
-                plugin.utils.chat("&7Ping: &9" + p.getPing() + " &8| &7Tps: &9" + new DecimalFormat("##").format(plugin.getServer().getTPS()[0]))
+                plugin.utils.chat("<blue><bold>Polaris Duels"),
+                plugin.utils.chat("<gray>Ping: <blue>" + p.getPing() + " <dark_gray>| <gray>Tps: <blue>" + new DecimalFormat("##").format(plugin.getServer().getTPS()[0]))
         )),0, 100);
 
         registerScoreboard();
@@ -110,7 +110,7 @@ public class StartThings {
         Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 
         if (scoreboard.getObjective("HealthNamePL") == null) {
-            scoreboard.registerNewObjective("HealthNamePL", Criteria.DUMMY, plugin.utils.chat("&c❤")).setDisplaySlot(DisplaySlot.BELOW_NAME);
+            scoreboard.registerNewObjective("HealthNamePL", Criteria.DUMMY, plugin.utils.chat("<red>❤")).setDisplaySlot(DisplaySlot.BELOW_NAME);
         }
 
         plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {

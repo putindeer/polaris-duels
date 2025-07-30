@@ -109,7 +109,7 @@ public class QueueArenaState implements ArenaState, Listener {
         if (list.isEmpty()) {
             plugin.getArenaManager().setInactiveState(session.getArena());
         } else {
-            plugin.utils.message(list, player.getName() + " quit &c(" + list.size() + "/" + session.getQueueType().getPlayersNeeded() + ")");
+            plugin.utils.message(list, player.getName() + " quit <red>(" + list.size() + "/" + session.getQueueType().getPlayersNeeded() + ")");
         }
     }
 }

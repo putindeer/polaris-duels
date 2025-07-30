@@ -150,7 +150,7 @@ public class StartingArenaState implements ArenaState, Listener {
                 HashMap<Integer, ItemStack> remaining = player.getInventory().addItem(item);
                 if (!remaining.isEmpty()) {
                     player.setItemOnCursor(remaining.values().iterator().next());
-                    plugin.utils.message(player, "&cYou were holding an item on your cursor while your inventory was full. Your kit could not be saved because of this. Please avoid doing this.");
+                    plugin.utils.message(player, "<red>You were holding an item on your cursor while your inventory was full. Your kit could not be saved because of this. Please avoid doing this.");
                     return;
                 }
             }

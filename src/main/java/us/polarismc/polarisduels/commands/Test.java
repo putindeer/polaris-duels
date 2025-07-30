@@ -44,7 +44,7 @@ public class Test implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (sender instanceof Player p) {
-            plugin.utils.message(p, "&cNow we wait...");
+            plugin.utils.message(p, "<red>Now we wait...");
 
             KitType[] kits = KitType.values();
             int[] index = {0};

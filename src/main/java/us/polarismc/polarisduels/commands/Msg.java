@@ -53,12 +53,12 @@ public class Msg implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, String @NotNull [] args) {
         if (cmd.getName().equalsIgnoreCase("msg")) {
             if (args.length < 2) {
-                plugin.utils.message(sender, "Usage: &c/msg <player> <message>");
+                plugin.utils.message(sender, "Usage: <red>/msg <player> <message>");
                 return true;
             }
             Player target = Bukkit.getPlayer(args[0]);
             if (target == null) {
-                plugin.utils.message(sender, "&b" + args[0] + " &cis not connected");
+                plugin.utils.message(sender, "<aqua>" + args[0] + " <red>is not connected");
                 return true;
             }
             StringBuilder message = new StringBuilder();
@@ -67,9 +67,9 @@ public class Msg implements CommandExecutor {
             }
             String msg = message.toString().trim();
 
-            plugin.utils.message(sender, false, "&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg);
+            plugin.utils.message(sender, false, "<dark_gray>(<dark_aqua>You <gray>» <aqua>" + target.getName() + "<dark_gray>)<gray>: " + msg);
             plugin.utils.message(target, false, Sound.sound(SoundEventKeys.BLOCK_NOTE_BLOCK_BELL, Sound.Source.MASTER, 10, 1),
-                    "&8(&3" + sender.getName() + " &7» &bYou&8)&7: " + msg);
+                    "<dark_gray>(<dark_aqua>" + sender.getName() + " <gray>» <aqua>You<dark_gray>)<gray>: " + msg);
 
             // Update reply map for both parties
             replyMap.put(target, sender);
@@ -77,11 +77,11 @@ public class Msg implements CommandExecutor {
         }
         if (cmd.getName().equalsIgnoreCase("reply")) {
             if (args.length == 0) {
-                plugin.utils.message(sender, "Usage: &c/r <message>");
+                plugin.utils.message(sender, "Usage: <red>/r <message>");
                 return true;
             }
             if (!replyMap.containsKey(sender)) {
-                plugin.utils.message(sender, "&cYou don't have anyone to reply to.");
+                plugin.utils.message(sender, "<red>You don't have anyone to reply to.");
                 return true;
             }
             CommandSender target = replyMap.get(sender);
@@ -91,9 +91,9 @@ public class Msg implements CommandExecutor {
             }
             String msg = message.toString().trim();
 
-            plugin.utils.message(sender, false, "&8(&3You &7» &b" + target.getName() + "&8)&7: " + msg);
+            plugin.utils.message(sender, false, "<dark_gray>(<dark_aqua>You <gray>» <aqua>" + target.getName() + "<dark_gray>)<gray>: " + msg);
             plugin.utils.message(target, false, Sound.sound(SoundEventKeys.BLOCK_NOTE_BLOCK_BELL, Sound.Source.MASTER, 10, 1),
-                    "&8(&3" + sender.getName() + " &7» &bYou&8)&7: " + msg);
+                    "<dark_gray>(<dark_aqua>" + sender.getName() + " <gray>» <aqua>You<dark_gray>)<gray>: " + msg);
         }
         return false;
     }

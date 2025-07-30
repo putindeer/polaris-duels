@@ -46,22 +46,22 @@ public class WorldC implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (!(sender instanceof Player player)) {
-            plugin.utils.message(sender, "&cOnly players can use this command.");
+            plugin.utils.message(sender, "<red>Only players can use this command.");
             return true;
         }
         if (args.length != 1) {
-            plugin.utils.message(sender, "&cUsage: /world <name>");
+            plugin.utils.message(sender, "<red>Usage: /world <name>");
             return true;
         }
 
         World world = Bukkit.getWorld(args[0]);
         if (world == null) {
-            plugin.utils.message(sender, "&cThat world does not exist.");
+            plugin.utils.message(sender, "<red>That world does not exist.");
             return true;
         }
 
         player.teleport(world.getSpawnLocation());
-        plugin.utils.message(sender, "&aTeleported to " + args[0] + ".");
+        plugin.utils.message(sender, "<green>Teleported to " + args[0] + ".");
         return true;
     }
 

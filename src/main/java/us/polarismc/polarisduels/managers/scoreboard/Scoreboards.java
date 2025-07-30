@@ -19,17 +19,17 @@ public class Scoreboards {
      * @param board The FastBoard instance to update
      */
     public static void updateBoard(FastBoard board) {
-        Component headfooter = plugin.utils.chat("&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r&7&m &r");
+        Component headfooter = plugin.utils.chat("<gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset><gray><st> <reset>");
 
         board.updateLines(
                 headfooter,
-                plugin.utils.chat("&oOnline &r&8» &b" + plugin.getServer().getOnlinePlayers().size()),
-                plugin.utils.chat("&oPlaying &r&8» &b" + duelingCount()),
-                plugin.utils.chat("&oIn Queue &r&8» &b" + queueCount()),
+                plugin.utils.chat("<i>Online <reset><dark_gray>» <aqua>" + plugin.getServer().getOnlinePlayers().size()),
+                plugin.utils.chat("<i>Playing <reset><dark_gray>» <aqua>" + duelingCount()),
+                plugin.utils.chat("<i>In Queue <reset><dark_gray>» <aqua>" + queueCount()),
                 Component.empty(),
-                plugin.utils.chat("&oPing &r&8» &b" + board.getPlayer().getPing()),
+                plugin.utils.chat("<i>Ping <reset><dark_gray>» <aqua>" + board.getPlayer().getPing()),
                 headfooter,
-                plugin.utils.chat("&9polarismc.us")
+                plugin.utils.chat("<blue>polarismc.us")
         );
     }
 

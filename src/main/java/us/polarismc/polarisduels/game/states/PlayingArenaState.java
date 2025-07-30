@@ -108,7 +108,7 @@ public class PlayingArenaState implements ArenaState, Listener {
         teleportPlayers();
 
         if (session.getRounds() != 1) {
-            plugin.utils.message(playerList, "&7The first to win &b" + session.getRounds() + " &7rounds get the victory!");
+            plugin.utils.message(playerList, "<gray>The first to win <aqua>" + session.getRounds() + " <gray>rounds get the victory!");
         }
 
         if (session.getKit().hasAttribute(GameAttribute.HEALTH_INDICATOR)) {
@@ -121,7 +121,7 @@ public class PlayingArenaState implements ArenaState, Listener {
             player.setInvulnerable(false);
             player.setSaturation(5.0f);
             savedInventories.put(player.getUniqueId(), plugin.getKitManager().loadKit(player.getUniqueId(), session.getKit()));
-            plugin.utils.message(player, Sound.sound(SoundEventKeys.BLOCK_ANCIENT_DEBRIS_BREAK, Sound.Source.MASTER, 10f, 1f), "&cThe Match has started!");
+            plugin.utils.message(player, Sound.sound(SoundEventKeys.BLOCK_ANCIENT_DEBRIS_BREAK, Sound.Source.MASTER, 10f, 1f), "<red>The Match has started!");
             DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
             duelsPlayer.setStartingDuel(false);
             duelsPlayer.setDuel(true);
@@ -239,7 +239,7 @@ public class PlayingArenaState implements ArenaState, Listener {
     private void addHealthIndicator() {
         Scoreboard scoreboard = session.getScoreboard();
         if (scoreboard.getObjective("HealthNamePL") == null) {
-            scoreboard.registerNewObjective("HealthNamePL", Criteria.DUMMY, plugin.utils.chat("&c❤")).setDisplaySlot(DisplaySlot.BELOW_NAME);
+            scoreboard.registerNewObjective("HealthNamePL", Criteria.DUMMY, plugin.utils.chat("<red>❤")).setDisplaySlot(DisplaySlot.BELOW_NAME);
         }
 
         healthTaskId = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
@@ -314,7 +314,7 @@ public class PlayingArenaState implements ArenaState, Listener {
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
         DuelTeam team = duelsPlayer.getTeam();
 
-        plugin.utils.message(arena.getOnlinePlayers(), "&c" + player.getName() + " died.");
+        plugin.utils.message(arena.getOnlinePlayers(), "<red>" + player.getName() + " died.");
         if (team != null) {
             team.killPlayer(player);
             announceTeamElimination(team);
@@ -325,7 +325,7 @@ public class PlayingArenaState implements ArenaState, Listener {
 
     private void announceTeamElimination(DuelTeam team) {
         if (team.getAlivePlayers().isEmpty() && session.getTeams().size() > 2) {
-            plugin.utils.message(arena.getOnlinePlayers(), "&cTeam " + team.getDisplayName() + " has been eliminated!");
+            plugin.utils.message(arena.getOnlinePlayers(), "<red>Team " + team.getDisplayName() + " has been eliminated!");
         }
     }
 
@@ -339,7 +339,7 @@ public class PlayingArenaState implements ArenaState, Listener {
     }
 
     private void handleNoWinners() {
-        plugin.utils.message(arena.getOnlinePlayers(), "&cNo alive players... Game over.");
+        plugin.utils.message(arena.getOnlinePlayers(), "<red>No alive players... Game over.");
         plugin.utils.delay(20 * 5, this::resetArena);
     }
 
@@ -429,10 +429,15 @@ public class PlayingArenaState implements ArenaState, Listener {
      */
     private void resetRound() {
         plugin.utils.delay(20 * 5, () -> {
+            if (!arena.getGameSession().getKit().hasAttribute(GameAttribute.NO_ARENA_REGENERATION)) {
+                resetArenaBlocks();
+                resetArenaEntities();
+            }
+
             arena.getOnlinePlayers().forEach(this::preparePlayerForRound);
             teleportPlayers();
             plugin.utils.title(arena.getOnlinePlayers(), "<aqua><bold>GO!");
-            plugin.utils.message(arena.getOnlinePlayers(), "&aNew Round has started.");
+            plugin.utils.message(arena.getOnlinePlayers(), "<green>New Round has started.");
         });
     }
 
@@ -869,11 +874,11 @@ public class PlayingArenaState implements ArenaState, Listener {
 
         if (session.getKit().hasAttribute(GameAttribute.NO_BLOCK_BREAK)) {
             event.setCancelled(true);
-            p.sendActionBar(plugin.utils.chat("&cBreaking blocks is disabled in this kit!"));
+            p.sendActionBar(plugin.utils.chat("<red>Breaking blocks is disabled in this kit!"));
         }
         if (session.getKit().hasAttribute(GameAttribute.NO_ARENA_DESTRUCTION) && !placedBlocks.contains(event.getBlock().getLocation())) {
             event.setCancelled(true);
-            p.sendActionBar(plugin.utils.chat("&cBreaking the arena is disabled in this kit!"));
+            p.sendActionBar(plugin.utils.chat("<red>Breaking the arena is disabled in this kit!"));
         }
     }
 
@@ -892,7 +897,7 @@ public class PlayingArenaState implements ArenaState, Listener {
 
         if (session.getKit().hasAttribute(GameAttribute.NO_BLOCK_PLACE)) {
             event.setCancelled(true);
-            p.sendActionBar(plugin.utils.chat("&cPlacing blocks is disabled in this kit!"));
+            p.sendActionBar(plugin.utils.chat("<red>Placing blocks is disabled in this kit!"));
         }
     }
 

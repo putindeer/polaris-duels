@@ -49,7 +49,7 @@ public class PartyInvite {
         DuelsPlayer target = plugin.getPlayerManager().getPlayer(targetId);
         Player sender = Bukkit.getPlayer(senderId);
         if (target.getPartyInvites().stream().anyMatch(invite -> invite.getParty().equals(this.getParty()))) {
-            plugin.utils.message(sender, "&c" + target.getName() + " already has a pending invite!");
+            plugin.utils.message(sender, "<red>" + target.getName() + " already has a pending invite!");
             return true;
         } else return false;
     }

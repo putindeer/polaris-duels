@@ -148,15 +148,17 @@ public class DuelTeam {
 
     public List<Player> getOnlinePlayers() {
         return getMembers().stream()
-                .map(Bukkit::getPlayer)
-                .filter(Objects::nonNull)
+                .map(uuid -> plugin.getPlayerManager().getPlayer(uuid))
+                .filter(DuelsPlayer::isOnline)
+                .map(DuelsPlayer::getPlayer)
                 .toList();
     }
 
     public List<Player> getAlivePlayers() {
         return getAliveMembers().stream()
-                .map(Bukkit::getPlayer)
-                .filter(Objects::nonNull)
+                .map(uuid -> plugin.getPlayerManager().getPlayer(uuid))
+                .filter(DuelsPlayer::isOnline)
+                .map(DuelsPlayer::getPlayer)
                 .toList();
     }
 

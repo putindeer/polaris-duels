@@ -237,7 +237,7 @@ public class PartyCommands implements TabExecutor {
 
     private void handleChat(Player player, String[] args) {
         if (args.length < 2) {
-            plugin.utils.message(player, "&cUsage: /party chat <message>");
+            plugin.utils.message(player, "<red>Usage: /party chat <message>");
             return;
         }
 
@@ -326,7 +326,7 @@ public class PartyCommands implements TabExecutor {
                 .filter(dp -> dp.isDuel() || dp.isQueue()).findFirst();
 
         if (inDuel.isPresent()) {
-            plugin.utils.message(senderParty.getOnlineMembers(), "&cSomeone from your party is in a duel or queue. Please wait until they end their game before sending a party duel request.");
+            plugin.utils.message(senderParty.getOnlineMembers(), "<red>Someone from your party is in a duel or queue. Please wait until they end their game before sending a party duel request.");
             return;
         }
 
@@ -375,7 +375,7 @@ public class PartyCommands implements TabExecutor {
                 .filter(dp -> dp.isDuel() || dp.isQueue()).findFirst();
 
         if (inDuel.isPresent()) {
-            plugin.utils.message(party.getOnlineMembers(), "&cSomeone from your party is in a duel or queue. Please wait until they end their game before accepting a party duel request.");
+            plugin.utils.message(party.getOnlineMembers(), "<red>Someone from your party is in a duel or queue. Please wait until they end their game before accepting a party duel request.");
             return;
         }
 

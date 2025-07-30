@@ -47,39 +47,39 @@ public class DuelCommands implements TabExecutor {
         }
 
         if (args.length == 0) {
-            plugin.utils.message(p, "&cUsage: /duel <player> <kit> <rounds> | /duel accept <player> | /duel deny <player> | /duel list");
+            plugin.utils.message(p, "<red>Usage: /duel <player> <kit> <rounds> | /duel accept <player> | /duel deny <player> | /duel list");
             return true;
         }
 
         switch (args[0].toLowerCase()) {
             case "accept" -> {
                 if (args.length < 2) {
-                    plugin.utils.message(p, "&cUsage: /duel accept <player>");
+                    plugin.utils.message(p, "<red>Usage: /duel accept <player>");
                     return true;
                 }
                 Player requestor = Bukkit.getPlayer(args[1]);
                 if (requestor == null || !requestor.isOnline()) {
-                    plugin.utils.message(p, "&cThe player you tried to accept a duel from is either offline or does not exist.");
+                    plugin.utils.message(p, "<red>The player you tried to accept a duel from is either offline or does not exist.");
                     return true;
                 }
                 if (sender.equals(requestor)) {
-                    plugin.utils.message(p, "&cYou cannot accept a duel to yourself.");
+                    plugin.utils.message(p, "<red>You cannot accept a duel to yourself.");
                     return true;
                 }
                 plugin.getDuelManager().acceptDuel(p, requestor);
             }
             case "deny" -> {
                 if (args.length < 2) {
-                    plugin.utils.message(p, "&cUsage: /duel deny <player>");
+                    plugin.utils.message(p, "<red>Usage: /duel deny <player>");
                     return true;
                 }
                 Player requestor = Bukkit.getPlayer(args[1]);
                 if (requestor == null || !requestor.isOnline()) {
-                    plugin.utils.message(p, "&cThe player you tried to deny a duel from is either offline or does not exist.");
+                    plugin.utils.message(p, "<red>The player you tried to deny a duel from is either offline or does not exist.");
                     return true;
                 }
                 if (sender.equals(requestor)) {
-                    plugin.utils.message(p, "&cYou cannot deny a duel to yourself.");
+                    plugin.utils.message(p, "<red>You cannot deny a duel to yourself.");
                     return true;
                 }
                 plugin.getDuelManager().denyDuel(p, requestor);
@@ -100,18 +100,18 @@ public class DuelCommands implements TabExecutor {
      */
     private void sendDuelRequest(Player sender, String[] args) {
         if (args.length < 2) {
-            plugin.utils.message(sender, "&cUsage: /duel <player> <kit> [rounds]");
+            plugin.utils.message(sender, "<red>Usage: /duel <player> <kit> [rounds]");
             return;
         }
 
         Player target = Bukkit.getPlayer(args[0]);
         if (target == null || !target.isOnline()) {
-            plugin.utils.message(sender, "&cThat player is not online.");
+            plugin.utils.message(sender, "<red>That player is not online.");
             return;
         }
 
         if (sender.equals(target)) {
-            plugin.utils.message(sender, "&cYou cannot duel yourself.");
+            plugin.utils.message(sender, "<red>You cannot duel yourself.");
             return;
         }
 
@@ -119,7 +119,7 @@ public class DuelCommands implements TabExecutor {
         try {
             kit = KitType.valueOf(args[1].toUpperCase());
         } catch (IllegalArgumentException e) {
-            plugin.utils.message(sender, "&cInvalid kit type. Available kits: SMP, AXE, NETHPOT, UHC, DIAMONDPOT, SWORD, MACE, MARLOWUHC.");
+            plugin.utils.message(sender, "<red>Invalid kit type. Available kits: SMP, AXE, NETHPOT, UHC, DIAMONDPOT, SWORD, MACE, MARLOWUHC.");
             return;
         }
 
@@ -128,11 +128,11 @@ public class DuelCommands implements TabExecutor {
             try {
                 rounds = Integer.parseInt(args[2]);
                 if (rounds < 1 || rounds > 100) {
-                    plugin.utils.message(sender, "&cRounds must be between 1 and 100.");
+                    plugin.utils.message(sender, "<red>Rounds must be between 1 and 100.");
                     return;
                 }
             } catch (NumberFormatException e) {
-                plugin.utils.message(sender, "&cInvalid number of rounds.");
+                plugin.utils.message(sender, "<red>Invalid number of rounds.");
                 return;
             }
         }
