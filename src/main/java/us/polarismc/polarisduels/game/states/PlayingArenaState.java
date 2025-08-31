@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.*;
@@ -29,6 +30,7 @@ import us.polarismc.polarisduels.game.events.GameRemovePlayerEvent;
 import us.polarismc.polarisduels.managers.duel.DuelTeam;
 import us.polarismc.polarisduels.game.GameAttribute;
 import us.polarismc.polarisduels.game.GameSession;
+import us.polarismc.polarisduels.managers.party.Party;
 import us.polarismc.polarisduels.managers.player.DuelsPlayer;
 
 import java.util.*;
@@ -108,7 +110,7 @@ public class PlayingArenaState implements ArenaState, Listener {
         teleportPlayers();
 
         if (session.getRounds() != 1) {
-            plugin.utils.message(playerList, "<gray>The first to win <aqua>" + session.getRounds() + " <gray>rounds get the victory!");
+            plugin.utils.message(playerList, "<gray>The first to win <aqua>" + session.getRounds() + " <gray>rounds wins the game!");
         }
 
         if (session.getKit().hasAttribute(GameAttribute.HEALTH_INDICATOR)) {
@@ -215,6 +217,7 @@ public class PlayingArenaState implements ArenaState, Listener {
     }
 
     private void teleportMultipleTeams(List<DuelTeam> teams, ArenaEntity arena) {
+        //TODO - esto funciona pero tpea fuera de la arena jaja con 3 players
         Location center = arena.getCenter();
         Location cornerOne = arena.getPlayableCornerOne();
         Location cornerTwo = arena.getPlayableCornerTwo();
@@ -324,6 +327,7 @@ public class PlayingArenaState implements ArenaState, Listener {
 
 
     private void announceTeamElimination(DuelTeam team) {
+        //todo - en party ffa dice team antes del nick del player
         if (team.getAlivePlayers().isEmpty() && session.getTeams().size() > 2) {
             plugin.utils.message(arena.getOnlinePlayers(), "<red>Team " + team.getDisplayName() + " has been eliminated!");
         }
@@ -472,8 +476,13 @@ public class PlayingArenaState implements ArenaState, Listener {
      * @param team The team that won the match
      */
     private void Win(DuelTeam team) {
+        //TODO - algunas veces cuando alguien se sale después de perder una ronda, se inicia otra nueva y da doble ronda
         String winnerName = (session.getGameType() == GameType.DUEL_1V1) ? getFirstPlayerName(team) : team.getColoredName();
         String scores = formatScores();
+
+        if (session.getGameType() == GameType.PARTY_DUEL) {
+            addPartyStats(team);
+        }
         
         plugin.utils.message(arena.getOnlinePlayers(), "<green>" + winnerName + " has won! <gray>(Final Score: " + scores + "<gray>)");
 
@@ -486,6 +495,24 @@ public class PlayingArenaState implements ArenaState, Listener {
             }
         });
         plugin.utils.delay(20 * 5, this::resetArena);
+    }
+
+    private void addPartyStats(DuelTeam winnerTeam) {
+        //todo - placeholder method this should be made by events
+        winnerTeam.getMembers().stream()
+                .map(player -> plugin.getPlayerManager().getPlayer(player))
+                .map(DuelsPlayer::getParty)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .ifPresent(Party::addWin);
+
+        arena.getGameSession().getTeams().stream().filter(team -> !team.equals(winnerTeam))
+                .forEach(loserTeam -> loserTeam.getMembers().stream()
+                        .map(player -> plugin.getPlayerManager().getPlayer(player))
+                        .map(DuelsPlayer::getParty)
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .ifPresent(Party::addLoss));
     }
 
     /**
@@ -518,6 +545,8 @@ public class PlayingArenaState implements ArenaState, Listener {
     //region Arena Management
     @EventHandler
     private void onRemovePlayer(GameRemovePlayerEvent event) {
+        GameSession gameSession = event.getSession();
+        if (session != gameSession) return;
         Player player = event.getPlayer();
         if (player.isInvulnerable()) player.setInvulnerable(false);
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
@@ -831,7 +860,7 @@ public class PlayingArenaState implements ArenaState, Listener {
     @EventHandler(ignoreCancelled = true)
     public void onExplode(EntityExplodeEvent event) {
         if (!plugin.utils.isInside(event.getLocation(), arena.getCornerOne(), arena.getCornerTwo())) return;
-        event.blockList().forEach(b -> modifiedBlocks.putIfAbsent(b.getLocation(), b.getType()));
+        event.blockList().forEach(block -> modifiedBlocks.putIfAbsent(block.getLocation(), block.getType()));
     }
 
     /**
@@ -844,6 +873,8 @@ public class PlayingArenaState implements ArenaState, Listener {
             Material material = entry.getValue();
             loc.getBlock().setType(material);
         }
+
+        //TODO - cuando waterloggeas un bloque se cambia de orientación al norte
         modifiedBlocks.clear();
     }
 
@@ -869,16 +900,16 @@ public class PlayingArenaState implements ArenaState, Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onBreak(BlockBreakEvent event) {
-        Player p = event.getPlayer();
-        if (!arena.hasPlayer(p)) return;
+        Player player = event.getPlayer();
+        if (!arena.hasPlayer(player)) return;
 
         if (session.getKit().hasAttribute(GameAttribute.NO_BLOCK_BREAK)) {
             event.setCancelled(true);
-            p.sendActionBar(plugin.utils.chat("<red>Breaking blocks is disabled in this kit!"));
+            plugin.utils.actionBar(player, "<red>Breaking blocks is disabled in this kit!");
         }
         if (session.getKit().hasAttribute(GameAttribute.NO_ARENA_DESTRUCTION) && !placedBlocks.contains(event.getBlock().getLocation())) {
             event.setCancelled(true);
-            p.sendActionBar(plugin.utils.chat("<red>Breaking the arena is disabled in this kit!"));
+            plugin.utils.actionBar(player, "<red>Breaking the arena is disabled in this kit!");
         }
     }
 
@@ -892,12 +923,12 @@ public class PlayingArenaState implements ArenaState, Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPlace(BlockPlaceEvent event) {
         if (event.isCancelled()) return;
-        Player p = event.getPlayer();
-        if (!arena.hasPlayer(p)) return;
+        Player player = event.getPlayer();
+        if (!arena.hasPlayer(player)) return;
 
         if (session.getKit().hasAttribute(GameAttribute.NO_BLOCK_PLACE)) {
             event.setCancelled(true);
-            p.sendActionBar(plugin.utils.chat("<red>Placing blocks is disabled in this kit!"));
+            plugin.utils.actionBar(player, "<red>Placing blocks is disabled in this kit!");
         }
     }
 
@@ -909,10 +940,44 @@ public class PlayingArenaState implements ArenaState, Listener {
      */
     @EventHandler(priority = EventPriority.LOW)
     public void onRegen(EntityRegainHealthEvent event) {
-        if (!(event.getEntity() instanceof Player p)) return;
-        if (!arena.hasPlayer(p)) return;
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (!arena.hasPlayer(player)) return;
 
         if (session.getKit().hasAttribute(GameAttribute.NO_NATURAL_REGEN) && event.getRegainReason() == EntityRegainHealthEvent.RegainReason.SATIATED) {
+            event.setCancelled(true);
+        }
+    }
+
+    /**
+     * Cancels crafting result if crafting is not allowed in the current kit.
+     * @param event The crafting preparation event to handle
+     */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onCraft(PrepareItemCraftEvent event) {
+        Player player = (Player) event.getView().getPlayer();
+        if (!arena.hasPlayer(player)) return;
+        ItemStack result = event.getInventory().getResult();
+        if (result == null || result.getType() == Material.AIR) return;
+        if (arena.getGameSession().getKit().hasAttribute(GameAttribute.NO_CRAFTING)) {
+            event.getInventory().setResult(null);
+            plugin.utils.actionBar(player, "<red>Crafting is disabled in this kit!");
+        }
+    }
+
+    /**
+     * Prevents hunger loss if the kit doesn't allow hunger changes.
+     * Additionally, if the kit prevents complete hunger loss and the food level
+     * is at the minimum allowed threshold, cancels the hunger loss.
+     * @param event The food level change event to handle
+     */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onHungerChange(FoodLevelChangeEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (!arena.hasPlayer(player)) return;
+        if (arena.getGameSession().getKit().hasAttribute(GameAttribute.NO_HUNGER)) {
+            event.setCancelled(true);
+        }
+        if (arena.getGameSession().getKit().hasAttribute(GameAttribute.NO_COMPLETE_HUNGER_LOSS) && event.getFoodLevel() < 10) {
             event.setCancelled(true);
         }
     }

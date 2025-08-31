@@ -3,11 +3,14 @@ package us.polarismc.polarisduels.game;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionType;
 import us.polarismc.polarisduels.Main;
+import us.polarismc.polarisduels.arenas.entity.ArenaSize;
 
 import java.util.EnumSet;
+import java.util.List;
 
 @Getter
 public enum KitType {
@@ -37,7 +40,11 @@ public enum KitType {
             Main.getInstance().utils.ib(Material.NETHERITE_CHESTPLATE).enchant(Enchantment.MENDING, 1).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             Main.getInstance().utils.ib(Material.NETHERITE_HELMET).enchant(Enchantment.MENDING, 1).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             Main.getInstance().utils.ib(Material.SHIELD).enchant(Enchantment.MENDING, 1).enchant(Enchantment.UNBREAKING, 3).build()
-    }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.HEALTH_INDICATOR), 1),
+    }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.HEALTH_INDICATOR),
+            1, ArenaSize.LARGE,
+            Main.getInstance().utils.ib(Material.ENDER_PEARL).hideGUI().build(), "<#ff00d1>SMP",
+            List.of("Survival‑style PvP with maxed-out gear, pearls and totems.",
+                    "Endurance-based PvP without arena destruction.")),
 
     AXE(new ItemStack[] {
             new ItemStack(Material.DIAMOND_AXE, 1),
@@ -51,7 +58,11 @@ public enum KitType {
             new ItemStack(Material.DIAMOND_CHESTPLATE, 1),
             new ItemStack(Material.DIAMOND_HELMET, 1),
             new ItemStack(Material.SHIELD, 1)
-    }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.NO_NATURAL_REGEN, GameAttribute.NO_HUNGER, GameAttribute.HEALTH_INDICATOR), 2),
+    }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.NO_NATURAL_REGEN, GameAttribute.NO_HUNGER, GameAttribute.HEALTH_INDICATOR),
+            2, ArenaSize.LARGE,
+            Main.getInstance().utils.ib(Material.DIAMOND_AXE).hideGUI().build(), "<#9300ff>Axe",
+            List.of("Diamond‑axe combat mixed with shield and crossbow tactics.",
+                    "Low attack speed, high burst damage.")),
 
     NETHPOT(new ItemStack[] {
             Main.getInstance().utils.ib(Material.NETHERITE_SWORD).enchant(Enchantment.SHARPNESS, 5).build(),
@@ -82,7 +93,11 @@ public enum KitType {
             Main.getInstance().utils.ib(Material.NETHERITE_CHESTPLATE).enchant(Enchantment.MENDING, 1).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             Main.getInstance().utils.ib(Material.NETHERITE_HELMET).enchant(Enchantment.MENDING, 1).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             new ItemStack(Material.TOTEM_OF_UNDYING, 1)
-    }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.HEALTH_INDICATOR), 1),
+    }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.HEALTH_INDICATOR),
+            1, ArenaSize.LARGE,
+            Main.getInstance().utils.ib(Material.NETHERITE_HELMET).hideGUI().build(), "<#808080>NetheritePot",
+            List.of("Full netherite armor with splash healing potions.",
+                    "Leverage pot‑timing and strong‑hit combos to break defenses.")),
 
     UHC(new ItemStack[] {
             Main.getInstance().utils.ib(Material.DIAMOND_AXE).enchant(Enchantment.EFFICIENCY, 3).enchant(Enchantment.SHARPNESS, 1).build(),
@@ -113,7 +128,11 @@ public enum KitType {
             Main.getInstance().utils.ib(Material.DIAMOND_CHESTPLATE).enchant(Enchantment.PROTECTION, 2).build(),
             Main.getInstance().utils.ib(Material.DIAMOND_HELMET).enchant(Enchantment.PROTECTION, 3).build(),
             new ItemStack(Material.SHIELD)
-    }, EnumSet.of(GameAttribute.NO_CRAFTING, GameAttribute.NO_NATURAL_REGEN, GameAttribute.NO_HUNGER, GameAttribute.NO_ARENA_DESTRUCTION, GameAttribute.HEALTH_INDICATOR), 1),
+    }, EnumSet.of(GameAttribute.NO_CRAFTING, GameAttribute.NO_NATURAL_REGEN, GameAttribute.NO_HUNGER, GameAttribute.NO_ARENA_DESTRUCTION, GameAttribute.HEALTH_INDICATOR),
+            1, ArenaSize.LARGE,
+            Main.getInstance().utils.ib(Material.GOLDEN_APPLE).hideGUI().build(), "<#d1bb00>UHC",
+            List.of("No natural regeneration; heal only with golden apples.",
+                    "Carry water, lava, blocks and cobwebs for tactical utility.")),
 
     DIAMONDPOT(new ItemStack[] {
             Main.getInstance().utils.ib(Material.DIAMOND_SWORD).enchant(Enchantment.SHARPNESS, 5).build(),
@@ -134,7 +153,11 @@ public enum KitType {
             Main.getInstance().utils.ib(Material.DIAMOND_CHESTPLATE).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             Main.getInstance().utils.ib(Material.DIAMOND_HELMET).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).build(),
             new ItemStack(Material.COOKED_BEEF, 20)
-    }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.ONE_THIRD_MORE_MELEE_DAMAGE, GameAttribute.HEALTH_INDICATOR), 1),
+    }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.ONE_THIRD_MORE_MELEE_DAMAGE, GameAttribute.HEALTH_INDICATOR),
+            1, ArenaSize.LARGE,
+            Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.HEALING).hideGUI().build(), "<#ff0000>DiamondPot",
+            List.of("Diamond armor with splash healing potions.",
+                    "Classic potion PvP mode with 33% increased damage.")),
 
     SWORD(new ItemStack[] {
             Main.getInstance().utils.ib(Material.DIAMOND_SWORD).enchant(Enchantment.SWEEPING_EDGE, 3).build(),
@@ -144,7 +167,11 @@ public enum KitType {
             Main.getInstance().utils.ib(Material.DIAMOND_CHESTPLATE).enchant(Enchantment.PROTECTION, 3).build(),
             Main.getInstance().utils.ib(Material.DIAMOND_HELMET).enchant(Enchantment.PROTECTION, 3).build(),
             null
-    }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.NO_COMPLETE_HUNGER_LOSS, GameAttribute.HEALTH_INDICATOR), 2),
+    }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.NO_COMPLETE_HUNGER_LOSS, GameAttribute.HEALTH_INDICATOR),
+            2, ArenaSize.LARGE,
+            Main.getInstance().utils.ib(Material.DIAMOND_SWORD).hideGUI().build(), "<#00fff3>Sword",
+            List.of("Classic sword PvP without shields.",
+                    "Focuses on timing and spacing.")),
 
     MACE(new ItemStack[]{
             Main.getInstance().utils.ib(Material.SHIELD).enchant(Enchantment.UNBREAKING, 3).enchant(Enchantment.MENDING).build(),
@@ -173,7 +200,12 @@ public enum KitType {
             Main.getInstance().utils.ib(Material.DIAMOND_CHESTPLATE).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).enchant(Enchantment.MENDING).build(),
             Main.getInstance().utils.ib(Material.DIAMOND_HELMET).enchant(Enchantment.PROTECTION, 4).enchant(Enchantment.UNBREAKING, 3).enchant(Enchantment.MENDING).build(),
             new ItemStack(Material.TOTEM_OF_UNDYING)
-    }, EnumSet.of(GameAttribute.NO_ARENA_LIMITS, GameAttribute.HEALTH_INDICATOR), 1),
+    }, EnumSet.of(GameAttribute.NO_ARENA_LIMITS, GameAttribute.HEALTH_INDICATOR),
+            1, ArenaSize.LARGE,
+            Main.getInstance().utils.ib(Material.MACE).hideGUI().build(), "<#04cd14>Mace",
+            List.of("PvP based on the mace as main weapon.",
+                    "Combines aerial movement and burst damage with wind charges and elytra.",
+                    "<red>Experimental kit from Enrico & Lurrn's TL.")),
 
     MARLOWUHC(new ItemStack[] {
             Main.getInstance().utils.ib(Material.DIAMOND_SWORD).enchant(Enchantment.SHARPNESS, 3).build(),
@@ -204,21 +236,29 @@ public enum KitType {
             Main.getInstance().utils.ib(Material.DIAMOND_CHESTPLATE).enchant(Enchantment.PROTECTION, 2).build(),
             Main.getInstance().utils.ib(Material.DIAMOND_HELMET).enchant(Enchantment.PROTECTION, 3).build(),
             new ItemStack(Material.SHIELD)
-    }, EnumSet.of(GameAttribute.NO_CRAFTING, GameAttribute.NO_NATURAL_REGEN, GameAttribute.NO_HUNGER, GameAttribute.NO_ARENA_DESTRUCTION, GameAttribute.HEALTH_INDICATOR), 1),
-
-    CUSTOM(new ItemStack[] {
-            new ItemStack(Material.ENCHANTED_GOLDEN_APPLE),
-            null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null
-    }, EnumSet.noneOf(GameAttribute.class), 1);
+    }, EnumSet.of(GameAttribute.NO_CRAFTING, GameAttribute.NO_NATURAL_REGEN, GameAttribute.NO_HUNGER, GameAttribute.NO_ARENA_DESTRUCTION, GameAttribute.HEALTH_INDICATOR),
+            1, ArenaSize.LARGE,
+            Main.getInstance().utils.goldenHeadTexture().hideGUI().build(), "<#d1bb00>Marlow UHC",
+            List.of("Similar to UHC but with player heads for extra healing.",
+                    "No natural regeneration; heal with golden apples and heads."));
 
     private final ItemStack[] defaultInv;
     private final EnumSet<GameAttribute> attributes;
     private final int defaultRounds;
+    private final ArenaSize recommendedSize;
+    private final ItemStack kitItem;
+    private final String displayName;
+    private final List<String> description;
 
-    KitType(ItemStack[] inv, EnumSet<GameAttribute> attributes, int defaultRounds) {
+    KitType(ItemStack[] inv, EnumSet<GameAttribute> attributes, int defaultRounds, ArenaSize recommendedSize,
+            ItemStack kitItem, String displayName, List<String> description) {
         this.defaultInv = inv;
         this.attributes = attributes;
         this.defaultRounds = defaultRounds;
+        this.recommendedSize = recommendedSize;
+        this.kitItem = kitItem;
+        this.displayName = displayName;
+        this.description = description;
     }
 
     public boolean hasAttribute(GameAttribute attribute) {

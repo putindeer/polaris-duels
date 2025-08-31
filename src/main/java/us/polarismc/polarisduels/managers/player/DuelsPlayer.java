@@ -11,6 +11,8 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import us.polarismc.polarisduels.managers.hub.HubLayout;
 import us.polarismc.polarisduels.managers.party.Party;
 import us.polarismc.polarisduels.managers.party.PartyInvite;
 
@@ -44,6 +46,8 @@ public class DuelsPlayer {
     private Party party = null;
     /** Set of active party invitations for this player */
     private final Set<PartyInvite> partyInvites = ConcurrentHashMap.newKeySet();
+    /** Current hub layout of the player */
+    private HubLayout layout = HubLayout.DEFAULT;
 
     /**
      * Creates a new DuelsPlayer instance with the specified UUID and name.
@@ -83,5 +87,12 @@ public class DuelsPlayer {
 
     public boolean hasParty() {
         return party != null;
+    }
+
+    public void setLayout(HubLayout layout) {
+        this.layout = layout;
+        if (isOnline()) {
+            plugin.getHubManager().giveLobbyItems(getPlayer(), layout);
+        }
     }
 }

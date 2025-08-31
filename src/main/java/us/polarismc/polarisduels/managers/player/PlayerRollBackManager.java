@@ -4,7 +4,6 @@ import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import us.polarismc.polarisduels.Main;
-import us.polarismc.polarisduels.managers.hub.HubEvents;
 
 public class PlayerRollBackManager {
     private final Main plugin;
@@ -25,7 +24,7 @@ public class PlayerRollBackManager {
         player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
         player.setSaturation(5.0f);
         player.setItemOnCursor(new ItemStack(Material.AIR));
-        HubEvents.giveLobbyItems(player);
+        plugin.hubManager.giveLobbyItems(player);
 
         World world = Bukkit.getWorld("lobby");
         Location loc = new Location(world, 0, 100, 0);

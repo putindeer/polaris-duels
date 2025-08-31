@@ -154,9 +154,6 @@ public class DuelManager {
                 .collect(Collectors.toList());
     }
 
-    //TODO - arreglar bug, cuando te sales de un duel, te deja en queue, no debería pasar eso, debería cancelarse el duel
-
-
     /**
      * Creates a new duel by finding an available arena and adding both players.
      *

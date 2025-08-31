@@ -3,8 +3,10 @@ package us.polarismc.polarisduels.managers.party;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import us.polarismc.polarisduels.Main;
+import us.polarismc.polarisduels.managers.hub.HubLayout;
 import us.polarismc.polarisduels.managers.player.DuelsPlayer;
 
 import javax.annotation.Nullable;
@@ -23,6 +25,11 @@ public class Party {
     private final Set<UUID> members = new HashSet<>();
     private final Set<PartyInvite> invitations = new HashSet<>();
     private final Set<PartyDuelRequest> requests = new HashSet<>();
+    private final PartyGameSettings gameSettings = new PartyGameSettings();
+    private final long createdAt = System.currentTimeMillis();
+    private final Map<UUID, Long> memberJoinTimes = new HashMap<>();
+    private int wins = 0;
+    private int losses = 0;
     private UUID leaderId;
 
     /**
@@ -38,7 +45,10 @@ public class Party {
     private void createLeader(Player leader) {
         leaderId = leader.getUniqueId();
         members.add(leaderId);
-        plugin.getPlayerManager().getPlayer(leader).setParty(this);
+        memberJoinTimes.put(leader.getUniqueId(), System.currentTimeMillis());
+        DuelsPlayer player = plugin.getPlayerManager().getPlayer(leader);
+        player.setParty(this);
+        player.setLayout(HubLayout.PARTY_LEADER);
         plugin.utils.message(leader, "<green>Party created! Use /party invite <player> to invite others.");
     }
 
@@ -48,12 +58,15 @@ public class Party {
     public void disband() {
         plugin.utils.message(getOnlineMembers(leaderId), "<red>The party has been disbanded!");
         Player leader = Bukkit.getPlayer(leaderId);
-        if (leader != null && leader.isOnline()) {
+        if (leader != null && leader.isOnline() && members.contains(leaderId)) {
             plugin.utils.message(leader, "<green>Your party has been disbanded.");
         }
 
         plugin.getPartyManager().getParties().remove(this);
-        members.stream().map(member -> plugin.getPlayerManager().getPlayer(member)).forEach(member -> member.setParty(null));
+        members.stream().map(member -> plugin.getPlayerManager().getPlayer(member)).forEach(member -> {
+            member.setParty(null);
+            member.setLayout(HubLayout.DEFAULT);
+        });
         members.clear();
         invitations.forEach(PartyInvite::destroy);
         requests.forEach(PartyDuelRequest::destroy);
@@ -69,9 +82,12 @@ public class Party {
      */
     public void addMember(Player player) {
         if (members.add(player.getUniqueId())) {
-            plugin.getPlayerManager().getPlayer(player).setParty(this);
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
+            duelsPlayer.setParty(this);
+            duelsPlayer.setLayout(HubLayout.PARTY_MEMBER);
             plugin.utils.message(getOnlineMembers(player), "<green>" + player.getName() + " has joined the party!");
             plugin.utils.message(player, "<green>You have joined the party!");
+            memberJoinTimes.put(player.getUniqueId(), System.currentTimeMillis());
         } else {
             plugin.utils.message(player, "<red>You are already in this party!");
         }
@@ -86,7 +102,9 @@ public class Party {
     public void removeMember(UUID playerId, boolean kicked) {
         DuelsPlayer player = plugin.getPlayerManager().getPlayer(playerId);
         members.remove(playerId);
+        memberJoinTimes.remove(playerId);
         player.setParty(null);
+        player.setLayout(HubLayout.DEFAULT);
 
         String playerName = Bukkit.getOfflinePlayer(playerId).getName();
 
@@ -98,9 +116,10 @@ public class Party {
             String newLeaderName = Bukkit.getOfflinePlayer(newLeaderId).getName();
 
             plugin.utils.message(getOnlineMembers(newLeaderId), "<yellow>" + playerName + " has left the party. " + newLeaderName + " is now the party leader!");
-            Player newLeader =  Bukkit.getPlayer(newLeaderId);
+            Player newLeader = Bukkit.getPlayer(newLeaderId);
             if (newLeader != null && newLeader.isOnline()) {
                 plugin.utils.message(newLeader, "<yellow>" + playerName + " has left the party. You are now the party leader.");
+                getLeaderDuelsPlayer().setLayout(HubLayout.PARTY_LEADER);
             }
         } else {
             if (kicked) {
@@ -111,16 +130,20 @@ public class Party {
         }
     }
 
+    //TODO - public parties
+
     /**
      * Promotes a member to be the new party leader.
      *
      * @param newLeaderId The UUID of the new leader
      */
     public void promoteLeader(UUID newLeaderId) {
+        getLeaderDuelsPlayer().setLayout(HubLayout.PARTY_MEMBER);
         leaderId = newLeaderId;
         plugin.utils.message(getOnlineMembers(newLeaderId), "<gold>" + Bukkit.getOfflinePlayer(newLeaderId).getName() + " is now the party leader!");
-        Player player =  Bukkit.getPlayer(newLeaderId);
+        Player player = Bukkit.getPlayer(newLeaderId);
         if (player != null && player.isOnline()) {
+            getLeaderDuelsPlayer().setLayout(HubLayout.PARTY_LEADER);
             plugin.utils.message(player, "<gold>You are now the party leader.");
         }
     }
@@ -223,6 +246,10 @@ public class Party {
         return Bukkit.getPlayer(leaderId);
     }
 
+    public OfflinePlayer getLeaderOfflinePlayer() {
+        return Bukkit.getOfflinePlayer(leaderId);
+    }
+
     /**
      * Gets the DuelsPlayer instance for the party leader.
      *
@@ -230,6 +257,18 @@ public class Party {
      */
     public DuelsPlayer getLeaderDuelsPlayer() {
         return plugin.getPlayerManager().getPlayer(leaderId);
+    }
+
+    public int getTotalDuels() {
+        return wins + losses;
+    }
+
+    public void addWin() {
+        wins++;
+    }
+
+    public void addLoss() {
+        losses++;
     }
     //endregion
 }

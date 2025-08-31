@@ -17,7 +17,7 @@ import us.polarismc.polarisduels.arenas.entity.ArenaState;
 import us.polarismc.polarisduels.game.GameSession;
 import us.polarismc.polarisduels.game.GameType;
 import us.polarismc.polarisduels.game.events.GameRemovePlayerEvent;
-import us.polarismc.polarisduels.managers.hub.HubEvents;
+import us.polarismc.polarisduels.managers.hub.HubItem;
 import us.polarismc.polarisduels.managers.player.DuelsPlayer;
 
 import java.util.HashMap;
@@ -210,7 +210,7 @@ public class StartingArenaState implements ArenaState, Listener {
         arena.getOnlinePlayers().forEach(player -> {
             plugin.utils.title(player, "<red>Match Cancelled", "A player left the queue.");
             player.getInventory().clear();
-            player.getInventory().addItem(HubEvents.LEAVE_QUEUE);
+            player.getInventory().addItem(HubItem.LEAVE_QUEUE.getItem());
         });
 
         arena.setArenaState(new QueueArenaState(arena, gameSession));

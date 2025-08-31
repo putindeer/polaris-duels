@@ -44,3 +44,7 @@ commands:
     permission: duels.admin
   world:
     permission: duels.admin
+  hex:
+    permission: duels.dev
+  addalltoparty:
+    permission: duels.dev

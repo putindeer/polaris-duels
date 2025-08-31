@@ -8,13 +8,14 @@ import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.ArenaCommands;
 import us.polarismc.polarisduels.commands.Msg;
 import us.polarismc.polarisduels.commands.Test;
+import us.polarismc.polarisduels.commands.debug.AddAllToParty;
 import us.polarismc.polarisduels.commands.debug.Debug;
+import us.polarismc.polarisduels.commands.debug.Hex;
 import us.polarismc.polarisduels.commands.staff.Broadcast;
 import us.polarismc.polarisduels.commands.staff.CreateVoidWorld;
 import us.polarismc.polarisduels.commands.staff.GameModeC;
 import us.polarismc.polarisduels.commands.staff.WorldC;
 import us.polarismc.polarisduels.managers.duel.DuelCommands;
-import us.polarismc.polarisduels.managers.hub.HubEvents;
 import us.polarismc.polarisduels.managers.scoreboard.Scoreboards;
 
 import java.text.DecimalFormat;
@@ -88,7 +89,9 @@ public class StartThings {
         new ArenaCommands(plugin);
         new DuelCommands(plugin);
         new Debug(plugin);
+        new Hex(plugin);
         new Test(plugin);
+        new AddAllToParty(plugin);
     }
 
     /**
@@ -96,7 +99,6 @@ public class StartThings {
      * Currently registers the HubEvents listener for handling player interactions.
      */
     public void registerListeners() {
-        new HubEvents(plugin);
     }
 
     /**

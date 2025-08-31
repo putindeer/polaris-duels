@@ -5,6 +5,8 @@ public enum GameType {
     DUEL_2V2,
     DUEL_3V3,
     PARTY_FFA,
-    PARTY_VS_PARTY,
+    PARTY_TEAMS,
+    PARTY_SPLIT,
+    PARTY_DUEL,
     CUSTOM
 }

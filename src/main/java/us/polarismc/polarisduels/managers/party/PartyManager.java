@@ -54,16 +54,50 @@ public class PartyManager implements Listener {
     /**
      * Removes a player from their current party.
      *
-     * @param playerId The UUID of the player to remove
+     * @param player The player to remove
      */
-    public void removeFromParty(UUID playerId) {
-        Party party = getParty(playerId);
-        party.removeMember(playerId, false);
+    public void leaveParty(Player player) {
+        Party party = getParty(player);
+        if (party == null) {
+            plugin.utils.message(player, "<red>You are not in a party!");
+            return;
+        }
+        plugin.utils.message(player, "<green>You have left the party.");
+        party.removeMember(player.getUniqueId(), false);
     }
 
     public void kickFromParty(UUID playerId) {
         Party party = getParty(playerId);
         party.removeMember(playerId, true);
+        OfflinePlayer target = Bukkit.getOfflinePlayer(playerId);
+        if (target.isOnline()) {
+            plugin.utils.message(target.getPlayer(), "<red>You have been kicked from the party!");
+        }
+        plugin.utils.message(party.getLeaderPlayer(), "<green>You have kicked " + target.getName() + " from the party.");
+    }
+
+    public void kickFromInactivity(UUID playerId) {
+        Party party = getParty(playerId);
+        party.removeMember(playerId, true);
+        OfflinePlayer leader = party.getLeaderOfflinePlayer();
+        if (leader.isOnline()) {
+            plugin.utils.message(leader.getPlayer(), "<red>" + Bukkit.getOfflinePlayer(playerId).getName() + " was kicked from the party!");
+        }
+    }
+
+    public void disbandParty(Player player) {
+        Party party = getParty(player);
+        if (party == null) {
+            plugin.utils.message(player, "<red>You are not in a party!");
+            return;
+        }
+
+        if (!party.isLeader(player)) {
+            plugin.utils.message(player, "<red>Only the party leader can disband the party!");
+            return;
+        }
+
+        party.disband();
     }
 
     /**
@@ -119,6 +153,11 @@ public class PartyManager implements Listener {
         Party party = getParty(sender);
         if (party == null || !party.isLeader(sender)) {
             plugin.utils.message(sender, "<red>Only the party leader can invite new members!");
+            return;
+        }
+
+        if (areInTheSameParty(sender, target)) {
+            plugin.utils.message(sender, "<red>That player is already in your party!");
             return;
         }
 
@@ -198,7 +237,7 @@ public class PartyManager implements Listener {
         playerUUIDs.addAll(targetPlayers.stream().map(Player::getUniqueId).toList());
         playerUUIDs.addAll(senderPlayers.stream().map(Player::getUniqueId).toList());
 
-        GameSession session = GameSession.builder().players(playerUUIDs).gameType(GameType.PARTY_VS_PARTY).rounds(request.getRounds()).kit(request.getKit()).build();
+        GameSession session = GameSession.builder().players(playerUUIDs).gameType(GameType.PARTY_DUEL).rounds(request.getRounds()).kit(request.getKit()).build();
         DuelTeam one = new DuelTeam(session.getScoreboard(), targetUUIDs, session.findNextAvailableColor());
         session.getTeams().add(one);
         DuelTeam two = new DuelTeam(session.getScoreboard(), senderUUIDs, session.findNextAvailableColor());
@@ -259,7 +298,7 @@ public class PartyManager implements Listener {
         int taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (!Bukkit.getOfflinePlayer(playerId).isOnline()) {
                 if (hasParty(playerId)) {
-                    kickFromParty(playerId);
+                    kickFromInactivity(playerId);
                 }
             }
             pendingKicks.remove(playerId);

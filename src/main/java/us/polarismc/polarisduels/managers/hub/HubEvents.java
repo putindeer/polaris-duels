@@ -1,72 +1,50 @@
 package us.polarismc.polarisduels.managers.hub;
 
-import fr.mrmicky.fastboard.adventure.FastBoard;
 import org.bukkit.*;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.block.Action;
-import java.util.Optional;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.scheduler.BukkitRunnable;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
-import us.polarismc.polarisduels.managers.queue.QueueGUI;
+import us.polarismc.polarisduels.managers.party.gui.PartyGameGUI;
+import us.polarismc.polarisduels.managers.party.gui.PartyInfoGUI;
+import us.polarismc.polarisduels.managers.party.gui.PartyLeaveDisbandGUI;
 import us.polarismc.polarisduels.managers.player.DuelsPlayer;
+import us.polarismc.polarisduels.managers.queue.QueueGUI;
 import us.polarismc.polarisduels.managers.queue.QueueType;
 
-import java.text.DecimalFormat;
-import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Handles all hub-related events and player interactions in the lobby.
  * Manages player join/quit, inventory interactions, and various game restrictions.
  */
-@SuppressWarnings("unstable")
 public class HubEvents implements Listener {
-    
-    // Item display names
-    private static ItemStack JOIN_1V1_QUEUE;
-    private static ItemStack JOIN_2V2_QUEUE;
-    private static ItemStack JOIN_3V3_QUEUE;
-    private static ItemStack CREATE_PARTY;
-    public static ItemStack LEAVE_QUEUE;
-    
-    // Constants
-    private static final String LOBBY_WORLD = "lobby";
-    private static final Location LOBBY_SPAWN = new Location(null, 0.5, 100, 0.5, 0, 0);
-    
+
     private final Main plugin;
-    
+    private final HubManager hubManager;
+
     /**
-     * Initializes the HubEvents listener.
+     * Initializes the HubEventHandler.
      *
      * @param plugin The main plugin instance
      */
-
-    public HubEvents(Main plugin) {
+    public HubEvents(Main plugin, HubManager hubManager) {
         this.plugin = plugin;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        createQueueItems();
-    }
+        this.hubManager = hubManager;
 
-    private void createQueueItems() {
-        JOIN_1V1_QUEUE = plugin.utils.ib(Material.NAME_TAG).name("<red>1v1 Queue").lore("Use this item to enter the 1v1 Queue").build();
-        JOIN_2V2_QUEUE = plugin.utils.ib(Material.NAME_TAG).name("<red>2v2 Queue").lore("Use this item to enter the 2v2 Queue").build();
-        JOIN_3V3_QUEUE = plugin.utils.ib(Material.NAME_TAG).name("<red>3v3 Queue").lore("Use this item to enter the 3v3 Queue").build();
-        CREATE_PARTY = plugin.utils.ib(Material.ENDER_PEARL).name("<green>Create Party").lore("Use this item to create a party!").build();
-        LEAVE_QUEUE = plugin.utils.ib(Material.BARRIER).name("<red>Leave Queue").build();
+        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     /**
@@ -80,106 +58,13 @@ public class HubEvents implements Listener {
         Player player = event.getPlayer();
         event.joinMessage(plugin.utils.chat("<dark_gray>(<green>+</green>) " + player.getName()));
 
-        // Initialize player data
+        hubManager.handlePlayerJoin(player);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void firstJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
         plugin.getPlayerManager().playerJoin(player);
-        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
-        
-        // Remove from any existing team
-        if (duelsPlayer.getTeam() != null) {
-            duelsPlayer.getTeam().removePlayer(duelsPlayer);
-        }
-
-        // Setup scoreboard
-        setupScoreboard(player);
-        
-        // Teleport to lobby and reset player state
-        teleportToLobby(player);
-        resetPlayerState(player);
-        
-        // Give lobby items
-        giveLobbyItems(player);
-    }
-    
-    /**
-     * Sets up the scoreboard for a player.
-     *
-     * @param player The player to set up the scoreboard for
-     */
-    private void setupScoreboard(Player player) {
-        FastBoard board = new FastBoard(player);
-        board.updateTitle(plugin.utils.chat("<blue><bold>Polaris Duels"));
-        plugin.boards.put(player.getUniqueId(), board);
-        
-        String tps = new DecimalFormat("##").format(plugin.getServer().getTPS()[0]);
-        String footer = String.format("<gray>Ping: <blue>%d <dark_gray>| <gray>Tps: <blue>%s", player.getPing(), tps);
-        
-        player.sendPlayerListHeaderAndFooter(
-            plugin.utils.chat("<blue><bold>Polaris Duels"),
-            plugin.utils.chat(footer)
-        );
-        player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-    }
-    
-    /**
-     * Teleports a player to the lobby spawn point.
-     *
-     * @param player The player to teleport
-     */
-    private void teleportToLobby(Player player) {
-        World lobbyWorld = Bukkit.getWorld(LOBBY_WORLD);
-        if (lobbyWorld == null) return;
-        
-        Location spawn = LOBBY_SPAWN.clone();
-        spawn.setWorld(lobbyWorld);
-        player.teleport(spawn);
-    }
-    
-    /**
-     * Resets a player's game state to default lobby state.
-     *
-     * @param player The player to reset
-     */
-    private void resetPlayerState(Player player) {
-        player.setGameMode(GameMode.SURVIVAL);
-        
-        // Clear all active potion effects
-        player.getActivePotionEffects().stream()
-            .map(PotionEffect::getType)
-            .forEach(player::removePotionEffect);
-        
-        // Reset health and food
-        player.setHealth(20);
-        plugin.utils.setMaxHealth(player);
-        player.setFoodLevel(20);
-        player.setSaturation(5.0f);
-        
-        // Reset XP
-        player.setLevel(0);
-        player.setExp(0.0f);
-        Objects.requireNonNull(player.getAttribute(Attribute.BLOCK_INTERACTION_RANGE)).setBaseValue(4.5);
-        
-        // Reset player movement speed to default (0.2 is the default walking speed in Minecraft)
-        // Using setWalkSpeed which is more reliable across different Bukkit/Spigot versions
-        player.setWalkSpeed(0.2f);
-        
-        // Reset other player attributes
-        player.setFlySpeed(0.1f); // Default fly speed
-        player.setAllowFlight(false); // Disable flight by default
-    }
-    
-    /**
-     * Gives the default lobby items to a player.
-     * 
-     * @param player The player to give items to
-     */
-    public static void giveLobbyItems(Player player) {
-        Inventory inventory = player.getInventory();
-        inventory.clear();
-
-        inventory.setItem(0, JOIN_1V1_QUEUE);
-        inventory.setItem(1, JOIN_2V2_QUEUE);
-        inventory.setItem(2, JOIN_3V3_QUEUE);
-        inventory.setItem(8, CREATE_PARTY);
     }
 
     /**
@@ -192,12 +77,8 @@ public class HubEvents implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         event.quitMessage(plugin.utils.chat("<dark_gray>(<red>-<dark_gray>) " + player.getName()));
-        
-        // Clean up scoreboard
-        FastBoard board = plugin.boards.remove(player.getUniqueId());
-        if (board != null) {
-            board.delete();
-        }
+
+        hubManager.handlePlayerQuit(player);
     }
 
     /**
@@ -212,7 +93,7 @@ public class HubEvents implements Listener {
         if (player.getGameMode() == GameMode.CREATIVE) {
             return;
         }
-        
+
         DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
         if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
             event.setCancelled(true);
@@ -223,17 +104,17 @@ public class HubEvents implements Listener {
      * Handles block placement events.
      * Prevents block placement in non-creative mode when not in a duel.
      *
-     * @param e The BlockPlaceEvent
+     * @param event The BlockPlaceEvent
      */
     @EventHandler
-    public void onBlockPlace(BlockPlaceEvent e) {
-        Player p = e.getPlayer();
-        if (p.getGameMode().equals(GameMode.CREATIVE)) {
+    public void onBlockPlace(BlockPlaceEvent event) {
+        Player player = event.getPlayer();
+        if (player.getGameMode().equals(GameMode.CREATIVE)) {
             return;
         }
-        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(p);
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
         if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
-            e.setCancelled(true);
+            event.setCancelled(true);
         }
     }
 
@@ -241,32 +122,32 @@ public class HubEvents implements Listener {
      * Handles food level change events.
      * Prevents hunger changes when not in a duel.
      *
-     * @param e The FoodLevelChangeEvent
+     * @param event The FoodLevelChangeEvent
      */
     @EventHandler
-    public void onHungerChange(FoodLevelChangeEvent e) {
-        if (e.getEntity() instanceof Player p) {
-            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(p);
+    public void onHungerChange(FoodLevelChangeEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
             if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
-                e.setCancelled(true);
+                event.setCancelled(true);
             }
         }
     }
 
     /**
      * Handles item dropping events.
-     * Prevents items from being drop when not in a duel.
+     * Prevents items from being dropped when not in a duel.
      *
-     * @param e The PlayerDropItemEvent
+     * @param event The PlayerDropItemEvent
      */
     @EventHandler
-    public void onItemDrop(PlayerDropItemEvent e) {
-        if (e.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
+    public void onItemDrop(PlayerDropItemEvent event) {
+        if (event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
             return;
         }
-        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(e.getPlayer());
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(event.getPlayer());
         if (!duelsPlayer.isDuel() || duelsPlayer.isStartingDuel() || duelsPlayer.isOnHold()) {
-            e.setCancelled(true);
+            event.setCancelled(true);
         }
     }
 
@@ -278,10 +159,10 @@ public class HubEvents implements Listener {
      */
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player p)) return;
-        if (p.getGameMode().equals(GameMode.CREATIVE)) return;
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        if (player.getGameMode().equals(GameMode.CREATIVE)) return;
 
-        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(p);
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
         if (duelsPlayer.isDuel() && !duelsPlayer.isOnHold()) return;
         if (event.getClickedInventory() == null) return;
 
@@ -299,17 +180,17 @@ public class HubEvents implements Listener {
      * Handles item consumption events.
      * Prevents item consumption in non-creative mode when not in a duel.
      *
-     * @param e The PlayerItemConsumeEvent
+     * @param event The PlayerItemConsumeEvent
      */
     @EventHandler
-    public void onConsume(PlayerItemConsumeEvent e) {
-        Player p = e.getPlayer();
-        if (p.getGameMode().equals(GameMode.CREATIVE)) {
+    public void onConsume(PlayerItemConsumeEvent event) {
+        Player player = event.getPlayer();
+        if (player.getGameMode().equals(GameMode.CREATIVE)) {
             return;
         }
-        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(p);
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
         if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
-            e.setCancelled(true);
+            event.setCancelled(true);
         }
     }
 
@@ -317,14 +198,14 @@ public class HubEvents implements Listener {
      * Handles entity damage events.
      * Prevents damage when not in a duel.
      *
-     * @param e The EntityDamageEvent
+     * @param event The EntityDamageEvent
      */
     @EventHandler
-    public void onDamageReceive(EntityDamageEvent e) {
-        if (e.getEntity() instanceof Player p) {
-            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(p);
+    public void onDamageReceive(EntityDamageEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
             if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
-                e.setCancelled(true);
+                event.setCancelled(true);
             }
         }
     }
@@ -338,18 +219,18 @@ public class HubEvents implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void shieldDisable(EntityDamageByEntityEvent event) {
         if (event.getEntity().getType() == EntityType.PLAYER && event.getDamager().getType() == EntityType.PLAYER) {
-            Player p = (Player) event.getEntity();
-            Player a = (Player) event.getDamager();
-            if (a.isInvulnerable()) a.setInvulnerable(false);
-            if (a.getInventory().getItemInMainHand().getType().toString().endsWith("_AXE")) {
-                if (p.isBlocking()) {
-                    double h1 = p.getHealth() + p.getAbsorptionAmount();
+            Player victim = (Player) event.getEntity();
+            Player attacker = (Player) event.getDamager();
+            if (attacker.isInvulnerable()) attacker.setInvulnerable(false);
+            if (attacker.getInventory().getItemInMainHand().getType().toString().endsWith("_AXE")) {
+                if (victim.isBlocking()) {
+                    double initialHealth = victim.getHealth() + victim.getAbsorptionAmount();
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            double h2 = p.getHealth() + p.getAbsorptionAmount();
-                            if (h1 == h2) {
-                                a.playSound(p.getLocation(), Sound.ITEM_SHIELD_BREAK, 10, 0.5F);
+                            double finalHealth = victim.getHealth() + victim.getAbsorptionAmount();
+                            if (initialHealth == finalHealth) {
+                                attacker.playSound(victim.getLocation(), Sound.ITEM_SHIELD_BREAK, 10, 0.5F);
                             }
                         }
                     }.runTaskLater(plugin, 1L);
@@ -362,14 +243,14 @@ public class HubEvents implements Listener {
      * Handles player movement events.
      * Prevents falling into the void in the lobby by teleporting players back to spawn.
      *
-     * @param e The PlayerMoveEvent
+     * @param event The PlayerMoveEvent
      */
     @EventHandler
-    public void onMove(PlayerMoveEvent e) {
-        if (e.getPlayer().getWorld().getName().equals("lobby") && e.getPlayer().getLocation().getBlockY() <= -64) {
-            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(e.getPlayer());
+    public void onMove(PlayerMoveEvent event) {
+        if (event.getPlayer().getWorld().getName().equals("lobby") && event.getPlayer().getLocation().getBlockY() <= -64) {
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(event.getPlayer());
             if (!duelsPlayer.isDuel() || duelsPlayer.isOnHold()) {
-                e.getPlayer().teleport(new Location(Bukkit.getWorld("lobby"), 0, 100, 0));
+                event.getPlayer().teleport(new Location(Bukkit.getWorld("lobby"), 0, 100, 0));
             }
         }
     }
@@ -378,88 +259,109 @@ public class HubEvents implements Listener {
      * Marks a player as disconnecting when they quit.
      * This is used to handle cleanup operations.
      *
-     * @param e The PlayerQuitEvent
+     * @param event The PlayerQuitEvent
      */
     @EventHandler(priority = EventPriority.LOWEST)
-    public void setDisconnecting(PlayerQuitEvent e) {
-        plugin.getPlayerManager().getPlayer(e.getPlayer()).setDisconnecting(true);
+    public void setDisconnecting(PlayerQuitEvent event) {
+        plugin.getPlayerManager().getPlayer(event.getPlayer()).setDisconnecting(true);
     }
 
     /**
      * Cleans up the disconnecting state when a player quits.
      * This ensures proper state management when players leave the server.
      *
-     * @param e The PlayerQuitEvent
+     * @param event The PlayerQuitEvent
      */
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void removeDisconnecting(PlayerQuitEvent e) {
-        plugin.getPlayerManager().getPlayer(e.getPlayer()).setDisconnecting(false);
+    public void removeDisconnecting(PlayerQuitEvent event) {
+        plugin.getPlayerManager().getPlayer(event.getPlayer()).setDisconnecting(false);
     }
 
     /**
      * Handles player interaction events.
      * Manages interactions with queue items and prevents other interactions when not in a duel.
      *
-     * @param e The PlayerInteractEvent
+     * @param event The PlayerInteractEvent
      */
     @EventHandler
-    public void onInteract(PlayerInteractEvent e) {
-        if (e.getAction().equals(Action.RIGHT_CLICK_AIR) || e.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
-            Player p = e.getPlayer();
-            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(p);
+    public void onInteract(PlayerInteractEvent event) {
+        if (event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+            Player player = event.getPlayer();
+            DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
             if (duelsPlayer.isDuel() && !duelsPlayer.isOnHold()) return;
 
-            ItemStack item = p.getInventory().getItemInMainHand();
-            if (p.getGameMode() == GameMode.SPECTATOR) return;
+            ItemStack item = player.getInventory().getItemInMainHand();
+            if (player.getGameMode() == GameMode.SPECTATOR) return;
 
-            switch (item.getType()) {
-                case BARRIER -> {
-                    if (Objects.equals(item, LEAVE_QUEUE)) {
-                        e.setCancelled(true);
-                        Optional<ArenaEntity> arena = plugin.getArenaManager().getPlayerArena(p);
-                        if (arena.isPresent()){
-                            arena.get().removePlayer(p, plugin);
-                            plugin.utils.message(p, "<red>You left the queue");
-                        } else plugin.utils.message(p, "<red>You don't seem to be in any arena, try re-joining.");
-                    }
+            // Get the item type from the hub manager
+            HubItem itemType = hubManager.getItemType(item);
+            if (itemType == null) {
+                // Cancel interaction for unknown items if not in creative mode
+                if (!player.getGameMode().equals(GameMode.CREATIVE)) {
+                    event.setCancelled(true);
                 }
-                case NAME_TAG -> {
-                    e.setCancelled(true);
-                    if (Objects.equals(item, JOIN_1V1_QUEUE)) {
-                        if (duelsPlayer.hasParty()) {
-                            plugin.utils.message(p, "<red>You cannot join a queue while in a party!");
-                            return;
-                        }
-                        new QueueGUI(p, QueueType.UNRANKED_1V1, plugin);
-                    }
-                    if (Objects.equals(item, JOIN_2V2_QUEUE)) {
-                        if (duelsPlayer.hasParty()) {
-                            plugin.utils.message(p, "<red>You cannot join a queue while in a party!");
-                            return;
-                        }
-                        new QueueGUI(p,  QueueType.UNRANKED_2V2, plugin);
-                    }
-                    if (Objects.equals(item, JOIN_3V3_QUEUE)) {
-                        if (duelsPlayer.hasParty()) {
-                            plugin.utils.message(p, "<red>You cannot join a queue while in a party!");
-                            return;
-                        }
-                        new QueueGUI(p,  QueueType.UNRANKED_3V3, plugin);
-                    }
-                }
-                case ENDER_PEARL -> {
-                    e.setCancelled(true);
-                    if (Objects.equals(item, CREATE_PARTY)) {
-                        plugin.getPartyManager().createParty(p);
-                    }
-                }
-                default -> {
-                    if (p.getGameMode().equals(GameMode.CREATIVE)) {
-                        return;
-                    }
-                    e.setCancelled(true);
+                return;
+            }
+
+            event.setCancelled(true);
+            handleHubItemInteraction(player, itemType);
+        }
+    }
+
+    /**
+     * Handles interaction with hub items based on their type.
+     *
+     * @param player   The player who interacted
+     * @param itemType The type of hub item that was interacted with
+     */
+    private void handleHubItemInteraction(Player player, HubItem itemType) {
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
+
+        switch (itemType) {
+            case LEAVE_QUEUE -> {
+                Optional<ArenaEntity> arena = plugin.getArenaManager().getPlayerArena(player);
+                if (arena.isPresent()) {
+                    arena.get().removePlayer(player, plugin);
+                    plugin.utils.message(player, "<red>You left the queue");
+                    hubManager.giveLobbyItems(player);
+                } else {
+                    plugin.utils.message(player, "<red>You don't seem to be in any arena, try re-joining.");
                 }
             }
+
+            case JOIN_1V1_QUEUE -> {
+                if (duelsPlayer.hasParty()) {
+                    plugin.utils.message(player, "<red>You cannot join a queue while in a party!");
+                    return;
+                }
+                new QueueGUI(player, QueueType.UNRANKED_1V1, plugin);
+            }
+
+            case JOIN_2V2_QUEUE -> {
+                if (duelsPlayer.hasParty()) {
+                    plugin.utils.message(player, "<red>You cannot join a queue while in a party!");
+                    return;
+                }
+                new QueueGUI(player, QueueType.UNRANKED_2V2, plugin);
+            }
+
+            case JOIN_3V3_QUEUE -> {
+                if (duelsPlayer.hasParty()) {
+                    plugin.utils.message(player, "<red>You cannot join a queue while in a party!");
+                    return;
+                }
+                new QueueGUI(player, QueueType.UNRANKED_3V3, plugin);
+            }
+
+            case CREATE_PARTY -> plugin.getPartyManager().createParty(player);
+
+            case LEAVE_PARTY -> plugin.getPartyManager().leaveParty(player);
+
+            case LEAVE_DISBAND_PARTY -> new PartyLeaveDisbandGUI(player, plugin);
+
+            case PARTY_INFO -> new PartyInfoGUI(player, plugin);
+
+            case PARTY_FFA -> new PartyGameGUI(player, plugin);
         }
     }
 }

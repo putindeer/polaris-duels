@@ -11,10 +11,10 @@ import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.arenas.entity.ArenaState;
 import us.polarismc.polarisduels.game.GameType;
-import us.polarismc.polarisduels.managers.hub.HubEvents;
 import us.polarismc.polarisduels.game.events.GameAddPlayerEvent;
 import us.polarismc.polarisduels.game.events.GameRemovePlayerEvent;
 import us.polarismc.polarisduels.game.GameSession;
+import us.polarismc.polarisduels.managers.hub.HubItem;
 
 import java.util.List;
 
@@ -76,7 +76,7 @@ public class QueueArenaState implements ArenaState, Listener {
 
         Player player = event.getPlayer();
         plugin.getPlayerManager().getPlayer(player).setQueue(true);
-        player.getInventory().setItem(8, HubEvents.LEAVE_QUEUE);
+        player.getInventory().setItem(8, HubItem.LEAVE_QUEUE.getItem());
 
         ArenaEntity arena = session.getArena();
         List<Player> list = session.getPlayerList();

@@ -9,6 +9,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.polarismc.polarisduels.Main;
+import us.polarismc.polarisduels.managers.party.gui.PartyInfoGUI;
 import us.polarismc.polarisduels.managers.player.DuelsPlayer;
 import us.polarismc.polarisduels.game.KitType;
 
@@ -42,12 +43,12 @@ public class PartyCommands implements TabExecutor {
         }
 
         switch (args[0].toLowerCase()) {
-            case "create" -> handleCreate(player);
-            case "disband" -> handleDisband(player);
+            case "create" -> pm.createParty(player);
+            case "disband" -> pm.disbandParty(player);
             case "invite" -> handleInvite(player, args);
             case "accept" -> handleAccept(player, args);
             case "decline" -> handleDecline(player, args);
-            case "leave" -> handleLeave(player);
+            case "leave" -> pm.leaveParty(player);
             case "kick" -> handleKick(player, args);
             case "promote" -> handlePromote(player, args);
             case "info" -> handleInfo(player);
@@ -59,26 +60,6 @@ public class PartyCommands implements TabExecutor {
         }
 
         return true;
-    }
-
-    private void handleCreate(Player player) {
-        pm.createParty(player);
-    }
-
-    private void handleDisband(Player player) {
-        if (!pm.hasParty(player)) {
-            plugin.utils.message(player, "<red>You are not in a party!");
-            return;
-        }
-
-        Party party = pm.getParty(player);
-
-        if (!pm.getParty(player).isLeader(player)) {
-            plugin.utils.message(player, "<red>Only the party leader can disband the party!");
-            return;
-        }
-
-        party.disband();
     }
 
     private void handleInvite(Player player, String[] args) {
@@ -143,15 +124,6 @@ public class PartyCommands implements TabExecutor {
         pm.declineInvite(player, args[1]);
     }
 
-    private void handleLeave(Player player) {
-        if (!pm.hasParty(player)) {
-            plugin.utils.message(player.getPlayer(), "<red>You are not in a party!");
-            return;
-        }
-        pm.removeFromParty(player.getUniqueId());
-        plugin.utils.message(player, "<green>You have left the party.");
-    }
-
     private void handleKick(Player player, String[] args) {
         if (!pm.hasParty(player)) {
             plugin.utils.message(player, "<red>You are not in a party!");
@@ -182,10 +154,6 @@ public class PartyCommands implements TabExecutor {
         }
 
         pm.kickFromParty(target.getUniqueId());
-        if (target.isOnline()) {
-            plugin.utils.message(Bukkit.getPlayer(target.getUniqueId()), "<red>You have been kicked from the party!");
-        }
-        plugin.utils.message(player, "<green>You have kicked " + target.getName() + " from the party.");
     }
 
     private void handlePromote(Player player, String[] args) {
@@ -205,11 +173,7 @@ public class PartyCommands implements TabExecutor {
             return;
         }
 
-        Player target = Bukkit.getPlayer(args[1]);
-        if (target == null) {
-            plugin.utils.message(player, "<red>Player not found or is offline.");
-            return;
-        }
+        OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
 
         if (target.getUniqueId().equals(player.getUniqueId())) {
             plugin.utils.message(player, "<red>You are already the leader!");
@@ -230,9 +194,7 @@ public class PartyCommands implements TabExecutor {
             return;
         }
 
-        plugin.utils.message(player, "<gold><bold>Party Information:",
-                "<gray>Members: <reset>" + pm.getParty(player.getUniqueId()).getSize(),
-                "<gray>Leader: <reset>" + Bukkit.getOfflinePlayer(pm.getParty(player.getUniqueId()).getLeaderId()).getName());
+        new PartyInfoGUI(player, plugin);
     }
 
     private void handleChat(Player player, String[] args) {
@@ -313,7 +275,6 @@ public class PartyCommands implements TabExecutor {
             return;
         }
 
-        // Verificar si ya existe una request pendiente
         boolean hasExistingRequest = senderParty.getRequests().stream()
                 .anyMatch(request -> request.getTargetParty().equals(targetParty));
 

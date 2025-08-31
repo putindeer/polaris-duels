@@ -11,6 +11,7 @@ import us.polarismc.polarisduels.managers.duel.DuelManager;
 import us.polarismc.polarisduels.database.Database;
 import us.polarismc.polarisduels.database.DatabaseInitializer;
 import us.polarismc.polarisduels.database.KitManager;
+import us.polarismc.polarisduels.managers.hub.HubManager;
 import us.polarismc.polarisduels.managers.party.PartyManager;
 import us.polarismc.polarisduels.managers.tab.TabManager;
 import us.polarismc.polarisduels.managers.player.PlayerManager;
@@ -61,6 +62,10 @@ public final class Main extends JavaPlugin {
     /** Handles player tab list customization */
     @Getter
     public TabManager tabManager;
+
+    /** Handles hub management */
+    @Getter
+    public HubManager hubManager;
     
     /** Maps player UUIDs to their FastBoard instances for scoreboard management */
     public final Map<UUID, FastBoard> boards = new HashMap<>();
@@ -117,6 +122,7 @@ public final class Main extends JavaPlugin {
         partyManager = new PartyManager(this);
         kitManager = new KitManager(this, database);
         tabManager = new TabManager(this);
+        hubManager = new HubManager(this);
     }
 
     /**
