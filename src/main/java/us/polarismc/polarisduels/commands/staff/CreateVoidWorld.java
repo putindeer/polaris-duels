@@ -8,8 +8,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import us.polarismc.api.util.builder.WorldBuilder;
-import us.polarismc.api.util.generator.VoidGenerator;
+import me.putindeer.api.util.builder.WorldBuilder;
+import me.putindeer.api.util.generator.VoidGenerator;
 import us.polarismc.polarisduels.Main;
 
 import java.util.Objects;
@@ -17,7 +17,7 @@ import java.util.Objects;
 /**
  * A command that allows staff members to create void worlds with optimized game rules.
  * Void worlds are empty worlds that can be used for various purposes like minigames or events.
- * 
+ * <p>
  * Permission: duels.admin
  * Usage: /createvoidworld <worldname>
  */

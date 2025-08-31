@@ -3,7 +3,7 @@ package us.polarismc.polarisduels.arenas.setup;
 import com.google.gson.*;
 import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
-import us.polarismc.api.util.generator.VoidGenerator;
+import me.putindeer.api.util.generator.VoidGenerator;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.arenas.entity.ArenaSize;

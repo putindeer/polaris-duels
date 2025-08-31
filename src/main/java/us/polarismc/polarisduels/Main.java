@@ -3,7 +3,7 @@ package us.polarismc.polarisduels;
 import fr.mrmicky.fastboard.adventure.FastBoard;
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
-import us.polarismc.api.util.PluginUtils;
+import me.putindeer.api.util.PluginUtils;
 import us.polarismc.polarisduels.arenas.ArenaManager;
 import us.polarismc.polarisduels.arenas.entity.ArenaEntity;
 import us.polarismc.polarisduels.game.states.PlayingArenaState;
