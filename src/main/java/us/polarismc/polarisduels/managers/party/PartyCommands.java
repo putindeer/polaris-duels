@@ -218,8 +218,7 @@ public class PartyCommands implements TabExecutor {
 
         final Component message = builder;
 
-        //TODO - check this, player's messages could have click events (dangerous)
-        Component formattedMessage = plugin.utils.chat(String.format("<light_purple>[Party] " + player.getName() + ":</light_purple> <white>", player.getName()));
+        Component formattedMessage = plugin.utils.chat("<light_purple>[Party] " + player.getName() + ":</light_purple> <white>");
 
         pm.getParty(player).getMembers().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).filter(Player::isOnline)
                 .forEach(p -> plugin.utils.message(p, false, formattedMessage.append(message)));
