@@ -15,7 +15,7 @@ public enum HubLayout {
         layout.put(0, HubItem.JOIN_1V1_QUEUE);
         layout.put(1, HubItem.JOIN_2V2_QUEUE);
         layout.put(2, HubItem.JOIN_3V3_QUEUE);
-        layout.put(4, HubItem.UHC);
+        layout.put(7, HubItem.UHC);
         layout.put(8, HubItem.CREATE_PARTY);
     }},
 
@@ -24,7 +24,7 @@ public enum HubLayout {
      */
     PARTY_MEMBER {{
         layout.put(0, HubItem.PARTY_INFO);
-        layout.put(4, HubItem.UHC);
+        layout.put(7, HubItem.UHC);
         layout.put(8, HubItem.LEAVE_PARTY);
     }},
 
@@ -34,7 +34,7 @@ public enum HubLayout {
     PARTY_LEADER {{
         layout.put(0, HubItem.PARTY_INFO);
         layout.put(1, HubItem.PARTY_FFA);
-        layout.put(4, HubItem.UHC);
+        layout.put(7, HubItem.UHC);
         layout.put(8, HubItem.LEAVE_DISBAND_PARTY);
     }};
 
