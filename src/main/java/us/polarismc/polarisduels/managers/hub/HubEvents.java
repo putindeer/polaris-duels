@@ -362,6 +362,8 @@ public class HubEvents implements Listener {
             case PARTY_INFO -> new PartyInfoGUI(player, plugin);
 
             case PARTY_FFA -> new PartyGameGUI(player, plugin);
+
+            case UHC -> player.transfer("polarismc.us", 25565);
         }
     }
 }

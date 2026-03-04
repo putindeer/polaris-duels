@@ -14,6 +14,7 @@ public enum HubItem {
     JOIN_1V1_QUEUE(Main.getInstance().utils.ib(Material.NAME_TAG).name("<red>1v1 Queue").lore("Use this item to enter the 1v1 Queue!").build()),
     JOIN_2V2_QUEUE(Main.getInstance().utils.ib(Material.NAME_TAG).name("<red>2v2 Queue").lore("Use this item to enter the 2v2 Queue!").build()),
     JOIN_3V3_QUEUE(Main.getInstance().utils.ib(Material.NAME_TAG).name("<red>3v3 Queue").lore("Use this item to enter the 3v3 Queue!").build()),
+    UHC(Main.getInstance().utils.ib(Material.GOLDEN_APPLE).name("<red>UHC").lore("Use this item to enter the UHC!").build()),
     LEAVE_QUEUE(Main.getInstance().utils.ib(Material.BARRIER).name("<red>Leave Queue").lore("Use this item to leave the queue!").build()),
     CREATE_PARTY(Main.getInstance().utils.ib(Material.ENDER_PEARL).name("<green>Create Party").lore("Use this item to create a party!").build()),
     LEAVE_PARTY(Main.getInstance().utils.ib(Material.RED_DYE).name("<red>Leave Party").lore("Use this item to leave your party!").build()),
