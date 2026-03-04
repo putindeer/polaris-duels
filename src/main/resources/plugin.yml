@@ -14,7 +14,7 @@ commands:
   broadcast:
     description: Broadcast a message to all players
     aliases: [bc]
-    permission: duels.admin
+    permission: duels.broadcast
   gmc:
     permission: duels.admin
   gmsp:
