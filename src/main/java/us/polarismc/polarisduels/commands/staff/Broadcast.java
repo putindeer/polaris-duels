@@ -14,8 +14,8 @@ import java.util.Objects;
 /**
  * A command that allows staff members to send formatted broadcast messages to all online players.
  * Includes a sound effect to draw attention to the broadcast.
- * 
- * Permission: duels.admin
+ * <br><br>
+ * Permission: duels.admin<br>
  * Usage: /broadcast <message>
  */
 public class Broadcast implements CommandExecutor {
@@ -44,11 +44,7 @@ public class Broadcast implements CommandExecutor {
      * @return true if the command was handled, false otherwise
      */
     @Override
-    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
-        if (!sender.hasPermission("duels.admin")){
-            plugin.utils.message(sender, "<red>You dont have permission to execute this command");
-            return true;
-        }
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         if (args.length < 1){
             plugin.utils.message(sender, "<red>Usage: /bc <text>");
             return true;
