@@ -3,7 +3,6 @@ package us.polarismc.polarisduels.game;
 import lombok.Getter;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionType;
 import us.polarismc.polarisduels.Main;
@@ -100,28 +99,26 @@ public enum KitType {
                     "Leverage pot‑timing and strong‑hit combos to break defenses.")),
 
     UHC(new ItemStack[] {
-            Main.getInstance().utils.ib(Material.DIAMOND_AXE).enchant(Enchantment.EFFICIENCY, 3).enchant(Enchantment.SHARPNESS, 1).build(),
             Main.getInstance().utils.ib(Material.DIAMOND_SWORD).enchant(Enchantment.SHARPNESS, 4).build(),
-            Main.getInstance().utils.ib(Material.CROSSBOW).enchant(Enchantment.PIERCING, 1).build(),
+            Main.getInstance().utils.ib(Material.DIAMOND_AXE).enchant(Enchantment.EFFICIENCY, 3).enchant(Enchantment.SHARPNESS, 1).build(),
             Main.getInstance().utils.ib(Material.BOW).enchant(Enchantment.POWER, 1).build(),
-            new ItemStack(Material.GOLDEN_APPLE, 13),
+            Main.getInstance().utils.ib(Material.CROSSBOW).enchant(Enchantment.PIERCING, 1).build(),
             new ItemStack(Material.COBWEB, 8),
-            new ItemStack(Material.LAVA_BUCKET, 1),
-            new ItemStack(Material.WATER_BUCKET, 1),
             new ItemStack(Material.COBBLESTONE, 64),
-            null, null, null,
-            Main.getInstance().utils.ib(Material.DIAMOND_PICKAXE).enchant(Enchantment.EFFICIENCY, 3).build(),
-            new ItemStack(Material.WATER_BUCKET, 1),
-            new ItemStack(Material.WATER_BUCKET, 1),
-            new ItemStack(Material.SHIELD, 1),
-            null, null, null, null, null, null,
-            new ItemStack(Material.WATER_BUCKET, 1),
+            new ItemStack(Material.GOLDEN_APPLE, 10),
             new ItemStack(Material.LAVA_BUCKET, 1),
+            new ItemStack(Material.WATER_BUCKET, 1),
+            null, null, null,
+            new ItemStack(Material.WATER_BUCKET, 1),
+            new ItemStack(Material.WATER_BUCKET, 1),
+            new ItemStack(Material.WATER_BUCKET, 1),
+            null, null, null, null, null, null,
+            new ItemStack(Material.ARROW, 10),
+            new ItemStack(Material.LAVA_BUCKET, 1),
+            new ItemStack(Material.SHIELD, 1),
             null, null,
-            new ItemStack(Material.OAK_PLANKS, 64),
-            null, null,
-            new ItemStack(Material.ARROW, 16),
-            null, null, null, null, null,
+            Main.getInstance().utils.ib(Material.DIAMOND_PICKAXE).enchant(Enchantment.EFFICIENCY, 3).build(),
+            null, null, null, null, null, null, null, null,
             new ItemStack(Material.OAK_PLANKS, 64),
             Main.getInstance().utils.ib(Material.DIAMOND_BOOTS).enchant(Enchantment.PROTECTION, 3).build(),
             Main.getInstance().utils.ib(Material.DIAMOND_LEGGINGS).enchant(Enchantment.PROTECTION, 3).build(),
