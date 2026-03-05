@@ -127,7 +127,7 @@ public enum KitType {
             new ItemStack(Material.SHIELD)
     }, EnumSet.of(GameAttribute.NO_CRAFTING, GameAttribute.NO_NATURAL_REGEN, GameAttribute.NO_HUNGER, GameAttribute.NO_ARENA_DESTRUCTION, GameAttribute.HEALTH_INDICATOR),
             1, ArenaSize.LARGE,
-            Main.getInstance().utils.ib(Material.GOLDEN_APPLE).hideGUI().build(), "<#d1bb00><bold>PvP Tiers UHC",
+            Main.getInstance().utils.ib(Material.GOLDEN_APPLE).hideGUI().build(), "<#d1bb00><bold>PvPTiers UHC",
             List.of("No natural regeneration; heal only with golden apples.",
                     "Carry water, lava, blocks and cobwebs for tactical utility.")),
 
