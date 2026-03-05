@@ -24,7 +24,14 @@ public class Spec implements CommandExecutor {
             plugin.utils.message(sender, "<red>Only players can use this command.");
             return true;
         }
-        player.setGameMode(GameMode.SPECTATOR);
+        if (player.getGameMode() == GameMode.SPECTATOR) {
+            plugin.hubManager.teleportToLobby(player);
+            plugin.hubManager.resetPlayerState(player);
+            plugin.utils.message(player, "<green>Returning to lobby.");
+        } else {
+            plugin.utils.message(player, "<green>Switching to spectator mode. Use /spec to return.");
+            player.setGameMode(GameMode.SPECTATOR);
+        }
         return true;
     }
 }
