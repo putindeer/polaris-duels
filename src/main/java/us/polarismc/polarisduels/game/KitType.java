@@ -82,7 +82,7 @@ public enum KitType {
             Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.STRONG_STRENGTH).build(), Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.STRONG_STRENGTH).build(),
             Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.STRONG_SWIFTNESS).build(),
             new ItemStack(Material.EXPERIENCE_BOTTLE, 64),
-            Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.LONG_FIRE_RESISTANCE).build(),
+            Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.STRONG_HEALING).build(),
             Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.STRONG_HEALING).build(), Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.STRONG_HEALING).build(), Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.STRONG_HEALING).build(),
             Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.STRONG_SWIFTNESS).build(),
             Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.STRONG_STRENGTH).build(), Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.STRONG_STRENGTH).build(),
