@@ -903,9 +903,15 @@ public class PlayingArenaState implements ArenaState, Listener {
 
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
-                if (world.isChunkLoaded(x, z)) {
-                    world.unloadChunk(x, z, false);
-                }
+                Chunk chunk = world.getChunkAt(x, z);
+
+                if (!chunk.isLoaded()) continue;
+
+                List<Player> players = new ArrayList<>();
+                Arrays.stream(chunk.getEntities()).filter(entity -> entity instanceof Player).forEach(entity -> players.add((Player) entity));
+                players.forEach(plugin.hubManager::teleportToLobby);
+
+                chunk.unload(false);
             }
         }
     }
