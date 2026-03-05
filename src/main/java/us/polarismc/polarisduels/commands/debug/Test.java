@@ -1,4 +1,4 @@
-package us.polarismc.polarisduels.commands;
+package us.polarismc.polarisduels.commands.debug;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;

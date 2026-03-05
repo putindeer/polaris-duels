@@ -48,3 +48,7 @@ commands:
     permission: duels.dev
   addalltoparty:
     permission: duels.dev
+  spec:
+    description: Switch to spectator mode
+  uhc:
+    description: Transfers you to UHC server

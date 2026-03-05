@@ -7,14 +7,13 @@ import org.bukkit.scoreboard.*;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.ArenaCommands;
 import us.polarismc.polarisduels.commands.Msg;
-import us.polarismc.polarisduels.commands.Test;
+import us.polarismc.polarisduels.commands.Spec;
+import us.polarismc.polarisduels.commands.debug.Test;
+import us.polarismc.polarisduels.commands.UHC;
 import us.polarismc.polarisduels.commands.debug.AddAllToParty;
 import us.polarismc.polarisduels.commands.debug.Debug;
 import us.polarismc.polarisduels.commands.debug.Hex;
-import us.polarismc.polarisduels.commands.staff.Broadcast;
-import us.polarismc.polarisduels.commands.staff.CreateVoidWorld;
-import us.polarismc.polarisduels.commands.staff.GameModeC;
-import us.polarismc.polarisduels.commands.staff.WorldC;
+import us.polarismc.polarisduels.commands.staff.*;
 import us.polarismc.polarisduels.managers.duel.DuelCommands;
 import us.polarismc.polarisduels.managers.scoreboard.Scoreboards;
 
@@ -80,6 +79,8 @@ public class StartThings {
     public void registerCommands() {
         // User commands (polarisduels.commands)
         new Msg(plugin);
+        new Spec(plugin);
+        new UHC(plugin);
         // Admin commands (polarisduels.admin)
         new Broadcast(plugin);
         new CreateVoidWorld(plugin);
