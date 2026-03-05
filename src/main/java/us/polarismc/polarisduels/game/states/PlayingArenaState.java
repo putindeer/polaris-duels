@@ -540,8 +540,8 @@ public class PlayingArenaState implements ArenaState, Listener {
         resetArenaEntities();
 
         plugin.utils.delay(5, () -> {
-            unloadArenaChunks();
             plugin.getArenaManager().setInactiveState(arena);
+            unloadArenaChunks();
         });
     }
     //endregion
