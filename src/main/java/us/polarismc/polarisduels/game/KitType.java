@@ -41,7 +41,7 @@ public enum KitType {
             Main.getInstance().utils.ib(Material.SHIELD).enchant(Enchantment.MENDING, 1).enchant(Enchantment.UNBREAKING, 3).build()
     }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.HEALTH_INDICATOR),
             1, ArenaSize.LARGE,
-            Main.getInstance().utils.ib(Material.ENDER_PEARL).hideGUI().build(), "<#ff00d1>SMP",
+            Main.getInstance().utils.ib(Material.ENDER_PEARL).hideGUI().build(), "<#ff00d1><bold>SMP",
             List.of("Survival‑style PvP with maxed-out gear, pearls and totems.",
                     "Endurance-based PvP without arena destruction.")),
 
@@ -59,7 +59,7 @@ public enum KitType {
             new ItemStack(Material.SHIELD, 1)
     }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.NO_NATURAL_REGEN, GameAttribute.NO_HUNGER, GameAttribute.HEALTH_INDICATOR),
             2, ArenaSize.LARGE,
-            Main.getInstance().utils.ib(Material.DIAMOND_AXE).hideGUI().build(), "<#9300ff>Axe",
+            Main.getInstance().utils.ib(Material.DIAMOND_AXE).hideGUI().build(), "<#9300ff><bold>Axe",
             List.of("Diamond‑axe combat mixed with shield and crossbow tactics.",
                     "Low attack speed, high burst damage.")),
 
@@ -94,7 +94,7 @@ public enum KitType {
             new ItemStack(Material.TOTEM_OF_UNDYING, 1)
     }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.HEALTH_INDICATOR),
             1, ArenaSize.LARGE,
-            Main.getInstance().utils.ib(Material.NETHERITE_HELMET).hideGUI().build(), "<#808080>NetheritePot",
+            Main.getInstance().utils.ib(Material.NETHERITE_HELMET).hideGUI().build(), "<#808080><bold>NetheritePot",
             List.of("Full netherite armor with splash healing potions.",
                     "Leverage pot‑timing and strong‑hit combos to break defenses.")),
 
@@ -127,7 +127,7 @@ public enum KitType {
             new ItemStack(Material.SHIELD)
     }, EnumSet.of(GameAttribute.NO_CRAFTING, GameAttribute.NO_NATURAL_REGEN, GameAttribute.NO_HUNGER, GameAttribute.NO_ARENA_DESTRUCTION, GameAttribute.HEALTH_INDICATOR),
             1, ArenaSize.LARGE,
-            Main.getInstance().utils.ib(Material.GOLDEN_APPLE).hideGUI().build(), "<#d1bb00>UHC",
+            Main.getInstance().utils.ib(Material.GOLDEN_APPLE).hideGUI().build(), "<#d1bb00><bold>UHC",
             List.of("No natural regeneration; heal only with golden apples.",
                     "Carry water, lava, blocks and cobwebs for tactical utility.")),
 
@@ -152,7 +152,7 @@ public enum KitType {
             new ItemStack(Material.COOKED_BEEF, 20)
     }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.ONE_THIRD_MORE_MELEE_DAMAGE, GameAttribute.HEALTH_INDICATOR),
             1, ArenaSize.LARGE,
-            Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.HEALING).hideGUI().build(), "<#ff0000>DiamondPot",
+            Main.getInstance().utils.ib(Material.SPLASH_POTION).potionType(PotionType.HEALING).hideGUI().build(), "<#ff0000><bold>DiamondPot",
             List.of("Diamond armor with splash healing potions.",
                     "Classic potion PvP mode with 33% increased damage.")),
 
@@ -166,7 +166,7 @@ public enum KitType {
             null
     }, EnumSet.of(GameAttribute.NO_BLOCK_PLACE, GameAttribute.NO_BLOCK_BREAK, GameAttribute.NO_COMPLETE_HUNGER_LOSS, GameAttribute.HEALTH_INDICATOR),
             2, ArenaSize.LARGE,
-            Main.getInstance().utils.ib(Material.DIAMOND_SWORD).hideGUI().build(), "<#00fff3>Sword",
+            Main.getInstance().utils.ib(Material.DIAMOND_SWORD).hideGUI().build(), "<#00fff3><bold>Sword",
             List.of("Classic sword PvP without shields.",
                     "Focuses on timing and spacing.")),
 
@@ -199,7 +199,7 @@ public enum KitType {
             new ItemStack(Material.TOTEM_OF_UNDYING)
     }, EnumSet.of(GameAttribute.NO_ARENA_LIMITS, GameAttribute.HEALTH_INDICATOR),
             1, ArenaSize.LARGE,
-            Main.getInstance().utils.ib(Material.MACE).hideGUI().build(), "<#04cd14>Mace",
+            Main.getInstance().utils.ib(Material.MACE).hideGUI().build(), "<#04cd14><bold>Mace",
             List.of("PvP based on the mace as main weapon.",
                     "Combines aerial movement and burst damage with wind charges and elytra.",
                     "<red>Experimental kit from Enrico & Lurrn's TL.")),
@@ -235,7 +235,7 @@ public enum KitType {
             new ItemStack(Material.SHIELD)
     }, EnumSet.of(GameAttribute.NO_CRAFTING, GameAttribute.NO_NATURAL_REGEN, GameAttribute.NO_HUNGER, GameAttribute.NO_ARENA_DESTRUCTION, GameAttribute.HEALTH_INDICATOR),
             1, ArenaSize.LARGE,
-            Main.getInstance().utils.goldenHeadTexture().hideGUI().build(), "<#d1bb00>Marlow UHC",
+            Main.getInstance().utils.goldenHeadTexture().hideGUI().build(), "<#d1bb00><bold>Marlow UHC",
             List.of("Similar to UHC but with player heads for extra healing.",
                     "No natural regeneration; heal with golden apples and heads."));
 
