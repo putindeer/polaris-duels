@@ -7,6 +7,7 @@ import org.bukkit.scoreboard.*;
 import us.polarismc.polarisduels.Main;
 import us.polarismc.polarisduels.arenas.ArenaCommands;
 import us.polarismc.polarisduels.commands.Msg;
+import us.polarismc.polarisduels.commands.ResetKit;
 import us.polarismc.polarisduels.commands.Spec;
 import us.polarismc.polarisduels.commands.debug.Test;
 import us.polarismc.polarisduels.commands.UHC;
@@ -81,6 +82,7 @@ public class StartThings {
         new Msg(plugin);
         new Spec(plugin);
         new UHC(plugin);
+        new ResetKit(plugin);
         // Admin commands (polarisduels.admin)
         new Broadcast(plugin);
         new CreateVoidWorld(plugin);
