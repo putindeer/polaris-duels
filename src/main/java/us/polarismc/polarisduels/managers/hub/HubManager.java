@@ -182,4 +182,8 @@ public class HubManager {
         return null;
     }
 
+    public void transferToUHC(Player player) {
+        plugin.utils.message(player, "<green>Transferring to UHC... <gray>(This will only transfer you if your client version is 1.20.5 or higher)");
+        player.transfer("polarismc.us", 25565);
+    }
 }

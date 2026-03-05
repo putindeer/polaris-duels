@@ -23,8 +23,7 @@ public class UHC implements CommandExecutor {
             plugin.utils.message(sender, "<red>Only players can use this command.");
             return true;
         }
-        plugin.utils.message(sender, "<green>Transferring to UHC... <gray>(This command will only transfer you if you are on 1.20.5+)");
-        player.transfer("polarismc.us", 25565);
+        plugin.hubManager.transferToUHC(player);
         return true;
     }
 }
