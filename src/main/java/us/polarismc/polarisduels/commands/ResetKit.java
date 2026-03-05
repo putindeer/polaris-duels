@@ -42,7 +42,7 @@ public class ResetKit implements TabExecutor {
         }
 
         plugin.kitManager.resetKit(player, kitType);
-        plugin.utils.message(player, "<green>Your " + kitType.name() + " kit has been reset.");
+        plugin.utils.message(player, "<green>Your " + kitType.getDisplayName() + " kit has been reset.");
         return true;
     }
 
