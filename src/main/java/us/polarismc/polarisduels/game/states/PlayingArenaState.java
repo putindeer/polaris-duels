@@ -218,7 +218,7 @@ public class PlayingArenaState implements ArenaState, Listener {
 
     private void teleportMultipleTeams(List<DuelTeam> teams, ArenaEntity arena) {
         //TODO - esto funciona pero tpea fuera de la arena jaja con 3 players
-        Location center = arena.getCenter();
+        Location center = arena.getCenter().clone();
         Location cornerOne = arena.getPlayableCornerOne();
         Location cornerTwo = arena.getPlayableCornerTwo();
         double safeRadius = plugin.utils.calculateSafeRadius(cornerOne, cornerTwo);
@@ -538,7 +538,11 @@ public class PlayingArenaState implements ArenaState, Listener {
 
         resetArenaBlocks();
         resetArenaEntities();
-        plugin.getArenaManager().setInactiveState(arena);
+
+        plugin.utils.delay(5, () -> {
+            unloadArenaChunks();
+            plugin.getArenaManager().setInactiveState(arena);
+        });
     }
     //endregion
 
@@ -887,6 +891,23 @@ public class PlayingArenaState implements ArenaState, Listener {
                 .filter(entity -> !(entity instanceof Player))
                 .filter(entity -> plugin.utils.isInside(entity.getLocation(), arena.getCornerOne(), arena.getCornerTwo()))
                 .forEach(Entity::remove);
+    }
+
+    public void unloadArenaChunks() {
+        World world = arena.getCenter().getWorld();
+
+        int minX = arena.getCornerOne().getBlockX() >> 4;
+        int maxX = arena.getCornerTwo().getBlockX() >> 4;
+        int minZ = arena.getCornerOne().getBlockZ() >> 4;
+        int maxZ = arena.getCornerTwo().getBlockZ() >> 4;
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                if (world.isChunkLoaded(x, z)) {
+                    world.unloadChunk(x, z, false);
+                }
+            }
+        }
     }
     //endregion
 

@@ -180,7 +180,7 @@ public class StartingArenaState implements ArenaState, Listener {
             player1.teleport(arena.getSpawnOne());
             player2.teleport(arena.getSpawnTwo());
         } else {
-            list.forEach(player -> player.teleport(arena.getCenter().add(0.5, 1, 0.5)));
+            list.forEach(player -> player.teleport(arena.getCenter().clone().add(0.5, 1, 0.5)));
         }
     }
 

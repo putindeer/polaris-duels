@@ -89,7 +89,7 @@ public class QueueArenaState implements ArenaState, Listener {
                 player.teleport(arena.getSpawnTwo());
             }
         } else {
-            player.teleport(arena.getCenter().add(0.5, 1, 0.5));
+            player.teleport(arena.getCenter().clone().add(0.5, 1, 0.5));
         }
 
         plugin.utils.message(list, player.getName() + " joined <green>(" + list.size() + "/" + playersNeeded + ")");
