@@ -51,7 +51,6 @@ public class QueueGUI extends FastInv {
                 plugin.utils.ib(kit.getKitItem())
                         .name(kit.getDisplayName())
                         .lore(kit.getDescription())
-                        .hideGUI()
                         .build(),
                 e -> setQueue(kit)
         );
