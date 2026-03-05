@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.polarismc.polarisduels.Main;
+import us.polarismc.polarisduels.managers.player.DuelsPlayer;
 
 import java.util.Objects;
 
@@ -24,6 +25,13 @@ public class Spec implements CommandExecutor {
             plugin.utils.message(sender, "<red>Only players can use this command.");
             return true;
         }
+
+        DuelsPlayer duelsPlayer = plugin.getPlayerManager().getPlayer(player);
+        if (duelsPlayer.isDuel() || duelsPlayer.isStartingDuel()) {
+            plugin.utils.message(player, "<red>You cannot switch to spectator mode while in a duel.");
+            return true;
+        }
+
         if (player.getGameMode() == GameMode.SPECTATOR) {
             plugin.hubManager.teleportToLobby(player);
             plugin.hubManager.resetPlayerState(player);
