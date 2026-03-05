@@ -93,4 +93,15 @@ public class KitManager {
         }
         return kitType.getDefaultInv();
     }
+
+    /**
+     * Resets the stored kit of a player to the default kit of the given type.
+     *
+     * @param player The player
+     * @param kitType The kit type to reset
+     */
+    public void resetKit(Player player, KitType kitType) {
+        ItemStack[] defaultInv = kitType.getDefaultInv();
+        saveKit(player, kitType, defaultInv);
+    }
 }

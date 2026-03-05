@@ -52,3 +52,5 @@ commands:
     description: Switch to spectator mode
   uhc:
     description: Transfers you to UHC server
+  resetkit:
+    description: Resets your kit
