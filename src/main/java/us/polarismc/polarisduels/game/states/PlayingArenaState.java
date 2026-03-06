@@ -246,7 +246,7 @@ public class PlayingArenaState implements ArenaState, Listener {
         }
 
         healthTaskId = plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-            for (Player player : Bukkit.getServer().getOnlinePlayers()) {
+            for (Player player : arena.getOnlinePlayers()) {
                 Objective objective = scoreboard.getObjective("HealthNamePL");
                 Score score = Objects.requireNonNull(objective).getScore(player.getName());
                 double totalhealth = player.getHealth() + player.getAbsorptionAmount();
@@ -538,6 +538,7 @@ public class PlayingArenaState implements ArenaState, Listener {
 
         resetArenaBlocks();
         resetArenaEntities();
+        savedInventories.clear();
 
         plugin.utils.delay(5, () -> {
             plugin.getArenaManager().setInactiveState(arena);
