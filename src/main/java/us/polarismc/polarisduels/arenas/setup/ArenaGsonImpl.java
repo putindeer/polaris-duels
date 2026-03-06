@@ -58,7 +58,7 @@ public class ArenaGsonImpl implements ArenaDAO {
 
             World world = new WorldCreator(name).generator(new VoidGenerator()).createWorld();
             assert world != null;
-            world.setAutoSave(false);
+            world.setAutoSave(true);
         }
     }
 
