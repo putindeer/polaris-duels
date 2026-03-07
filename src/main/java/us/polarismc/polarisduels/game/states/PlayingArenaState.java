@@ -520,6 +520,10 @@ public class PlayingArenaState implements ArenaState, Listener {
      * Restores players, clears teams, and prepares the arena for the next match.
      */
     private void resetArena() {
+        if (arena.getGameSession() == null) {
+            plugin.getArenaManager().setInactiveState(arena);
+            return;
+        }
         if (arena.getGameSession().getKit().hasAttribute(GameAttribute.HEALTH_INDICATOR)) {
             stopHealthIndicator();
         }
