@@ -521,7 +521,8 @@ public class PlayingArenaState implements ArenaState, Listener {
      */
     private void resetArena() {
         if (arena.getGameSession() == null) {
-            plugin.getArenaManager().setInactiveState(arena);
+            resetArenaBlocks();
+            resetArenaEntities();
             return;
         }
         if (arena.getGameSession().getKit().hasAttribute(GameAttribute.HEALTH_INDICATOR)) {
