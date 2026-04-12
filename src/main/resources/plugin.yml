@@ -4,6 +4,7 @@ main: us.polarismc.polarisduels.Main
 api-version: '1.21.7'
 authors: [putindeer, tmpst, wixent]
 description: A Minimalist Duels Plugin for Polaris
+depends: [FastAsyncWorldEdit]
 website: https://github.com/polaris-mc
 
 commands:
